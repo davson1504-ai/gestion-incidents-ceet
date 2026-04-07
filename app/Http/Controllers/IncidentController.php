@@ -19,14 +19,10 @@ use Illuminate\View\View;
 
 class IncidentController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware(['permission:incidents.view'])->only(['index', 'show']);
-        $this->middleware(['permission:incidents.create'])->only(['create', 'store']);
-        $this->middleware(['permission:incidents.update'])->only(['edit', 'update']);
-        $this->middleware(['permission:incidents.delete'])->only(['destroy']);
-        $this->middleware(['permission:incidents.view'])->only(['export']);
-    }
+    // Les vérifications de rôle sont faites au niveau des routes
+    // (middleware 'role:Administrateur|Superviseur|Opérateur').
+    // On utilise uniquement les permissions Spatie pour contrôler
+    // les actions granulaires DANS les vues via @can().
 
     public function index(Request $request): View
     {
@@ -41,72 +37,62 @@ class IncidentController extends Controller
                 'q'                => null,
             ],
             $request->only([
-                'departement_id',
-                'status_id',
-                'priorite_id',
-                'type_incident_id',
-                'date_from',
-                'date_to',
-                'q',
+                'departement_id', 'status_id', 'priorite_id',
+                'type_incident_id', 'date_from', 'date_to', 'q',
             ])
         );
 
-        $baseQuery = Incident::with([
-            'departement',
-            'typeIncident',
-            'cause',
-            'statut',
-            'priorite',
-            'operateur',
-            'superviseur',
-        ])
-            ->when($filters['departement_id'] ?? null, fn ($q, $v) => $q->where('departement_id', $v))
-            ->when($filters['status_id'] ?? null, fn ($q, $v) => $q->where('status_id', $v))
-            ->when($filters['priorite_id'] ?? null, fn ($q, $v) => $q->where('priorite_id', $v))
-            ->when($filters['type_incident_id'] ?? null, fn ($q, $v) => $q->where('type_incident_id', $v))
-            ->when($filters['date_from'] ?? null, fn ($q, $v) => $q->whereDate('date_debut', '>=', $v))
-            ->when($filters['date_to'] ?? null, fn ($q, $v) => $q->whereDate('date_debut', '<=', $v))
-            ->when($filters['q'] ?? null, function ($q, $v) {
+        // Requête de base (sans order pour les agrégats)
+        $baseQuery = Incident::query()
+            ->when($filters['departement_id'],   fn ($q, $v) => $q->where('departement_id', $v))
+            ->when($filters['status_id'],         fn ($q, $v) => $q->where('status_id', $v))
+            ->when($filters['priorite_id'],       fn ($q, $v) => $q->where('priorite_id', $v))
+            ->when($filters['type_incident_id'],  fn ($q, $v) => $q->where('type_incident_id', $v))
+            ->when($filters['date_from'],         fn ($q, $v) => $q->whereDate('date_debut', '>=', $v))
+            ->when($filters['date_to'],           fn ($q, $v) => $q->whereDate('date_debut', '<=', $v))
+            ->when($filters['q'], function ($q, $v) {
                 $q->where(function ($sq) use ($v) {
                     $sq->where('code_incident', 'like', "%{$v}%")
-                        ->orWhere('titre', 'like', "%{$v}%");
+                       ->orWhere('titre', 'like', "%{$v}%");
                 });
-            })
-            ->latest('date_debut');
-
-        $incidents = $baseQuery->paginate(15)->withQueryString();
-
-        // Stats pour tableau de bord (filtrés comme la liste)
-        $byStatus = (clone $baseQuery)->reorder() // supprime les ORDER BY hérités pour éviter only_full_group_by
-            ->selectRaw('status_id, count(*) as total')
-            ->groupBy('status_id')
-            ->get()
-            ->map(function ($row) {
-                $statut = Statut::find($row->status_id);
-                return [
-                    'label' => $statut?->libelle ?? 'Inconnu',
-                    'color' => $statut?->couleur ?? '#6c757d',
-                    'total' => $row->total,
-                ];
             });
 
-        $byPriorite = (clone $baseQuery)->reorder()
-            ->selectRaw('priorite_id, count(*) as total')
-            ->groupBy('priorite_id')
-            ->get()
-            ->map(function ($row) {
-                $priorite = Priorite::find($row->priorite_id);
-                return [
-                    'label' => $priorite?->libelle ?? 'Inconnu',
-                    'color' => $priorite?->couleur ?? '#6c757d',
-                    'total' => $row->total,
-                ];
-            });
+        // ── Une seule requête pour les stats ─────────────────────────────
+        $allIds = (clone $baseQuery)->pluck('id');
 
-        $avgDuration = (clone $baseQuery)->reorder()->whereNotNull('duree_minutes')->avg('duree_minutes');
+        $statsQuery = Incident::whereIn('id', $allIds);
 
-        $openCount = (clone $baseQuery)->reorder()->whereHas('statut', fn ($q) => $q->where('is_final', false))->count();
-        $closedCount = (clone $baseQuery)->reorder()->whereHas('statut', fn ($q) => $q->where('is_final', true))->count();
+        // Pagination avec eager loading
+        $incidents = (clone $baseQuery)
+            ->with(['departement', 'typeIncident', 'cause', 'statut', 'priorite', 'operateur', 'superviseur'])
+            ->latest('date_debut')
+            ->paginate(15)
+            ->withQueryString();
+
+        // Agrégats : 1 seule passe en PHP sur la collection des stats
+        $statRows = (clone $baseQuery)
+            ->selectRaw('status_id, priorite_id, duree_minutes')
+            ->get();
+
+        $allStatuts  = Statut::all()->keyBy('id');
+        $allPriorites = Priorite::all()->keyBy('id');
+
+        $byStatus = $statRows->groupBy('status_id')->map(function ($g, $statusId) use ($allStatuts) {
+            $s = $allStatuts->get($statusId);
+            return ['label' => $s?->libelle ?? 'Inconnu', 'color' => $s?->couleur ?? '#6c757d', 'total' => $g->count()];
+        })->values();
+
+        $byPriorite = $statRows->groupBy('priorite_id')->map(function ($g, $pId) use ($allPriorites) {
+            $p = $allPriorites->get($pId);
+            return ['label' => $p?->libelle ?? 'Inconnu', 'color' => $p?->couleur ?? '#6c757d', 'total' => $g->count()];
+        })->values();
+
+        $avgDuration = $statRows->whereNotNull('duree_minutes')->avg('duree_minutes');
+
+        $openIds   = $allStatuts->where('is_final', false)->pluck('id');
+        $closedIds = $allStatuts->where('is_final', true)->pluck('id');
+        $openCount   = $statRows->whereIn('status_id', $openIds)->count();
+        $closedCount = $statRows->whereIn('status_id', $closedIds)->count();
 
         return view('incidents.index', [
             'incidents'    => $incidents,
@@ -116,42 +102,36 @@ class IncidentController extends Controller
             'types'        => TypeIncident::orderBy('libelle')->get(),
             'filters'      => $filters,
             'stats'        => [
-                'byStatus'     => $byStatus,
-                'byPriorite'   => $byPriorite,
-                'avgDuration'  => $avgDuration,
-                'openCount'    => $openCount,
-                'closedCount'  => $closedCount,
+                'byStatus'    => $byStatus,
+                'byPriorite'  => $byPriorite,
+                'avgDuration' => $avgDuration,
+                'openCount'   => $openCount,
+                'closedCount' => $closedCount,
             ],
         ]);
     }
 
     public function export(Request $request)
     {
+        $this->authorize('incidents.view');
+
         $filters = $request->only([
-            'departement_id','status_id','priorite_id','type_incident_id','date_from','date_to','q'
+            'departement_id', 'status_id', 'priorite_id',
+            'type_incident_id', 'date_from', 'date_to', 'q',
         ]);
 
-        $query = Incident::with(['departement','typeIncident','cause','statut','priorite','operateur'])
-            ->when($filters['departement_id'] ?? null, fn ($q, $v) => $q->where('departement_id', $v))
-            ->when($filters['status_id'] ?? null, fn ($q, $v) => $q->where('status_id', $v))
-            ->when($filters['priorite_id'] ?? null, fn ($q, $v) => $q->where('priorite_id', $v))
-            ->when($filters['type_incident_id'] ?? null, fn ($q, $v) => $q->where('type_incident_id', $v))
-            ->when($filters['date_from'] ?? null, fn ($q, $v) => $q->whereDate('date_debut', '>=', $v))
-            ->when($filters['date_to'] ?? null, fn ($q, $v) => $q->whereDate('date_debut', '<=', $v))
-            ->when($filters['q'] ?? null, function ($q, $v) {
-                $q->where(function ($sq) use ($v) {
-                    $sq->where('code_incident', 'like', "%{$v}%")
-                        ->orWhere('titre', 'like', "%{$v}%");
-                });
+        $rows = Incident::with(['departement', 'typeIncident', 'cause', 'statut', 'priorite', 'operateur'])
+            ->when($filters['departement_id']  ?? null, fn ($q, $v) => $q->where('departement_id', $v))
+            ->when($filters['status_id']       ?? null, fn ($q, $v) => $q->where('status_id', $v))
+            ->when($filters['priorite_id']     ?? null, fn ($q, $v) => $q->where('priorite_id', $v))
+            ->when($filters['type_incident_id']?? null, fn ($q, $v) => $q->where('type_incident_id', $v))
+            ->when($filters['date_from']       ?? null, fn ($q, $v) => $q->whereDate('date_debut', '>=', $v))
+            ->when($filters['date_to']         ?? null, fn ($q, $v) => $q->whereDate('date_debut', '<=', $v))
+            ->when($filters['q']               ?? null, function ($q, $v) {
+                $q->where(fn ($sq) => $sq->where('code_incident', 'like', "%{$v}%")->orWhere('titre', 'like', "%{$v}%"));
             })
-            ->orderByDesc('date_debut');
-
-        $rows = $query->get();
-
-        $headers = [
-            'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="incidents.csv"',
-        ];
+            ->orderByDesc('date_debut')
+            ->get();
 
         $callback = function () use ($rows) {
             $out = fopen('php://output', 'w');
@@ -174,18 +154,18 @@ class IncidentController extends Controller
             fclose($out);
         };
 
-        return response()->streamDownload($callback, 'incidents.csv', $headers);
+        return response()->streamDownload($callback, 'incidents.csv', ['Content-Type' => 'text/csv']);
     }
 
     public function create(): View
     {
         return view('incidents.create', [
-            'departements' => Departement::orderBy('nom')->get(),
-            'statuts'      => Statut::orderBy('ordre')->get(),
-            'priorites'    => Priorite::orderBy('niveau')->get(),
-            'types'        => TypeIncident::orderBy('libelle')->get(),
-            'causes'       => Cause::orderBy('libelle')->get(),
-            'users'        => cache()->remember('users_for_incidents', 300, fn () => \App\Models\User::orderBy('name')->get()),
+            'departements' => Departement::where('is_active', true)->orderBy('nom')->get(),
+            'statuts'      => Statut::where('is_active', true)->orderBy('ordre')->get(),
+            'priorites'    => Priorite::where('is_active', true)->orderBy('niveau')->get(),
+            'types'        => TypeIncident::where('is_active', true)->orderBy('libelle')->get(),
+            'causes'       => Cause::where('is_active', true)->orderBy('libelle')->get(),
+            'users'        => \App\Models\User::where('is_active', true)->orderBy('name')->get(),
         ]);
     }
 
@@ -193,12 +173,12 @@ class IncidentController extends Controller
     {
         $data = $request->validated();
         $data['code_incident'] = $this->generateCode();
-        $data['operateur_id'] = $request->user()->id;
+        $data['operateur_id']  = $request->user()->id;
 
         $incident = Incident::create($data);
         $this->syncDurationOnClosure($incident);
 
-        $this->logAction($incident, 'create', 'Création de l’incident', [], $incident->only($incident->getFillable()));
+        $this->logAction($incident, 'create', 'Création de l\'incident', [], $incident->only($incident->getFillable()));
         $this->logAudit($incident, 'create', ['message' => 'Incident créé']);
 
         return redirect()->route('incidents.show', $incident)->with('success', 'Incident créé avec succès.');
@@ -207,14 +187,8 @@ class IncidentController extends Controller
     public function show(Incident $incident): View
     {
         $incident->load([
-            'departement',
-            'typeIncident',
-            'cause',
-            'statut',
-            'priorite',
-            'operateur',
-            'responsable',
-            'superviseur',
+            'departement', 'typeIncident', 'cause', 'statut',
+            'priorite', 'operateur', 'responsable', 'superviseur',
             'actions.user',
         ]);
 
@@ -225,12 +199,12 @@ class IncidentController extends Controller
     {
         return view('incidents.edit', [
             'incident'     => $incident,
-            'departements' => Departement::orderBy('nom')->get(),
-            'statuts'      => Statut::orderBy('ordre')->get(),
-            'priorites'    => Priorite::orderBy('niveau')->get(),
-            'types'        => TypeIncident::orderBy('libelle')->get(),
-            'causes'       => Cause::orderBy('libelle')->get(),
-            'users'        => cache()->remember('users_for_incidents', 300, fn () => \App\Models\User::orderBy('name')->get()),
+            'departements' => Departement::where('is_active', true)->orderBy('nom')->get(),
+            'statuts'      => Statut::where('is_active', true)->orderBy('ordre')->get(),
+            'priorites'    => Priorite::where('is_active', true)->orderBy('niveau')->get(),
+            'types'        => TypeIncident::where('is_active', true)->orderBy('libelle')->get(),
+            'causes'       => Cause::where('is_active', true)->orderBy('libelle')->get(),
+            'users'        => \App\Models\User::where('is_active', true)->orderBy('name')->get(),
         ]);
     }
 
@@ -240,10 +214,9 @@ class IncidentController extends Controller
 
         $incident->fill($request->validated());
         $incident->save();
-
         $this->syncDurationOnClosure($incident);
 
-        $this->logAction($incident, 'update', 'Mise à jour de l’incident', $old, $incident->only($incident->getFillable()));
+        $this->logAction($incident, 'update', 'Mise à jour de l\'incident', $old, $incident->only($incident->getFillable()));
         $this->logAudit($incident, 'update', ['message' => 'Incident mis à jour']);
 
         return redirect()->route('incidents.show', $incident)->with('success', 'Incident mis à jour avec succès.');
@@ -251,15 +224,15 @@ class IncidentController extends Controller
 
     public function destroy(Incident $incident): RedirectResponse
     {
-        $incident->delete();
-
-        $this->logAction($incident, 'delete', 'Suppression de l’incident');
+        $this->logAction($incident, 'delete', 'Suppression de l\'incident');
         $this->logAudit($incident, 'delete', ['message' => 'Incident supprimé']);
+
+        $incident->delete();
 
         return redirect()->route('incidents.index')->with('success', 'Incident supprimé.');
     }
 
-    // ---------- Helpers ----------
+    // ── Helpers ───────────────────────────────────────────────────────────
 
     private function generateCode(): string
     {
@@ -270,9 +243,7 @@ class IncidentController extends Controller
     {
         $incident->loadMissing('statut');
 
-        $shouldClose = $incident->statut?->is_final;
-
-        if ($shouldClose && is_null($incident->date_fin)) {
+        if ($incident->statut?->is_final && is_null($incident->date_fin)) {
             $incident->date_fin = now();
         }
 
@@ -281,9 +252,8 @@ class IncidentController extends Controller
                 ? $incident->date_debut->diffInMinutes($incident->date_fin)
                 : null;
             $incident->clotured_at = $incident->date_fin;
+            $incident->save();
         }
-
-        $incident->save();
     }
 
     private function logAction(Incident $incident, string $type, string $description, array $old = null, array $new = null): void

@@ -6,6 +6,7 @@ use App\Models\Incident;
 use App\Models\Priorite;
 use App\Models\Statut;
 use App\Models\TypeIncident;
+use App\Models\Departement;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -23,88 +24,61 @@ class DashboardController extends Controller
             'date_to'   => $request->input('date_to'),
         ];
 
-        $base = Incident::with(['statut', 'priorite', 'typeIncident', 'departement'])
+        // ── Requête de base sans order ─────────────────────────────────
+        $base = Incident::query()
             ->when($filters['date_from'], fn ($q, $v) => $q->whereDate('date_debut', '>=', $v))
-            ->when($filters['date_to'], fn ($q, $v) => $q->whereDate('date_debut', '<=', $v))
-            ->latest('date_debut');
+            ->when($filters['date_to'],   fn ($q, $v) => $q->whereDate('date_debut', '<=', $v));
 
-        // KPIs
-        $total      = (clone $base)->count();
-        $openCount  = (clone $base)->reorder()->whereHas('statut', fn($q) => $q->where('is_final', false))->count();
-        $closedCount= (clone $base)->reorder()->whereHas('statut', fn($q) => $q->where('is_final', true))->count();
-        $avgDuration= (clone $base)->reorder()->whereNotNull('duree_minutes')->avg('duree_minutes');
+        // ── Tous les incidents filtrés (une seule requête) ─────────────
+        $rows = (clone $base)
+            ->with(['statut', 'priorite', 'typeIncident', 'departement'])
+            ->latest('date_debut')
+            ->get();
 
-        // Distribution par statut
-        $byStatus = (clone $base)->reorder()
-            ->selectRaw('status_id, count(*) as total')
-            ->groupBy('status_id')
-            ->get()
-            ->map(function ($row) {
-                $s = Statut::find($row->status_id);
-                return [
-                    'label' => $s?->libelle ?? 'N/A',
-                    'color' => $s?->couleur ?? '#6c757d',
-                    'total' => $row->total,
-                ];
-            });
+        // ── KPIs calculés en PHP ───────────────────────────────────────
+        $total       = $rows->count();
+        $openCount   = $rows->filter(fn ($i) => $i->statut && ! $i->statut->is_final)->count();
+        $closedCount = $rows->filter(fn ($i) => $i->statut &&   $i->statut->is_final)->count();
+        $avgDuration = $rows->whereNotNull('duree_minutes')->avg('duree_minutes');
 
-        // Distribution par priorité
-        $byPriorite = (clone $base)->reorder()
-            ->selectRaw('priorite_id, count(*) as total')
-            ->groupBy('priorite_id')
-            ->get()
-            ->map(function ($row) {
-                $p = Priorite::find($row->priorite_id);
-                return [
-                    'label' => $p?->libelle ?? 'N/A',
-                    'color' => $p?->couleur ?? '#e9ecef',
-                    'total' => $row->total,
-                ];
-            });
+        // ── Distributions ──────────────────────────────────────────────
+        $byStatus = $rows->groupBy('status_id')->map(function ($g) {
+            $s = $g->first()->statut;
+            return ['label' => $s?->libelle ?? 'N/A', 'color' => $s?->couleur ?? '#6c757d', 'total' => $g->count()];
+        })->values();
 
-        // Distribution par type
-        $byType = (clone $base)->reorder()
-            ->selectRaw('type_incident_id, count(*) as total')
-            ->groupBy('type_incident_id')
-            ->get()
-            ->map(function ($row) {
-                $t = TypeIncident::find($row->type_incident_id);
-                return [
-                    'label' => $t?->libelle ?? 'N/A',
-                    'total' => $row->total,
-                ];
-            });
+        $byPriorite = $rows->groupBy('priorite_id')->map(function ($g) {
+            $p = $g->first()->priorite;
+            return ['label' => $p?->libelle ?? 'N/A', 'color' => $p?->couleur ?? '#e9ecef', 'total' => $g->count()];
+        })->values();
 
-        // Top 5 départs
-        $topDepart = (clone $base)->reorder()
-            ->selectRaw('departement_id, count(*) as total')
-            ->groupBy('departement_id')
-            ->orderByDesc('total')
-            ->limit(5)
-            ->get()
-            ->map(function ($row) {
-                return [
-                    'label' => optional($row->departement)->nom ?? 'N/A',
-                    'total' => $row->total,
-                ];
-            });
+        $byType = $rows->groupBy('type_incident_id')->map(function ($g) {
+            $t = $g->first()->typeIncident;
+            return ['label' => $t?->libelle ?? 'N/A', 'total' => $g->count()];
+        })->values();
 
-        // Série temporelle 30 jours (par date_debut)
-        $timeseries = (clone $base)->reorder()
-            ->whereDate('date_debut', '>=', now()->subDays(30)->toDateString())
+        $topDepart = $rows->groupBy('departement_id')->map(function ($g) {
+            return ['label' => optional($g->first()->departement)->nom ?? 'N/A', 'total' => $g->count()];
+        })->sortByDesc('total')->take(5)->values();
+
+        // ── Série temporelle 30 derniers jours (1 seule requête SQL) ──
+        $timeseries = Incident::query()
+            ->when($filters['date_from'], fn ($q, $v) => $q->whereDate('date_debut', '>=', $v))
+            ->when($filters['date_to'],   fn ($q, $v) => $q->whereDate('date_debut', '<=', $v))
+            ->when(! $filters['date_from'], fn ($q) => $q->whereDate('date_debut', '>=', now()->subDays(30)->toDateString()))
             ->selectRaw('DATE(date_debut) as d, count(*) as total')
             ->groupBy('d')
             ->orderBy('d')
             ->get();
 
         return view('dashboard', [
-            'filters'     => $filters,
-            'kpis'        => compact('total', 'openCount', 'closedCount', 'avgDuration'),
-            'byStatus'    => $byStatus,
-            'byPriorite'  => $byPriorite,
-            'byType'      => $byType,
-            'topDepart'   => $topDepart,
-            'timeseries'  => $timeseries,
+            'filters'    => $filters,
+            'kpis'       => compact('total', 'openCount', 'closedCount', 'avgDuration'),
+            'byStatus'   => $byStatus,
+            'byPriorite' => $byPriorite,
+            'byType'     => $byType,
+            'topDepart'  => $topDepart,
+            'timeseries' => $timeseries,
         ]);
     }
 }
