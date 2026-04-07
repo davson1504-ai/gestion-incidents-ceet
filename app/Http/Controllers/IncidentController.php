@@ -12,6 +12,7 @@ use App\Models\Log;
 use App\Models\Priorite;
 use App\Models\Statut;
 use App\Models\TypeIncident;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -19,6 +20,16 @@ use Illuminate\View\View;
 
 class IncidentController extends Controller
 {
+    public function __construct()
+    {
+        // Les roles restent filtres au niveau des routes.
+        // Ici, on force aussi les permissions cote backend.
+        $this->middleware('permission:incidents.view')->only(['index', 'show', 'export']);
+        $this->middleware('permission:incidents.create')->only(['create', 'store']);
+        $this->middleware('permission:incidents.update')->only(['edit', 'update']);
+        $this->middleware('permission:incidents.delete')->only(['destroy']);
+    }
+
     // Les vérifications de rôle sont faites au niveau des routes
     // (middleware 'role:Administrateur|Superviseur|Opérateur').
     // On utilise uniquement les permissions Spatie pour contrôler
@@ -32,13 +43,16 @@ class IncidentController extends Controller
                 'status_id'        => null,
                 'priorite_id'      => null,
                 'type_incident_id' => null,
+                'cause_id'         => null,
+                'operateur_id'     => null,
                 'date_from'        => null,
                 'date_to'          => null,
                 'q'                => null,
             ],
             $request->only([
                 'departement_id', 'status_id', 'priorite_id',
-                'type_incident_id', 'date_from', 'date_to', 'q',
+                'type_incident_id', 'cause_id', 'operateur_id',
+                'date_from', 'date_to', 'q',
             ])
         );
 
@@ -48,6 +62,8 @@ class IncidentController extends Controller
             ->when($filters['status_id'],         fn ($q, $v) => $q->where('status_id', $v))
             ->when($filters['priorite_id'],       fn ($q, $v) => $q->where('priorite_id', $v))
             ->when($filters['type_incident_id'],  fn ($q, $v) => $q->where('type_incident_id', $v))
+            ->when($filters['cause_id'],          fn ($q, $v) => $q->where('cause_id', $v))
+            ->when($filters['operateur_id'],      fn ($q, $v) => $q->where('operateur_id', $v))
             ->when($filters['date_from'],         fn ($q, $v) => $q->whereDate('date_debut', '>=', $v))
             ->when($filters['date_to'],           fn ($q, $v) => $q->whereDate('date_debut', '<=', $v))
             ->when($filters['q'], function ($q, $v) {
@@ -100,6 +116,8 @@ class IncidentController extends Controller
             'statuts'      => Statut::orderBy('ordre')->get(),
             'priorites'    => Priorite::orderBy('niveau')->get(),
             'types'        => TypeIncident::orderBy('libelle')->get(),
+            'causes'       => Cause::orderBy('libelle')->get(),
+            'operateurs'   => User::active()->orderBy('name')->get(),
             'filters'      => $filters,
             'stats'        => [
                 'byStatus'    => $byStatus,
@@ -117,7 +135,8 @@ class IncidentController extends Controller
 
         $filters = $request->only([
             'departement_id', 'status_id', 'priorite_id',
-            'type_incident_id', 'date_from', 'date_to', 'q',
+            'type_incident_id', 'cause_id', 'operateur_id',
+            'date_from', 'date_to', 'q',
         ]);
 
         $rows = Incident::with(['departement', 'typeIncident', 'cause', 'statut', 'priorite', 'operateur'])
@@ -125,6 +144,8 @@ class IncidentController extends Controller
             ->when($filters['status_id']       ?? null, fn ($q, $v) => $q->where('status_id', $v))
             ->when($filters['priorite_id']     ?? null, fn ($q, $v) => $q->where('priorite_id', $v))
             ->when($filters['type_incident_id']?? null, fn ($q, $v) => $q->where('type_incident_id', $v))
+            ->when($filters['cause_id']        ?? null, fn ($q, $v) => $q->where('cause_id', $v))
+            ->when($filters['operateur_id']    ?? null, fn ($q, $v) => $q->where('operateur_id', $v))
             ->when($filters['date_from']       ?? null, fn ($q, $v) => $q->whereDate('date_debut', '>=', $v))
             ->when($filters['date_to']         ?? null, fn ($q, $v) => $q->whereDate('date_debut', '<=', $v))
             ->when($filters['q']               ?? null, function ($q, $v) {
@@ -165,7 +186,7 @@ class IncidentController extends Controller
             'priorites'    => Priorite::where('is_active', true)->orderBy('niveau')->get(),
             'types'        => TypeIncident::where('is_active', true)->orderBy('libelle')->get(),
             'causes'       => Cause::where('is_active', true)->orderBy('libelle')->get(),
-            'users'        => \App\Models\User::where('is_active', true)->orderBy('name')->get(),
+            'users'        => User::where('is_active', true)->orderBy('name')->get(),
         ]);
     }
 
@@ -204,7 +225,7 @@ class IncidentController extends Controller
             'priorites'    => Priorite::where('is_active', true)->orderBy('niveau')->get(),
             'types'        => TypeIncident::where('is_active', true)->orderBy('libelle')->get(),
             'causes'       => Cause::where('is_active', true)->orderBy('libelle')->get(),
-            'users'        => \App\Models\User::where('is_active', true)->orderBy('name')->get(),
+            'users'        => User::where('is_active', true)->orderBy('name')->get(),
         ]);
     }
 
@@ -256,7 +277,7 @@ class IncidentController extends Controller
         }
     }
 
-    private function logAction(Incident $incident, string $type, string $description, array $old = null, array $new = null): void
+    private function logAction(Incident $incident, string $type, string $description, ?array $old = null, ?array $new = null): void
     {
         IncidentAction::create([
             'incident_id' => $incident->id,

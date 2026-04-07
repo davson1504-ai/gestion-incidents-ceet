@@ -63,6 +63,15 @@
                 </li>
                 @endcan
 
+                @can('users.view')
+                <li class="nav-item">
+                    <a class="nav-link {{ request()->routeIs('users.*') ? 'active fw-semibold' : '' }}"
+                       href="{{ route('users.index') }}">
+                        Equipes
+                    </a>
+                </li>
+                @endcan
+
             </ul>
 
             {{-- Compte utilisateur --}}

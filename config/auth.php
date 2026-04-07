@@ -20,6 +20,17 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Public Registration
+    |--------------------------------------------------------------------------
+    |
+    | By default, self-service registration is disabled for production safety.
+    | Enable only when explicitly needed.
+    |
+    */
+    'allow_public_registration' => env('AUTH_ALLOW_PUBLIC_REGISTRATION', false),
+
+    /*
+    |--------------------------------------------------------------------------
     | Authentication Guards
     |--------------------------------------------------------------------------
     |

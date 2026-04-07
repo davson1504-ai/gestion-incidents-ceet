@@ -3,6 +3,7 @@
 use App\Http\Controllers\IncidentController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\HistoriqueController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -40,6 +41,9 @@ Route::middleware('auth')->group(function () {
         Route::resource('types',        \App\Http\Controllers\TypeIncidentController::class)->except(['show']);
         Route::resource('causes',       \App\Http\Controllers\CauseController::class)->except(['show']);
     });
+
+    // Utilisateurs / equipes terrain
+    Route::resource('users', UserController::class)->except(['show']);
 
 });
 

@@ -37,6 +37,9 @@
     </style>
 </head>
 <body>
+@php
+    $topCauses = $byCause->sortByDesc('total')->take(10);
+@endphp
 
 {{-- ── En-tête ──────────────────────────────────────────────────────── --}}
 <div class="header">
@@ -153,6 +156,23 @@
 @endif
 
 {{-- ── Liste détaillée ─────────────────────────────────────────────── --}}
+@if($topCauses->count())
+<div class="section">
+    <h2>Causes les plus frequentes</h2>
+    <table>
+        <thead><tr><th>Cause</th><th>Nb incidents</th></tr></thead>
+        <tbody>
+            @foreach($topCauses as $row)
+            <tr>
+                <td>{{ $row['label'] }}</td>
+                <td>{{ $row['total'] }}</td>
+            </tr>
+            @endforeach
+        </tbody>
+    </table>
+</div>
+@endif
+
 @if($incidents->count())
 <div class="section">
     <h2>Liste des incidents ({{ $incidents->count() }})</h2>

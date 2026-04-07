@@ -71,6 +71,28 @@
                         @endforeach
                     </select>
                 </div>
+                <div class="col-6 col-md-3">
+                    <label class="form-label">Cause</label>
+                    <select name="cause_id" class="form-select form-select-sm">
+                        <option value="">Toutes</option>
+                        @foreach($causes as $cause)
+                            <option value="{{ $cause->id }}" @selected($filters['cause_id'] == $cause->id)>
+                                {{ $cause->libelle }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-6 col-md-3">
+                    <label class="form-label">Operateur</label>
+                    <select name="operateur_id" class="form-select form-select-sm">
+                        <option value="">Tous</option>
+                        @foreach($operateurs as $operateur)
+                            <option value="{{ $operateur->id }}" @selected($filters['operateur_id'] == $operateur->id)>
+                                {{ $operateur->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
                 <div class="col-6 col-md-2">
                     <label class="form-label">Du</label>
                     <input type="date" name="date_from" class="form-control form-control-sm"

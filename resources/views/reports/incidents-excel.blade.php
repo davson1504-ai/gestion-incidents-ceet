@@ -1,3 +1,7 @@
+@php
+    $topCauses = $byCause->sortByDesc('total')->take(10);
+@endphp
+
 <table>
     <thead>
         <tr>
@@ -30,6 +34,24 @@
         <tr><td colspan="7"></td></tr>
 
         {{-- En-têtes colonnes --}}
+        <tr>
+            <th style="background-color:#e8edf5; font-weight:bold;" colspan="2">Top causes</th>
+            <th style="background-color:#e8edf5; font-weight:bold;">Nb incidents</th>
+            <td colspan="4"></td>
+        </tr>
+        @forelse($topCauses as $cause)
+        <tr>
+            <td colspan="2">{{ $cause['label'] }}</td>
+            <td>{{ $cause['total'] }}</td>
+            <td colspan="4"></td>
+        </tr>
+        @empty
+        <tr>
+            <td colspan="7">Aucune cause sur la periode.</td>
+        </tr>
+        @endforelse
+        <tr><td colspan="7"></td></tr>
+
         <tr>
             <th style="background-color:#1e3a5f; color:#ffffff; font-weight:bold;">Code</th>
             <th style="background-color:#1e3a5f; color:#ffffff; font-weight:bold;">Titre</th>

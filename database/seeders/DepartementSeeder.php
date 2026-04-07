@@ -75,6 +75,17 @@ class DepartementSeeder extends Seeder
         ['Cimtogo', 'Lomé', 'Lomé B'],
         ['Coopérative', 'Lomé', 'Lomé Siège'],
         ['Deux Février', 'Lomé', 'Lomé A'],
+        ['Adakpame Nord', 'Lomé', 'Lomé C'],
+        ['Bè Kpota', 'Lomé', 'Lomé C'],
+        ['Attikoume', 'Lomé', 'Lomé C'],
+        ['Kehou', 'Maritime', 'Fortia'],
+        ['Kpalime Centre', 'Plateaux', 'Kpalimé'],
+        ['Atakpame Centre', 'Plateaux', 'Atakpamé'],
+        ['Sokode Centre', 'Centrale', 'Sokodé'],
+        ['Kara Ville', 'Kara', 'Kara'],
+        ['Dapaong Centre', 'Savanes', 'Dapaong'],
+        ['Mango Ville', 'Savanes', 'Mango'],
+        ['Cinkasse', 'Savanes', 'Dapaong'],
     ];
 
     public function run(): void

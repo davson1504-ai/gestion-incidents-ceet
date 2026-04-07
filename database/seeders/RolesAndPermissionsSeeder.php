@@ -28,7 +28,12 @@ class RolesAndPermissionsSeeder extends Seeder
             'catalogues.manage',
         ];
 
-        foreach ([...$incidentPerms, ...$cataloguePerms] as $perm) {
+        $userPerms = [
+            'users.view',
+            'users.manage',
+        ];
+
+        foreach ([...$incidentPerms, ...$cataloguePerms, ...$userPerms] as $perm) {
             Permission::firstOrCreate(['name' => $perm, 'guard_name' => 'web']);
         }
 
@@ -36,7 +41,7 @@ class RolesAndPermissionsSeeder extends Seeder
 
         // Administrateur : accès total
         $admin = Role::firstOrCreate(['name' => 'Administrateur', 'guard_name' => 'web']);
-        $admin->syncPermissions([...$incidentPerms, ...$cataloguePerms]);
+        $admin->syncPermissions([...$incidentPerms, ...$cataloguePerms, ...$userPerms]);
 
         // Superviseur : lecture + création + modification + lecture catalogues
         $superviseur = Role::firstOrCreate(['name' => 'Superviseur', 'guard_name' => 'web']);
@@ -45,6 +50,8 @@ class RolesAndPermissionsSeeder extends Seeder
             'incidents.create',
             'incidents.update',
             'catalogues.view',
+            'users.view',
+            'users.manage',
         ]);
 
         // Opérateur : lecture + création incidents + lecture catalogues

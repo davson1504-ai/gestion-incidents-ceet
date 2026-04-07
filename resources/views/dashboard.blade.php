@@ -10,6 +10,9 @@
     $typeLabels     = $byType->pluck('label');
     $typeData       = $byType->pluck('total');
 
+    $causeLabels    = $byCause->pluck('label');
+    $causeData      = $byCause->pluck('total');
+
     $topDepLabels   = $topDepart->pluck('label');
     $topDepData     = $topDepart->pluck('total');
 
@@ -130,6 +133,17 @@
         </div>
     </div>
 
+    <div class="row g-3 mb-3">
+        <div class="col-md-12">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-white">Causes les plus frequentes</div>
+                <div class="card-body">
+                    <canvas id="chartCause" height="120"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="card shadow-sm">
         <div class="card-header bg-white">Tendance 30 jours (incidents créés)</div>
         <div class="card-body">
@@ -176,6 +190,22 @@
                 datasets: [{data: {!! $typeData->toJson() !!}, backgroundColor: ['#0ea5e9','#10b981','#f59e0b','#ef4444','#8b5cf6','#14b8a6','#f97316','#6366f1','#6b7280','#111827']}]
             },
             options: {plugins:{legend:{position:'bottom'}}}
+        });
+
+        new Chart(document.getElementById('chartCause'), {
+            type: 'bar',
+            data: {
+                labels: {!! $causeLabels->toJson() !!},
+                datasets: [{
+                    label: 'Incidents',
+                    data: {!! $causeData->toJson() !!},
+                    backgroundColor: '#2563eb',
+                }]
+            },
+            options: {
+                plugins:{legend:{display:false}},
+                scales:{y:{beginAtZero:true, ticks:{precision:0}}}
+            }
         });
 
         new Chart(document.getElementById('chartTs'), {

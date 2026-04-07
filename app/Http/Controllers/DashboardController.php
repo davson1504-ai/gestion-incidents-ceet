@@ -3,10 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Incident;
-use App\Models\Priorite;
-use App\Models\Statut;
-use App\Models\TypeIncident;
-use App\Models\Departement;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -31,7 +27,7 @@ class DashboardController extends Controller
 
         // ── Tous les incidents filtrés (une seule requête) ─────────────
         $rows = (clone $base)
-            ->with(['statut', 'priorite', 'typeIncident', 'departement'])
+            ->with(['statut', 'priorite', 'typeIncident', 'departement', 'cause'])
             ->latest('date_debut')
             ->get();
 
@@ -57,6 +53,11 @@ class DashboardController extends Controller
             return ['label' => $t?->libelle ?? 'N/A', 'total' => $g->count()];
         })->values();
 
+        $byCause = $rows->groupBy('cause_id')->map(function ($g) {
+            $c = $g->first()->cause;
+            return ['label' => $c?->libelle ?? 'N/A', 'total' => $g->count()];
+        })->sortByDesc('total')->take(10)->values();
+
         $topDepart = $rows->groupBy('departement_id')->map(function ($g) {
             return ['label' => optional($g->first()->departement)->nom ?? 'N/A', 'total' => $g->count()];
         })->sortByDesc('total')->take(5)->values();
@@ -77,6 +78,7 @@ class DashboardController extends Controller
             'byStatus'   => $byStatus,
             'byPriorite' => $byPriorite,
             'byType'     => $byType,
+            'byCause'    => $byCause,
             'topDepart'  => $topDepart,
             'timeseries' => $timeseries,
         ]);
