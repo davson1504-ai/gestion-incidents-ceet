@@ -17,5 +17,10 @@ export default {
         },
     },
 
+    // Désactive le reset Tailwind (preflight) qui écrase les styles Bootstrap
+    corePlugins: {
+        preflight: false,
+    },
+
     plugins: [forms],
 };

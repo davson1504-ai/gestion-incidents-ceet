@@ -12,17 +12,14 @@
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet">
 
-        <!-- Bootstrap 5 -->
+        <!-- Bootstrap 5 CSS (CDN) -->
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
               rel="stylesheet"
               integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
               crossorigin="anonymous">
 
-        <!-- CSS mobile personnalisé -->
-        <link href="{{ asset('css/mobile.css') }}" rel="stylesheet">
-
-        <!-- Vite -->
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
+        <!-- Vite : app.css (Tailwind utilitaires) + mobile.css + app.js (AlpineJS, TomSelect, Echo) -->
+        @vite(['resources/css/app.css', 'resources/css/mobile.css', 'resources/js/app.js'])
     </head>
     <body class="bg-light">
 
@@ -57,7 +54,7 @@
             </div>
         </main>
 
-        <!-- Bootstrap JS -->
+        <!-- Bootstrap 5 JS (CDN) — chargé une seule fois ici, pas dans resources/js/bootstrap.js -->
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
                 integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
                 crossorigin="anonymous"></script>
