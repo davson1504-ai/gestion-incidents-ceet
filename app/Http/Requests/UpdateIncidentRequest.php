@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateIncidentRequest extends FormRequest
 {
@@ -18,7 +19,12 @@ class UpdateIncidentRequest extends FormRequest
             'description'        => ['nullable', 'string'],
             'departement_id'     => ['required', 'exists:departements,id'],
             'type_incident_id'   => ['required', 'exists:type_incidents,id'],
-            'cause_id'           => ['nullable', 'exists:causes,id'],
+            'cause_id'           => [
+                'nullable',
+                Rule::exists('causes', 'id')->where(function ($query) {
+                    $query->where('type_incident_id', $this->input('type_incident_id'));
+                }),
+            ],
             'status_id'          => ['required', 'exists:statuses,id'],
             'priorite_id'        => ['required', 'exists:priorites,id'],
             'localisation'       => ['nullable', 'string', 'max:255'],

@@ -2,9 +2,11 @@
 
 namespace Tests\Feature\Incidents;
 
+use App\Models\Cause;
 use App\Models\Incident;
 use App\Models\IncidentAction;
 use App\Models\Log;
+use App\Models\TypeIncident;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
@@ -126,5 +128,73 @@ class IncidentWorkflowTest extends TestCase
         $response->assertSee($incidentA->code_incident);
         $response->assertDontSee($incidentB->code_incident);
     }
-}
 
+    public function test_operator_can_fetch_causes_by_type_for_dynamic_filter(): void
+    {
+        $this->seedRolesAndPermissions();
+        $context = $this->createCatalogContext();
+        $operator = $this->makeUserWithRole('operator');
+
+        $inactiveCause = Cause::create([
+            'code' => 'CAUSE_INACTIVE',
+            'libelle' => 'Cause inactive',
+            'type_incident_id' => $context['type']->id,
+            'is_active' => false,
+        ]);
+
+        $otherType = TypeIncident::create([
+            'code' => 'TYPE_OTHER',
+            'libelle' => 'Type autre',
+            'is_active' => true,
+        ]);
+
+        $otherTypeCause = Cause::create([
+            'code' => 'CAUSE_OTHER_TYPE',
+            'libelle' => 'Cause autre type',
+            'type_incident_id' => $otherType->id,
+            'is_active' => true,
+        ]);
+
+        $response = $this->actingAs($operator)->get(route('incidents.causes.by-type', $context['type']));
+
+        $response->assertOk();
+        $response->assertJsonFragment(['id' => $context['cause']->id, 'libelle' => $context['cause']->libelle]);
+        $response->assertJsonFragment(['id' => $context['causeAlt']->id, 'libelle' => $context['causeAlt']->libelle]);
+        $response->assertJsonMissing(['id' => $inactiveCause->id, 'libelle' => $inactiveCause->libelle]);
+        $response->assertJsonMissing(['id' => $otherTypeCause->id, 'libelle' => $otherTypeCause->libelle]);
+    }
+
+    public function test_store_rejects_cause_that_does_not_belong_to_selected_type(): void
+    {
+        $this->seedRolesAndPermissions();
+        $context = $this->createCatalogContext();
+        $operator = $this->makeUserWithRole('operator');
+
+        $otherType = TypeIncident::create([
+            'code' => 'TYPE_MISMATCH',
+            'libelle' => 'Type mismatch',
+            'is_active' => true,
+        ]);
+
+        $mismatchCause = Cause::create([
+            'code' => 'CAUSE_MISMATCH',
+            'libelle' => 'Cause mismatch',
+            'type_incident_id' => $otherType->id,
+            'is_active' => true,
+        ]);
+
+        $response = $this->actingAs($operator)->post(route('incidents.store'), [
+            'titre' => 'Incident cause invalide',
+            'description' => 'Validation type/cause',
+            'departement_id' => $context['departement']->id,
+            'type_incident_id' => $context['type']->id,
+            'cause_id' => $mismatchCause->id,
+            'status_id' => $context['statusOpen']->id,
+            'priorite_id' => $context['priorite']->id,
+            'date_debut' => now()->subHour()->format('Y-m-d H:i:s'),
+        ]);
+
+        $response->assertSessionHasErrors('cause_id');
+        $this->assertDatabaseMissing('incidents', ['titre' => 'Incident cause invalide']);
+    }
+}

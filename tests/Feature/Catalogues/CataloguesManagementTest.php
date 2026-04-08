@@ -4,6 +4,8 @@ namespace Tests\Feature\Catalogues;
 
 use App\Models\Cause;
 use App\Models\Departement;
+use App\Models\Priorite;
+use App\Models\Statut;
 use App\Models\TypeIncident;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\BuildsIncidentContext;
@@ -131,5 +133,74 @@ class CataloguesManagementTest extends TestCase
         $causeDelete->assertRedirect(route('catalogues.causes.index'));
         $this->assertDatabaseMissing('causes', ['id' => $cause->id]);
     }
-}
 
+    public function test_admin_can_crud_statut_and_priorite_catalogues(): void
+    {
+        $this->seedRolesAndPermissions();
+        $admin = $this->makeUserWithRole('admin');
+
+        $statutStore = $this->actingAs($admin)->post(route('catalogues.statuts.store'), [
+            'code' => 'EN_TEST',
+            'libelle' => 'En test',
+            'description' => 'Statut de test',
+            'ordre' => 9,
+            'couleur' => '#112233',
+            'is_active' => 1,
+            'is_final' => 0,
+        ]);
+        $statutStore->assertRedirect(route('catalogues.statuts.index'));
+
+        $statut = Statut::query()->where('code', 'EN_TEST')->firstOrFail();
+
+        $statutUpdate = $this->actingAs($admin)->put(route('catalogues.statuts.update', $statut), [
+            'code' => 'EN_TEST',
+            'libelle' => 'En test MAJ',
+            'description' => 'Statut de test mis a jour',
+            'ordre' => 10,
+            'couleur' => '#334455',
+            'is_active' => 1,
+            'is_final' => 1,
+        ]);
+        $statutUpdate->assertRedirect(route('catalogues.statuts.index'));
+        $this->assertDatabaseHas('statuses', [
+            'id' => $statut->id,
+            'libelle' => 'En test MAJ',
+            'is_final' => 1,
+        ]);
+
+        $statutDelete = $this->actingAs($admin)->delete(route('catalogues.statuts.destroy', $statut));
+        $statutDelete->assertRedirect(route('catalogues.statuts.index'));
+        $this->assertDatabaseMissing('statuses', ['id' => $statut->id]);
+
+        $prioriteStore = $this->actingAs($admin)->post(route('catalogues.priorites.store'), [
+            'code' => 'P_TEST',
+            'libelle' => 'Priorite test',
+            'description' => 'Priorite de test',
+            'niveau' => 7,
+            'couleur' => '#5511aa',
+            'is_active' => 1,
+        ]);
+        $prioriteStore->assertRedirect(route('catalogues.priorites.index'));
+
+        $priorite = Priorite::query()->where('code', 'P_TEST')->firstOrFail();
+
+        $prioriteUpdate = $this->actingAs($admin)->put(route('catalogues.priorites.update', $priorite), [
+            'code' => 'P_TEST',
+            'libelle' => 'Priorite test MAJ',
+            'description' => 'Priorite de test mise a jour',
+            'niveau' => 6,
+            'couleur' => '#227711',
+            'is_active' => 0,
+        ]);
+        $prioriteUpdate->assertRedirect(route('catalogues.priorites.index'));
+        $this->assertDatabaseHas('priorites', [
+            'id' => $priorite->id,
+            'libelle' => 'Priorite test MAJ',
+            'is_active' => 0,
+        ]);
+
+        $prioriteDelete = $this->actingAs($admin)->delete(route('catalogues.priorites.destroy', $priorite));
+        $prioriteDelete->assertRedirect(route('catalogues.priorites.index'));
+        $this->assertDatabaseMissing('priorites', ['id' => $priorite->id]);
+    }
+}

@@ -29,7 +29,7 @@
             <form class="row g-2" method="GET" action="{{ route('incidents.index') }}">
                 <div class="col-6 col-md-3">
                     <label class="form-label">Département</label>
-                    <select name="departement_id" class="form-select form-select-sm">
+                    <select name="departement_id" class="form-select form-select-sm js-tom-select" data-placeholder="Tous les departements">
                         <option value="">Tous</option>
                         @foreach($departements as $dep)
                             <option value="{{ $dep->id }}" @selected($filters['departement_id'] == $dep->id)>
@@ -40,7 +40,7 @@
                 </div>
                 <div class="col-6 col-md-3">
                     <label class="form-label">Statut</label>
-                    <select name="status_id" class="form-select form-select-sm">
+                    <select name="status_id" class="form-select form-select-sm js-tom-select" data-placeholder="Tous les statuts">
                         <option value="">Tous</option>
                         @foreach($statuts as $statut)
                             <option value="{{ $statut->id }}" @selected($filters['status_id'] == $statut->id)>
@@ -51,7 +51,7 @@
                 </div>
                 <div class="col-6 col-md-2">
                     <label class="form-label">Priorité</label>
-                    <select name="priorite_id" class="form-select form-select-sm">
+                    <select name="priorite_id" class="form-select form-select-sm js-tom-select" data-placeholder="Toutes les priorites">
                         <option value="">Toutes</option>
                         @foreach($priorites as $priorite)
                             <option value="{{ $priorite->id }}" @selected($filters['priorite_id'] == $priorite->id)>
@@ -62,7 +62,7 @@
                 </div>
                 <div class="col-6 col-md-2">
                     <label class="form-label">Type</label>
-                    <select name="type_incident_id" class="form-select form-select-sm">
+                    <select id="incident-filter-type" name="type_incident_id" class="form-select form-select-sm js-tom-select" data-placeholder="Tous les types">
                         <option value="">Tous</option>
                         @foreach($types as $type)
                             <option value="{{ $type->id }}" @selected($filters['type_incident_id'] == $type->id)>
@@ -73,7 +73,14 @@
                 </div>
                 <div class="col-6 col-md-3">
                     <label class="form-label">Cause</label>
-                    <select name="cause_id" class="form-select form-select-sm">
+                    <select
+                        id="incident-filter-cause"
+                        name="cause_id"
+                        class="form-select form-select-sm js-tom-select"
+                        data-placeholder="Toutes les causes"
+                        data-selected-cause="{{ $filters['cause_id'] }}"
+                        data-endpoint-template="{{ route('incidents.causes.by-type', ['type' => '__TYPE__']) }}"
+                    >
                         <option value="">Toutes</option>
                         @foreach($causes as $cause)
                             <option value="{{ $cause->id }}" @selected($filters['cause_id'] == $cause->id)>
@@ -84,7 +91,7 @@
                 </div>
                 <div class="col-6 col-md-3">
                     <label class="form-label">Operateur</label>
-                    <select name="operateur_id" class="form-select form-select-sm">
+                    <select name="operateur_id" class="form-select form-select-sm js-tom-select" data-placeholder="Tous les operateurs">
                         <option value="">Tous</option>
                         @foreach($operateurs as $operateur)
                             <option value="{{ $operateur->id }}" @selected($filters['operateur_id'] == $operateur->id)>
@@ -293,6 +300,82 @@
             },
             options: { plugins: { legend: { position: 'bottom' } } }
         });
+
+        const filterTypeSelect = document.getElementById('incident-filter-type');
+        const filterCauseSelect = document.getElementById('incident-filter-cause');
+
+        if (filterTypeSelect && filterCauseSelect) {
+            const allCauses = @json($causes->map(fn($cause) => ['id' => $cause->id, 'libelle' => $cause->libelle])->values());
+            const endpointTemplate = filterCauseSelect.dataset.endpointTemplate;
+            const initialCauseId = String(filterCauseSelect.dataset.selectedCause || '');
+
+            const setCauseOptions = (items, selectedId = '') => {
+                const normalizedSelectedId = String(selectedId || '');
+                const options = [{ value: '', text: 'Toutes' }, ...items.map((item) => ({
+                    value: String(item.id),
+                    text: item.libelle,
+                }))];
+
+                if (filterCauseSelect.tomselect) {
+                    const control = filterCauseSelect.tomselect;
+                    control.clear(true);
+                    control.clearOptions();
+                    control.addOptions(options);
+                    control.refreshOptions(false);
+                    control.setValue(normalizedSelectedId, true);
+                    return;
+                }
+
+                filterCauseSelect.innerHTML = '';
+                options.forEach((option) => {
+                    const element = document.createElement('option');
+                    element.value = option.value;
+                    element.textContent = option.text;
+                    if (option.value === normalizedSelectedId) {
+                        element.selected = true;
+                    }
+                    filterCauseSelect.appendChild(element);
+                });
+            };
+
+            const loadCausesByType = async (typeId, selectedCauseId = '') => {
+                const normalizedTypeId = String(typeId || '');
+
+                if (!normalizedTypeId) {
+                    setCauseOptions(allCauses, selectedCauseId);
+                    return;
+                }
+
+                try {
+                    const endpoint = endpointTemplate.replace('__TYPE__', encodeURIComponent(normalizedTypeId));
+                    const response = await fetch(endpoint, {
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'application/json',
+                        },
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Impossible de charger les causes.');
+                    }
+
+                    const causes = await response.json();
+                    setCauseOptions(causes, selectedCauseId);
+                } catch (error) {
+                    setCauseOptions([], '');
+                }
+            };
+
+            filterTypeSelect.addEventListener('change', () => {
+                loadCausesByType(filterTypeSelect.value, '');
+            });
+
+            if (filterTypeSelect.value) {
+                loadCausesByType(filterTypeSelect.value, initialCauseId);
+            } else {
+                setCauseOptions(allCauses, initialCauseId);
+            }
+        }
     </script>
 
 </x-app-layout>

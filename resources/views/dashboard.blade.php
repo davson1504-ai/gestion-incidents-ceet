@@ -26,6 +26,9 @@
             <div>
                 <h1 class="h4 mb-0">Tableau de bord incidents</h1>
                 <small class="text-muted">Vue synthèse (30 derniers jours par défaut)</small>
+                <div class="mt-1">
+                    <span id="realtime-status" class="badge text-bg-secondary">Temps reel: en attente</span>
+                </div>
             </div>
             <div class="d-flex gap-2 align-items-center">
                 <form class="d-flex gap-2" method="GET" action="{{ route('dashboard') }}">
@@ -216,5 +219,33 @@
             },
             options: {plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true, ticks:{precision:0}}}}
         });
+        if (window.Echo) {
+            const realtimeStatus = document.getElementById('realtime-status');
+            const setRealtimeBadge = (connected) => {
+                if (!realtimeStatus) return;
+                realtimeStatus.className = connected ? 'badge text-bg-success' : 'badge text-bg-warning';
+                realtimeStatus.textContent = connected ? 'Temps reel: connecte' : 'Temps reel: deconnecte';
+            };
+
+            let reloadTimer = null;
+            const scheduleReload = () => {
+                if (reloadTimer) return;
+                reloadTimer = setTimeout(() => window.location.reload(), 800);
+            };
+
+            window.Echo.channel('incidents')
+                .listen('.incident.changed', () => {
+                    scheduleReload();
+                });
+
+            const connector = window.Echo.connector?.pusher?.connection;
+            if (connector) {
+                connector.bind('connected', () => setRealtimeBadge(true));
+                connector.bind('disconnected', () => setRealtimeBadge(false));
+                setRealtimeBadge(connector.state === 'connected');
+            } else {
+                setRealtimeBadge(false);
+            }
+        }
     </script>
 </x-app-layout>

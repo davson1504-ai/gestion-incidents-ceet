@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\IncidentChanged;
 use App\Http\Requests\StoreIncidentRequest;
 use App\Http\Requests\UpdateIncidentRequest;
 use App\Models\Cause;
@@ -201,6 +202,7 @@ class IncidentController extends Controller
 
         $this->logAction($incident, 'create', 'Création de l\'incident', [], $incident->only($incident->getFillable()));
         $this->logAudit($incident, 'create', ['message' => 'Incident créé']);
+        broadcast(new IncidentChanged('created', $incident))->toOthers();
 
         return redirect()->route('incidents.show', $incident)->with('success', 'Incident créé avec succès.');
     }
@@ -239,6 +241,7 @@ class IncidentController extends Controller
 
         $this->logAction($incident, 'update', 'Mise à jour de l\'incident', $old, $incident->only($incident->getFillable()));
         $this->logAudit($incident, 'update', ['message' => 'Incident mis à jour']);
+        broadcast(new IncidentChanged('updated', $incident))->toOthers();
 
         return redirect()->route('incidents.show', $incident)->with('success', 'Incident mis à jour avec succès.');
     }
@@ -247,6 +250,7 @@ class IncidentController extends Controller
     {
         $this->logAction($incident, 'delete', 'Suppression de l\'incident');
         $this->logAudit($incident, 'delete', ['message' => 'Incident supprimé']);
+        broadcast(new IncidentChanged('deleted', $incident))->toOthers();
 
         $incident->delete();
 
