@@ -23,11 +23,20 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     Route::middleware('role:Administrateur|Superviseur|Opérateur|Operateur')->group(function () {
+        // ✅ CORRECTION #1: Déclarer la route spécifique AVANT Route::resource
+        // Sinon Laravel interprète "causes" comme un {incident} ID → 404
+        Route::get('incidents/causes/by-type/{type}', [CauseController::class, 'byType'])
+            ->name('incidents.causes.by-type');
+
+        Route::get('incidents-export', [IncidentController::class, 'export'])
+            ->name('incidents.export');
+
         Route::resource('incidents', IncidentController::class);
-        Route::get('incidents-export', [IncidentController::class, 'export'])->name('incidents.export');
-        Route::get('incidents/causes/by-type/{type}', [CauseController::class, 'byType'])->name('incidents.causes.by-type');
-        Route::get('reports/daily', [\App\Http\Controllers\ReportController::class, 'exportDailyReport'])->name('reports.daily');
-        Route::get('reports/monthly', [\App\Http\Controllers\ReportController::class, 'exportMonthlyReport'])->name('reports.monthly');
+
+        Route::get('reports/daily', [\App\Http\Controllers\ReportController::class, 'exportDailyReport'])
+            ->name('reports.daily');
+        Route::get('reports/monthly', [\App\Http\Controllers\ReportController::class, 'exportMonthlyReport'])
+            ->name('reports.monthly');
     });
 
     Route::middleware('role:Administrateur|Superviseur')->group(function () {

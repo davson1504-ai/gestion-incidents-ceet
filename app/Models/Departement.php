@@ -9,17 +9,21 @@ class Departement extends Model
 {
     use HasFactory;
 
+    protected $table = 'departements';
+
+    // ✅ CORRECTION #4: Fillable complet incluant les champs ajoutés
+    // via la migration 2026_03_30_202116_add_ceet_fields_to_departements_table
     protected $fillable = [
         'code',
         'nom',
-        'direction_exploitation',
-        'poste_repartition',
-        'transformateur',
-        'arrivee',
-        'charge_maximale',
-        'charge_unite',
         'zone',
+        'direction_exploitation',   // ← ajouté par migration CEET
+        'poste_repartition',        // ← ajouté par migration CEET
         'poste_source',
+        'transformateur',           // ← ajouté par migration CEET
+        'arrivee',                  // ← ajouté par migration CEET
+        'charge_maximale',          // ← ajouté par migration CEET
+        'charge_unite',             // ← ajouté par migration CEET
         'description',
         'is_active',
     ];

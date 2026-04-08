@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace App\Http\Controllers;
 
@@ -23,18 +23,11 @@ class IncidentController extends Controller
 {
     public function __construct()
     {
-        // Les roles restent filtres au niveau des routes.
-        // Ici, on force aussi les permissions cote backend.
         $this->middleware('permission:incidents.view')->only(['index', 'show', 'export']);
         $this->middleware('permission:incidents.create')->only(['create', 'store']);
         $this->middleware('permission:incidents.update')->only(['edit', 'update']);
         $this->middleware('permission:incidents.delete')->only(['destroy']);
     }
-
-    // Les vérifications de rôle sont faites au niveau des routes
-    // (middleware 'role:Administrateur|Superviseur|Opérateur').
-    // On utilise uniquement les permissions Spatie pour contrôler
-    // les actions granulaires DANS les vues via @can().
 
     public function index(Request $request): View
     {
@@ -57,7 +50,6 @@ class IncidentController extends Controller
             ])
         );
 
-        // Requête de base (sans order pour les agrégats)
         $baseQuery = Incident::query()
             ->when($filters['departement_id'],   fn ($q, $v) => $q->where('departement_id', $v))
             ->when($filters['status_id'],         fn ($q, $v) => $q->where('status_id', $v))
@@ -74,24 +66,17 @@ class IncidentController extends Controller
                 });
             });
 
-        // ── Une seule requête pour les stats ─────────────────────────────
-        $allIds = (clone $baseQuery)->pluck('id');
-
-        $statsQuery = Incident::whereIn('id', $allIds);
-
-        // Pagination avec eager loading
         $incidents = (clone $baseQuery)
             ->with(['departement', 'typeIncident', 'cause', 'statut', 'priorite', 'operateur', 'superviseur'])
             ->latest('date_debut')
             ->paginate(15)
             ->withQueryString();
 
-        // Agrégats : 1 seule passe en PHP sur la collection des stats
         $statRows = (clone $baseQuery)
             ->selectRaw('status_id, priorite_id, duree_minutes')
             ->get();
 
-        $allStatuts  = Statut::all()->keyBy('id');
+        $allStatuts   = Statut::all()->keyBy('id');
         $allPriorites = Priorite::all()->keyBy('id');
 
         $byStatus = $statRows->groupBy('status_id')->map(function ($g, $statusId) use ($allStatuts) {
@@ -106,8 +91,8 @@ class IncidentController extends Controller
 
         $avgDuration = $statRows->whereNotNull('duree_minutes')->avg('duree_minutes');
 
-        $openIds   = $allStatuts->where('is_final', false)->pluck('id');
-        $closedIds = $allStatuts->where('is_final', true)->pluck('id');
+        $openIds     = $allStatuts->where('is_final', false)->pluck('id');
+        $closedIds   = $allStatuts->where('is_final', true)->pluck('id');
         $openCount   = $statRows->whereIn('status_id', $openIds)->count();
         $closedCount = $statRows->whereIn('status_id', $closedIds)->count();
 
@@ -132,7 +117,10 @@ class IncidentController extends Controller
 
     public function export(Request $request)
     {
-        $this->authorize('incidents.view');
+        // ✅ CORRECTION #2: Utiliser can() au lieu de authorize() pour les permissions Spatie
+        if (! $request->user()->can('incidents.view')) {
+            abort(403);
+        }
 
         $filters = $request->only([
             'departement_id', 'status_id', 'priorite_id',
@@ -141,15 +129,15 @@ class IncidentController extends Controller
         ]);
 
         $rows = Incident::with(['departement', 'typeIncident', 'cause', 'statut', 'priorite', 'operateur'])
-            ->when($filters['departement_id']  ?? null, fn ($q, $v) => $q->where('departement_id', $v))
-            ->when($filters['status_id']       ?? null, fn ($q, $v) => $q->where('status_id', $v))
-            ->when($filters['priorite_id']     ?? null, fn ($q, $v) => $q->where('priorite_id', $v))
-            ->when($filters['type_incident_id']?? null, fn ($q, $v) => $q->where('type_incident_id', $v))
-            ->when($filters['cause_id']        ?? null, fn ($q, $v) => $q->where('cause_id', $v))
-            ->when($filters['operateur_id']    ?? null, fn ($q, $v) => $q->where('operateur_id', $v))
-            ->when($filters['date_from']       ?? null, fn ($q, $v) => $q->whereDate('date_debut', '>=', $v))
-            ->when($filters['date_to']         ?? null, fn ($q, $v) => $q->whereDate('date_debut', '<=', $v))
-            ->when($filters['q']               ?? null, function ($q, $v) {
+            ->when($filters['departement_id']   ?? null, fn ($q, $v) => $q->where('departement_id', $v))
+            ->when($filters['status_id']        ?? null, fn ($q, $v) => $q->where('status_id', $v))
+            ->when($filters['priorite_id']      ?? null, fn ($q, $v) => $q->where('priorite_id', $v))
+            ->when($filters['type_incident_id'] ?? null, fn ($q, $v) => $q->where('type_incident_id', $v))
+            ->when($filters['cause_id']         ?? null, fn ($q, $v) => $q->where('cause_id', $v))
+            ->when($filters['operateur_id']     ?? null, fn ($q, $v) => $q->where('operateur_id', $v))
+            ->when($filters['date_from']        ?? null, fn ($q, $v) => $q->whereDate('date_debut', '>=', $v))
+            ->when($filters['date_to']          ?? null, fn ($q, $v) => $q->whereDate('date_debut', '<=', $v))
+            ->when($filters['q']                ?? null, function ($q, $v) {
                 $q->where(fn ($sq) => $sq->where('code_incident', 'like', "%{$v}%")->orWhere('titre', 'like', "%{$v}%"));
             })
             ->orderByDesc('date_debut')
@@ -157,7 +145,9 @@ class IncidentController extends Controller
 
         $callback = function () use ($rows) {
             $out = fopen('php://output', 'w');
-            fputcsv($out, ['Code', 'Titre', 'Département', 'Statut', 'Priorité', 'Type', 'Cause', 'Début', 'Fin', 'Durée (min)', 'Opérateur']);
+            // BOM UTF-8 pour Excel
+            fprintf($out, chr(0xEF) . chr(0xBB) . chr(0xBF));
+            fputcsv($out, ['Code', 'Titre', 'Département', 'Statut', 'Priorité', 'Type', 'Cause', 'Début', 'Fin', 'Durée (min)', 'Opérateur'], ';');
             foreach ($rows as $inc) {
                 fputcsv($out, [
                     $inc->code_incident,
@@ -167,16 +157,18 @@ class IncidentController extends Controller
                     optional($inc->priorite)->libelle,
                     optional($inc->typeIncident)->libelle,
                     optional($inc->cause)->libelle,
-                    optional($inc->date_debut)?->format('Y-m-d H:i'),
-                    optional($inc->date_fin)?->format('Y-m-d H:i'),
+                    optional($inc->date_debut)?->format('d/m/Y H:i'),
+                    optional($inc->date_fin)?->format('d/m/Y H:i'),
                     $inc->duree_minutes,
                     optional($inc->operateur)->name,
-                ]);
+                ], ';');
             }
             fclose($out);
         };
 
-        return response()->streamDownload($callback, 'incidents.csv', ['Content-Type' => 'text/csv']);
+        return response()->streamDownload($callback, 'incidents-export-' . now()->format('Y-m-d') . '.csv', [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+        ]);
     }
 
     public function create(): View
@@ -200,7 +192,7 @@ class IncidentController extends Controller
         $incident = Incident::create($data);
         $this->syncDurationOnClosure($incident);
 
-        $this->logAction($incident, 'create', 'Création de l\'incident', [], $incident->only($incident->getFillable()));
+        $this->logAction($incident, 'create', "Création de l'incident", [], $incident->only($incident->getFillable()));
         $this->logAudit($incident, 'create', ['message' => 'Incident créé']);
         broadcast(new IncidentChanged('created', $incident))->toOthers();
 
@@ -239,7 +231,7 @@ class IncidentController extends Controller
         $incident->save();
         $this->syncDurationOnClosure($incident);
 
-        $this->logAction($incident, 'update', 'Mise à jour de l\'incident', $old, $incident->only($incident->getFillable()));
+        $this->logAction($incident, 'update', "Mise à jour de l'incident", $old, $incident->only($incident->getFillable()));
         $this->logAudit($incident, 'update', ['message' => 'Incident mis à jour']);
         broadcast(new IncidentChanged('updated', $incident))->toOthers();
 
@@ -248,7 +240,7 @@ class IncidentController extends Controller
 
     public function destroy(Incident $incident): RedirectResponse
     {
-        $this->logAction($incident, 'delete', 'Suppression de l\'incident');
+        $this->logAction($incident, 'delete', "Suppression de l'incident");
         $this->logAudit($incident, 'delete', ['message' => 'Incident supprimé']);
         broadcast(new IncidentChanged('deleted', $incident))->toOthers();
 
