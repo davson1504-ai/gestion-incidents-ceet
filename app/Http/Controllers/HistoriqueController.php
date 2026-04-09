@@ -26,7 +26,7 @@ class HistoriqueController extends Controller
             'q'           => null,
         ], $request->only(['user_id', 'action_type', 'date_from', 'date_to', 'q']));
 
-        $actions = IncidentAction::with(['user', 'incident'])
+        $actions = IncidentAction::with(['user.roles', 'incident'])
             ->when($filters['user_id'],     fn ($q, $v) => $q->where('user_id', $v))
             ->when($filters['action_type'], fn ($q, $v) => $q->where('action_type', $v))
             ->when($filters['date_from'],   fn ($q, $v) => $q->whereDate('action_date', '>=', $v))
@@ -37,6 +37,10 @@ class HistoriqueController extends Controller
                        ->orWhereHas('incident', fn ($i) =>
                            $i->where('code_incident', 'like', "%{$v}%")
                              ->orWhere('titre', 'like', "%{$v}%")
+                       )
+                       ->orWhereHas('user', fn ($u) =>
+                           $u->where('name', 'like', "%{$v}%")
+                             ->orWhere('email', 'like', "%{$v}%")
                        );
                 });
             })
@@ -83,9 +87,9 @@ class HistoriqueController extends Controller
                 foreach ($actions as $a) {
                     fputcsv($out, [
                         optional($a->action_date)?->format('d/m/Y H:i'),
-                        optional($a->user)?->name ?? '—',
+                        optional($a->user)?->name ?? '-',
                         strtoupper($a->action_type),
-                        optional($a->incident)?->code_incident ?? '—',
+                        optional($a->incident)?->code_incident ?? '-',
                         $a->description,
                     ], ';');
                 }

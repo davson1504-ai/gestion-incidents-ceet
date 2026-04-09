@@ -6,8 +6,10 @@ use App\Http\Requests\ProfileUpdateRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
+use Throwable;
 
 class ProfileController extends Controller
 {
@@ -16,8 +18,18 @@ class ProfileController extends Controller
      */
     public function edit(Request $request): View
     {
+        $dbVersion = 'N/A';
+
+        try {
+            $result = DB::selectOne('select version() as version');
+            $dbVersion = (string) ($result->version ?? 'N/A');
+        } catch (Throwable $exception) {
+            $dbVersion = 'N/A';
+        }
+
         return view('profile.edit', [
             'user' => $request->user(),
+            'dbVersion' => $dbVersion,
         ]);
     }
 

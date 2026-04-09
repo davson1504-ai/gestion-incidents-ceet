@@ -29,6 +29,9 @@ Route::middleware(['auth', 'verified'])->group(function (): void {
     Route::get('incidents-export', [IncidentController::class, 'export'])->name('incidents.export');
     Route::resource('incidents', IncidentController::class);
 
+    Route::get('reports', [ReportController::class, 'index'])
+        ->middleware('permission:incidents.view')
+        ->name('reports.index');
     Route::get('reports/daily', [ReportController::class, 'exportDailyReport'])
         ->middleware('permission:incidents.view')
         ->name('reports.daily');

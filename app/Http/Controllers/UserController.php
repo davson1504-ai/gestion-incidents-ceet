@@ -7,7 +7,9 @@ use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use Spatie\Permission\Models\Role;
 
@@ -24,10 +26,10 @@ class UserController extends Controller
         $roleOptions = $this->roleOptions();
 
         $filters = array_merge([
-            'q'             => null,
-            'role'          => null,
-            'departement_id'=> null,
-            'is_active'     => null,
+            'q' => null,
+            'role' => null,
+            'departement_id' => null,
+            'is_active' => null,
         ], $request->only(['q', 'role', 'departement_id', 'is_active']));
 
         $users = User::query()
@@ -46,18 +48,35 @@ class UserController extends Controller
             ->paginate(20)
             ->withQueryString();
 
+        $totalUsers = User::count();
+        $activeOperators = User::query()
+            ->where('is_active', true)
+            ->whereHas('roles', function ($q) {
+                $q->where('name', 'like', 'Op%rateur%')
+                    ->orWhere('name', 'like', 'Operateur%');
+            })
+            ->count();
+        $newThisWeek = User::query()
+            ->whereDate('created_at', '>=', now()->startOfWeek()->toDateString())
+            ->count();
+
         return view('users.index', [
-            'users'        => $users,
-            'filters'      => $filters,
-            'roles'        => $roleOptions,
+            'users' => $users,
+            'filters' => $filters,
+            'roles' => $roleOptions,
             'departements' => Departement::orderBy('nom')->get(),
+            'stats' => [
+                'totalUsers' => $totalUsers,
+                'activeOperators' => $activeOperators,
+                'newThisWeek' => $newThisWeek,
+            ],
         ]);
     }
 
     public function create(): View
     {
         return view('users.create', [
-            'roles'        => $this->roleOptions(),
+            'roles' => $this->roleOptions(),
             'departements' => Departement::orderBy('nom')->get(),
         ]);
     }
@@ -65,21 +84,36 @@ class UserController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'name'          => ['required', 'string', 'max:255'],
-            'email'         => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
-            'telephone'     => ['nullable', 'string', 'max:20', 'unique:users,telephone'],
-            'departement_id'=> ['nullable', 'exists:departements,id'],
-            'role'          => ['required', Rule::in($this->roleOptions())],
-            'password'      => ['required', 'string', 'min:8', 'confirmed'],
+            'name' => ['nullable', 'string', 'max:255', 'required_without_all:prenom,nom_famille'],
+            'prenom' => ['nullable', 'string', 'max:120', 'required_without:name'],
+            'nom_famille' => ['nullable', 'string', 'max:120', 'required_without:name'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
+            'telephone' => ['nullable', 'string', 'max:20', 'unique:users,telephone'],
+            'departement_id' => ['nullable', 'exists:departements,id'],
+            'role' => ['required', Rule::in($this->roleOptions())],
+            'password' => ['nullable', 'string', 'min:8', 'confirmed'],
         ]);
 
+        $fullName = trim((string) (
+            $validated['name']
+            ?? (($validated['prenom'] ?? '') . ' ' . ($validated['nom_famille'] ?? ''))
+        ));
+
+        if ($fullName === '') {
+            throw ValidationException::withMessages([
+                'name' => 'Le nom complet est obligatoire.',
+            ]);
+        }
+
+        $rawPassword = $validated['password'] ?? Str::random(14);
+
         $user = User::create([
-            'name'          => $validated['name'],
-            'email'         => $validated['email'],
-            'telephone'     => $validated['telephone'] ?? null,
-            'departement_id'=> $validated['departement_id'] ?? null,
-            'is_active'     => $request->boolean('is_active'),
-            'password'      => Hash::make($validated['password']),
+            'name' => $fullName,
+            'email' => $validated['email'],
+            'telephone' => $validated['telephone'] ?? null,
+            'departement_id' => $validated['departement_id'] ?? null,
+            'is_active' => $request->has('is_active') ? $request->boolean('is_active') : true,
+            'password' => Hash::make($rawPassword),
         ]);
 
         $user->syncRoles([$validated['role']]);
@@ -90,30 +124,30 @@ class UserController extends Controller
     public function edit(User $user): View
     {
         return view('users.edit', [
-            'userToEdit'    => $user,
-            'roles'         => $this->roleOptions(),
-            'departements'  => Departement::orderBy('nom')->get(),
-            'selectedRole'  => $user->roles()->value('name'),
+            'userToEdit' => $user,
+            'roles' => $this->roleOptions(),
+            'departements' => Departement::orderBy('nom')->get(),
+            'selectedRole' => $user->roles()->value('name'),
         ]);
     }
 
     public function update(Request $request, User $user): RedirectResponse
     {
         $validated = $request->validate([
-            'name'          => ['required', 'string', 'max:255'],
-            'email'         => ['required', 'string', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
-            'telephone'     => ['nullable', 'string', 'max:20', Rule::unique('users', 'telephone')->ignore($user->id)],
-            'departement_id'=> ['nullable', 'exists:departements,id'],
-            'role'          => ['required', Rule::in($this->roleOptions())],
-            'password'      => ['nullable', 'string', 'min:8', 'confirmed'],
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
+            'telephone' => ['nullable', 'string', 'max:20', Rule::unique('users', 'telephone')->ignore($user->id)],
+            'departement_id' => ['nullable', 'exists:departements,id'],
+            'role' => ['required', Rule::in($this->roleOptions())],
+            'password' => ['nullable', 'string', 'min:8', 'confirmed'],
         ]);
 
         $data = [
-            'name'          => $validated['name'],
-            'email'         => $validated['email'],
-            'telephone'     => $validated['telephone'] ?? null,
-            'departement_id'=> $validated['departement_id'] ?? null,
-            'is_active'     => $request->boolean('is_active'),
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'telephone' => $validated['telephone'] ?? null,
+            'departement_id' => $validated['departement_id'] ?? null,
+            'is_active' => $request->boolean('is_active'),
         ];
 
         if (! empty($validated['password'])) {
@@ -150,11 +184,9 @@ class UserController extends Controller
     private function roleOptions(): array
     {
         return Role::query()
-            ->whereIn('name', ['Administrateur', 'Superviseur', 'Opérateur'])
             ->orderBy('name')
             ->pluck('name')
             ->values()
             ->all();
     }
 }
-

@@ -1,274 +1,836 @@
 @php
-    $statusChartLabels = collect($stats['byStatus'])->pluck('label');
-    $statusChartData = collect($stats['byStatus'])->pluck('total');
-    $statusChartColors = collect($stats['byStatus'])->pluck('color');
+    use Illuminate\Support\Carbon;
+    use Illuminate\Support\Str;
 
-    $priorityChartLabels = collect($stats['byPriorite'])->pluck('label');
-    $priorityChartData = collect($stats['byPriorite'])->pluck('total');
-    $priorityChartColors = collect($stats['byPriorite'])->pluck('color');
+    $currentUser = auth()->user();
+    $roleName = $currentUser?->getRoleNames()->first() ?? 'Operateur';
+
+    $showAdvanced = collect([
+        $filters['departement_id'] ?? null,
+        $filters['status_id'] ?? null,
+        $filters['priorite_id'] ?? null,
+        $filters['type_incident_id'] ?? null,
+        $filters['cause_id'] ?? null,
+        $filters['operateur_id'] ?? null,
+        $filters['date_from'] ?? null,
+        $filters['date_to'] ?? null,
+    ])->filter(fn ($value) => filled($value))->isNotEmpty();
+
+    $dailyDate = $filters['date_from'] ?: now()->toDateString();
+    $from = $incidents->firstItem() ?? 0;
+    $to = $incidents->lastItem() ?? 0;
+
+    $formatDuration = static function (?int $minutes): string {
+        if ($minutes === null) {
+            return '-';
+        }
+
+        $hours = intdiv($minutes, 60);
+        $remaining = $minutes % 60;
+
+        return sprintf('%02dh %02dmin', $hours, $remaining);
+    };
 @endphp
 
-<x-app-layout>
-    <x-slot name="header">
-        <div class="w-100 d-flex justify-content-between align-items-center flex-wrap gap-2">
-            <div>
-                <h1 class="h4 mb-0">Gestion des incidents</h1>
-                <p class="text-muted mb-0">Pilotage, filtrage et suivi du cycle de vie des incidents</p>
+<!DOCTYPE html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>Incidents | CEET</title>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+    <style>
+        :root {
+            --ceet-red: #ef2433;
+            --ceet-red-dark: #ce1220;
+            --ceet-bg: #f5f6f8;
+            --ceet-border: #e5e7eb;
+            --ceet-muted: #6b7280;
+            --ceet-shadow: 0 14px 32px rgba(15, 23, 42, 0.04);
+        }
+
+        html,
+        body {
+            margin: 0;
+            width: 100%;
+            min-height: 100%;
+            background: var(--ceet-bg);
+            color: #1f2937;
+            font-family: "Figtree", "Segoe UI", sans-serif;
+        }
+
+        .page-shell {
+            min-height: 100dvh;
+            display: grid;
+            grid-template-columns: 280px 1fr;
+        }
+
+        .sidebar {
+            border-right: 1px solid var(--ceet-border);
+            background: #f8f9fb;
+            display: flex;
+            flex-direction: column;
+            min-height: 100dvh;
+        }
+
+        .sidebar-brand {
+            min-height: 72px;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--ceet-border);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: var(--ceet-red);
+            font-weight: 700;
+            font-size: 1.15rem;
+        }
+
+        .sidebar-brand-badge {
+            width: 30px;
+            height: 30px;
+            border-radius: 0.5rem;
+            background: var(--ceet-red);
+            color: #fff;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+        }
+
+        .sidebar-menu {
+            padding: 1rem;
+            display: grid;
+            gap: 0.3rem;
+        }
+
+        .sidebar-link {
+            border-radius: 0.65rem;
+            color: #1f2937;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.72rem 0.85rem;
+            font-weight: 500;
+        }
+
+        .sidebar-link:hover {
+            background: #f1f5f9;
+        }
+
+        .sidebar-link.active {
+            background: #eceff3;
+            font-weight: 700;
+        }
+
+        .sidebar-icon {
+            width: 18px;
+            height: 18px;
+            color: #111827;
+            flex-shrink: 0;
+        }
+
+        .sidebar-bottom {
+            margin-top: auto;
+            border-top: 1px solid var(--ceet-border);
+            padding: 1rem;
+        }
+
+        .sidebar-create {
+            width: 100%;
+            border: 1px solid var(--ceet-border);
+            border-radius: 0.75rem;
+            background: #fff;
+            color: #111827;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.72rem 0.95rem;
+        }
+
+        .main-area {
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100dvh;
+        }
+
+        .topbar {
+            min-height: 72px;
+            border-bottom: 1px solid var(--ceet-border);
+            background: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 0.9rem;
+            padding: 0.85rem 1.5rem;
+        }
+
+        .icon-btn {
+            border: 1px solid transparent;
+            border-radius: 0.5rem;
+            background: #fff;
+            color: #111827;
+            width: 38px;
+            height: 38px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .icon-btn:hover {
+            border-color: var(--ceet-border);
+            background: #f8fafc;
+        }
+
+        .user-chip {
+            border-left: 1px solid var(--ceet-border);
+            padding-left: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(140deg, #f8d64f 0%, #f5a623 100%);
+            color: #3b2f18;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        .content-wrap {
+            padding: 1.5rem;
+            display: grid;
+            gap: 1.1rem;
+        }
+
+        .page-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 0.9rem;
+            flex-wrap: wrap;
+        }
+
+        .page-title {
+            margin: 0;
+            font-size: 2.1rem;
+            font-weight: 800;
+        }
+
+        .page-subtitle {
+            margin: 0.35rem 0 0;
+            color: var(--ceet-muted);
+            font-size: 1.04rem;
+        }
+
+        .action-btn {
+            border: 1px solid #f6d1d5;
+            background: #fff;
+            color: var(--ceet-red);
+            border-radius: 0.65rem;
+            padding: 0.55rem 0.9rem;
+            font-weight: 700;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .action-btn:hover {
+            border-color: var(--ceet-red);
+            color: var(--ceet-red-dark);
+        }
+
+        .action-btn.primary {
+            border-color: var(--ceet-red);
+            background: var(--ceet-red);
+            color: #fff;
+        }
+
+        .action-btn.primary:hover {
+            background: var(--ceet-red-dark);
+            border-color: var(--ceet-red-dark);
+            color: #fff;
+        }
+
+        .panel {
+            border: 1px solid var(--ceet-border);
+            border-radius: 0.9rem;
+            background: #fff;
+            box-shadow: var(--ceet-shadow);
+            padding: 1rem;
+        }
+
+        .quick-row {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 0.75rem;
+            align-items: center;
+        }
+
+        .search-wrap {
+            display: flex;
+            gap: 0.6rem;
+            flex-wrap: wrap;
+        }
+
+        .search-input {
+            flex: 1;
+            min-width: 230px;
+        }
+
+        .filter-toggle {
+            border: 1px solid #d1d5db;
+            background: #fff;
+            color: #374151;
+            border-radius: 0.6rem;
+            font-weight: 600;
+            padding: 0.52rem 0.82rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .export-group {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .export-link {
+            border: 1px solid #d1d5db;
+            background: #fff;
+            color: #374151;
+            border-radius: 0.58rem;
+            text-decoration: none;
+            padding: 0.47rem 0.72rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .advanced-grid {
+            margin-top: 0.9rem;
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 0.75rem;
+            align-items: end;
+        }
+
+        .advanced-actions {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: flex-end;
+            align-items: center;
+        }
+
+        .list-panel {
+            border: 1px solid var(--ceet-border);
+            border-radius: 0.9rem;
+            background: #fff;
+            box-shadow: var(--ceet-shadow);
+            overflow: hidden;
+        }
+
+        .list-table {
+            margin: 0;
+        }
+
+        .list-table thead th {
+            color: #6b7280;
+            font-size: 0.86rem;
+            letter-spacing: 0.02em;
+            border-bottom-color: #e5e7eb;
+            white-space: nowrap;
+            background: #f9fafb;
+        }
+
+        .list-table td {
+            vertical-align: middle;
+            border-bottom-color: #edf2f7;
+        }
+
+        .status-pill {
+            border-radius: 999px;
+            padding: 0.16rem 0.58rem;
+            font-size: 0.76rem;
+            font-weight: 700;
+            display: inline-block;
+        }
+
+        .status-open {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .status-closed {
+            background: #f3f4f6;
+            color: #4b5563;
+        }
+
+        .duration-cell {
+            font-weight: 600;
+            font-size: 0.84rem;
+            color: #374151;
+            line-height: 1.25;
+            white-space: nowrap;
+        }
+
+        .row-actions {
+            display: inline-flex;
+            gap: 0.4rem;
+            justify-content: flex-end;
+        }
+
+        .icon-action {
+            width: 30px;
+            height: 30px;
+            border-radius: 999px;
+            border: 1px solid #d1d5db;
+            background: #fff;
+            color: #4b5563;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+        }
+
+        .icon-action:hover {
+            border-color: var(--ceet-red);
+            color: var(--ceet-red);
+        }
+
+        .list-footer {
+            padding: 0.9rem 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 0.8rem;
+            flex-wrap: wrap;
+            border-top: 1px solid #e5e7eb;
+            background: #fff;
+        }
+
+        .footer-note {
+            color: #6b7280;
+            font-size: 0.92rem;
+        }
+
+        .page-footer {
+            margin-top: auto;
+            border-top: 1px solid var(--ceet-border);
+            background: #fff;
+            color: #6b7280;
+            font-size: 0.88rem;
+            padding: 0.8rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #22c55e;
+            display: inline-block;
+            margin-right: 0.35rem;
+        }
+
+        @media (max-width: 1199.98px) {
+            .advanced-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 991.98px) {
+            .page-shell {
+                grid-template-columns: 1fr;
+            }
+
+            .topbar {
+                justify-content: space-between;
+                padding: 0.75rem 1rem;
+            }
+
+            .content-wrap {
+                padding: 1rem;
+            }
+
+            .page-title {
+                font-size: 1.75rem;
+            }
+
+            .quick-row {
+                grid-template-columns: 1fr;
+            }
+
+            .advanced-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .list-footer {
+                padding: 0.8rem;
+            }
+
+            .page-footer {
+                padding: 0.8rem 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="page-shell">
+        <aside class="sidebar d-none d-lg-flex">
+            <div class="sidebar-brand">
+                <span class="sidebar-brand-badge">~</span>
+                <span>Gestion des Incidents CEET</span>
             </div>
-            <div class="d-flex gap-2">
-                <a href="{{ route('incidents.export', request()->query()) }}" class="btn btn-outline-secondary">
-                    Export CSV
+
+            <nav class="sidebar-menu">
+                <a href="{{ route('dashboard') }}" class="sidebar-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">
+                    <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.8"/><rect x="14" y="3" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.8"/><rect x="3" y="14" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.8"/><rect x="14" y="14" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.8"/></svg>
+                    <span>Tableau de bord</span>
                 </a>
-                @can('incidents.create')
-                    <a href="{{ route('incidents.create') }}" class="btn btn-primary">Nouvel incident</a>
+                <a href="{{ route('incidents.index') }}" class="sidebar-link {{ request()->routeIs('incidents.*') ? 'active' : '' }}">
+                    <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none"><path d="M12 9V13M12 17H12.01M12 3L21 19H3L12 3Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    <span>Incidents</span>
+                </a>
+                @can('catalogues.view')
+                    <a href="{{ route('catalogues.departements.index') }}" class="sidebar-link {{ request()->routeIs('catalogues.departements.*') ? 'active' : '' }}">
+                        <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none"><path d="M4 6H20M4 12H20M4 18H20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                        <span>Departs</span>
+                    </a>
+                    <a href="{{ route('catalogues.types.index') }}" class="sidebar-link {{ request()->routeIs('catalogues.types.*') || request()->routeIs('catalogues.causes.*') ? 'active' : '' }}">
+                        <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none"><path d="M5 4H19V20L12 16L5 20V4Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+                        <span>Types & Causes</span>
+                    </a>
                 @endcan
-            </div>
-        </div>
-    </x-slot>
+                @can('incidents.view')
+                    <a href="{{ route('reports.index') }}" class="sidebar-link {{ request()->routeIs('reports.*') ? 'active' : '' }}">
+                        <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none"><path d="M5 19V5M10 19V9M15 19V13M20 19V7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                        <span>Reporting</span>
+                    </a>
+                @endcan
+                @role('Administrateur|Superviseur')
+                    <a href="{{ route('historique.index') }}" class="sidebar-link {{ request()->routeIs('historique.*') ? 'active' : '' }}">
+                        <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none"><path d="M3 12A9 9 0 1 0 6 5.3M3 4V9H8M12 7V12L15 15" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        <span>Audit</span>
+                    </a>
+                @endrole
+                @can('users.view')
+                    <a href="{{ route('users.index') }}" class="sidebar-link {{ request()->routeIs('users.*') ? 'active' : '' }}">
+                        <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none"><path d="M16 19V17A4 4 0 0 0 12 13H8A4 4 0 0 0 4 17V19M20 19V17A4 4 0 0 0 17 13.1M12 5A3 3 0 1 1 12 11A3 3 0 0 1 12 5Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        <span>Utilisateurs</span>
+                    </a>
+                @endcan
+                <a href="{{ route('profile.edit') }}" class="sidebar-link {{ request()->routeIs('profile.*') ? 'active' : '' }}">
+                    <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none"><path d="M12 15.5A3.5 3.5 0 1 0 12 8.5A3.5 3.5 0 0 0 12 15.5Z" stroke="currentColor" stroke-width="1.8"/><path d="M19.4 15A1.65 1.65 0 0 0 19.73 16.82L19.79 16.88A2 2 0 0 1 16.96 19.71L16.9 19.65A1.65 1.65 0 0 0 15.08 19.32A1.65 1.65 0 0 0 14 20.85V21A2 2 0 0 1 10 21V20.91A1.65 1.65 0 0 0 8.92 19.38A1.65 1.65 0 0 0 7.1 19.71L7.04 19.77A2 2 0 1 1 4.21 16.94L4.27 16.88A1.65 1.65 0 0 0 4.6 15.06A1.65 1.65 0 0 0 3.07 13.98H3A2 2 0 0 1 3 9.98H3.09A1.65 1.65 0 0 0 4.62 8.9A1.65 1.65 0 0 0 4.29 7.08L4.23 7.02A2 2 0 1 1 7.06 4.19L7.12 4.25A1.65 1.65 0 0 0 8.94 4.58H9A1.65 1.65 0 0 0 10.06 3.05V3A2 2 0 1 1 14.06 3V3.09A1.65 1.65 0 0 0 15.14 4.62A1.65 1.65 0 0 0 16.96 4.29L17.02 4.23A2 2 0 1 1 19.85 7.06L19.79 7.12A1.65 1.65 0 0 0 19.46 8.94V9A1.65 1.65 0 0 0 21 10.06H21.09A2 2 0 0 1 21.09 14.06H21A1.65 1.65 0 0 0 19.47 15.14Z" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    <span>Reglages</span>
+                </a>
+            </nav>
 
-    <div class="card mb-4">
-        <div class="card-body">
-            <form class="row g-3" method="GET" action="{{ route('incidents.index') }}">
-                <div class="col-12 col-md-3">
-                    <label class="form-label">Departement</label>
-                    <select name="departement_id" class="form-select js-tom-select" data-placeholder="Tous les departements">
-                        <option value="">Tous</option>
-                        @foreach($departements as $dep)
-                            <option value="{{ $dep->id }}" @selected($filters['departement_id'] == $dep->id)>{{ $dep->nom }}</option>
-                        @endforeach
-                    </select>
+            @can('incidents.create')
+                <div class="sidebar-bottom">
+                    <a href="{{ route('incidents.create') }}" class="sidebar-create">
+                        <span>+</span>
+                        <span>Nouvel Incident</span>
+                    </a>
                 </div>
-                <div class="col-12 col-md-3">
-                    <label class="form-label">Statut</label>
-                    <select name="status_id" class="form-select js-tom-select" data-placeholder="Tous les statuts">
-                        <option value="">Tous</option>
-                        @foreach($statuts as $statut)
-                            <option value="{{ $statut->id }}" @selected($filters['status_id'] == $statut->id)>{{ $statut->libelle }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="col-12 col-md-3">
-                    <label class="form-label">Priorite</label>
-                    <select name="priorite_id" class="form-select js-tom-select" data-placeholder="Toutes les priorites">
-                        <option value="">Toutes</option>
-                        @foreach($priorites as $priorite)
-                            <option value="{{ $priorite->id }}" @selected($filters['priorite_id'] == $priorite->id)>{{ $priorite->libelle }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="col-12 col-md-3">
-                    <label class="form-label">Type incident</label>
-                    <select id="incident-filter-type" name="type_incident_id" class="form-select js-tom-select" data-placeholder="Tous les types">
-                        <option value="">Tous</option>
-                        @foreach($types as $type)
-                            <option value="{{ $type->id }}" @selected($filters['type_incident_id'] == $type->id)>{{ $type->libelle }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="col-12 col-md-3">
-                    <label class="form-label">Cause</label>
-                    <select
-                        id="incident-filter-cause"
-                        name="cause_id"
-                        class="form-select js-tom-select"
-                        data-placeholder="Toutes les causes"
-                        data-selected-cause="{{ $filters['cause_id'] }}"
-                        data-endpoint-template="{{ route('incidents.causes.by-type', ['type' => '__TYPE__']) }}"
-                    >
-                        <option value="">Toutes</option>
-                        @foreach($causes as $cause)
-                            <option value="{{ $cause->id }}" @selected($filters['cause_id'] == $cause->id)>{{ $cause->libelle }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="col-12 col-md-3">
-                    <label class="form-label">Operateur</label>
-                    <select name="operateur_id" class="form-select js-tom-select" data-placeholder="Tous les operateurs">
-                        <option value="">Tous</option>
-                        @foreach($operateurs as $operateur)
-                            <option value="{{ $operateur->id }}" @selected($filters['operateur_id'] == $operateur->id)>{{ $operateur->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="col-6 col-md-2">
-                    <label class="form-label">Du</label>
-                    <input type="date" name="date_from" class="form-control" value="{{ $filters['date_from'] }}">
-                </div>
-                <div class="col-6 col-md-2">
-                    <label class="form-label">Au</label>
-                    <input type="date" name="date_to" class="form-control" value="{{ $filters['date_to'] }}">
-                </div>
-                <div class="col-12 col-md-4">
-                    <label class="form-label">Recherche (code ou titre)</label>
-                    <input type="text" name="q" class="form-control" placeholder="INC-2026..., titre..." value="{{ $filters['q'] }}">
-                </div>
-                <div class="col-12 col-md-4 d-flex gap-2 align-items-end">
-                    <button type="submit" class="btn btn-primary flex-grow-1">Filtrer</button>
-                    <a href="{{ route('incidents.index') }}" class="btn btn-outline-secondary">Reset</a>
-                </div>
-            </form>
-        </div>
-    </div>
+            @endcan
+        </aside>
 
-    <div class="row g-3 mb-4">
-        <div class="col-6 col-lg-3">
-            <div class="card h-100">
-                <div class="card-body">
-                    <p class="text-muted mb-1">Incidents en cours</p>
-                    <div class="metric-value text-warning">{{ number_format($stats['openCount']) }}</div>
-                </div>
-            </div>
-        </div>
-        <div class="col-6 col-lg-3">
-            <div class="card h-100">
-                <div class="card-body">
-                    <p class="text-muted mb-1">Incidents clotures</p>
-                    <div class="metric-value text-success">{{ number_format($stats['closedCount']) }}</div>
-                </div>
-            </div>
-        </div>
-        <div class="col-6 col-lg-3">
-            <div class="card h-100">
-                <div class="card-body">
-                    <p class="text-muted mb-1">Duree moyenne (min)</p>
-                    <div class="metric-value text-info">{{ number_format($stats['avgDuration'] ?? 0, 0, ',', ' ') }}</div>
-                </div>
-            </div>
-        </div>
-        <div class="col-6 col-lg-3">
-            <div class="card h-100">
-                <div class="card-body">
-                    <p class="text-muted mb-1">Resultats filtres</p>
-                    <div class="metric-value text-primary">{{ number_format($incidents->total()) }}</div>
-                </div>
-            </div>
-        </div>
-    </div>
+        <div class="main-area">
+            <header class="topbar">
+                <button class="icon-btn d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileSidebar" aria-controls="mobileSidebar" aria-label="Afficher la navigation">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 6H20M4 12H20M4 18H20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                </button>
 
-    <div class="row g-3 mb-4">
-        <div class="col-12 col-lg-6">
-            <div class="card h-100">
-                <div class="card-header bg-white fw-semibold">Repartition par statut</div>
-                <div class="card-body">
-                    <canvas id="chartStatus" height="160"></canvas>
-                </div>
-            </div>
-        </div>
-        <div class="col-12 col-lg-6">
-            <div class="card h-100">
-                <div class="card-header bg-white fw-semibold">Repartition par priorite</div>
-                <div class="card-body">
-                    <canvas id="chartPriorite" height="160"></canvas>
-                </div>
-            </div>
-        </div>
-    </div>
+                <button class="icon-btn" aria-label="Notifications">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M15 17H20L18.6 15.6C18.2 15.2 18 14.7 18 14.2V10.5C18 7.4 15.9 4.8 13 4V3.5A1.5 1.5 0 0 0 10 3.5V4C7.1 4.8 5 7.4 5 10.5V14.2C5 14.7 4.8 15.2 4.4 15.6L3 17H8M9 17C9 18.7 10.3 20 12 20C13.7 20 15 18.7 15 17H9Z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
 
-    <div class="card">
-        <div class="card-header bg-white d-flex justify-content-between align-items-center">
-            <span class="fw-semibold">Liste des incidents</span>
-            <span class="badge text-bg-secondary">{{ $incidents->total() }} resultat(s)</span>
-        </div>
-        <div class="table-responsive">
-            <table class="table table-hover mb-0 table-mobile-cards">
-                <thead class="table-light">
-                    <tr>
-                        <th>Code</th>
-                        <th>Titre</th>
-                        <th class="d-none d-md-table-cell">Departement</th>
-                        <th>Statut</th>
-                        <th class="d-none d-sm-table-cell">Priorite</th>
-                        <th class="d-none d-lg-table-cell">Debut</th>
-                        <th class="d-none d-lg-table-cell">Duree (min)</th>
-                        <th class="text-end">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($incidents as $incident)
-                        <tr>
-                            <td data-label="Code"><span class="fw-semibold text-primary">{{ $incident->code_incident }}</span></td>
-                            <td data-label="Titre">{{ \Illuminate\Support\Str::limit($incident->titre, 50) }}</td>
-                            <td data-label="Departement" class="d-none d-md-table-cell">{{ $incident->departement?->nom ?? '-' }}</td>
-                            <td data-label="Statut">
-                                <span class="badge" style="background-color: {{ $incident->statut?->couleur ?? '#6c757d' }}">
-                                    {{ $incident->statut?->libelle ?? 'N/A' }}
-                                </span>
-                            </td>
-                            <td data-label="Priorite" class="d-none d-sm-table-cell">
-                                <span class="badge" style="background-color: {{ $incident->priorite?->couleur ?? '#adb5bd' }}">
-                                    {{ $incident->priorite?->libelle ?? 'N/A' }}
-                                </span>
-                            </td>
-                            <td data-label="Debut" class="d-none d-lg-table-cell">{{ $incident->date_debut?->format('d/m/Y H:i') ?? '-' }}</td>
-                            <td data-label="Duree (min)" class="d-none d-lg-table-cell">{{ $incident->duree_minutes ?? '-' }}</td>
-                            <td data-label="Actions" class="text-end">
-                                <div class="d-flex justify-content-end gap-1 flex-wrap">
-                                    <a href="{{ route('incidents.show', $incident) }}" class="btn btn-sm btn-outline-secondary">Voir</a>
-                                    @can('incidents.update')
-                                        <a href="{{ route('incidents.edit', $incident) }}" class="btn btn-sm btn-outline-primary">Editer</a>
-                                    @endcan
-                                    @can('incidents.delete')
-                                        <form action="{{ route('incidents.destroy', $incident) }}" method="POST" onsubmit="return confirm('Supprimer cet incident ?')">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-sm btn-outline-danger">Supprimer</button>
-                                        </form>
-                                    @endcan
+                <div class="user-chip">
+                    <div class="text-end">
+                        <div class="fw-bold lh-1">{{ $currentUser?->name ?? 'Utilisateur CEET' }}</div>
+                        <small class="text-muted">{{ $roleName }}</small>
+                    </div>
+                    <span class="user-avatar">{{ strtoupper(Str::substr($currentUser?->name ?? 'CEET', 0, 2)) }}</span>
+                    <form method="POST" action="{{ route('logout') }}" class="m-0">
+                        @csrf
+                        <button type="submit" class="icon-btn" aria-label="Se deconnecter">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 21H5A2 2 0 0 1 3 19V5A2 2 0 0 1 5 3H9M16 17L21 12L16 7M21 12H9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </button>
+                    </form>
+                </div>
+            </header>
+
+            <main class="content-wrap">
+                @if (session('success'))
+                    <div class="alert alert-success mb-0">{{ session('success') }}</div>
+                @endif
+
+                @if (session('error'))
+                    <div class="alert alert-danger mb-0">{{ session('error') }}</div>
+                @endif
+
+                <div class="page-head">
+                    <div>
+                        <h1 class="page-title">Liste des Incidents</h1>
+                        <p class="page-subtitle">Consultez et gerez l'ensemble des anomalies detectees sur le reseau national.</p>
+                    </div>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <a href="{{ route('reports.daily', ['date' => $dailyDate, 'format' => 'pdf']) }}" class="action-btn">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M12 3V16M12 16L7 11M12 16L17 11M5 21H19" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            Rapport Journalier
+                        </a>
+                        @can('incidents.create')
+                            <a href="{{ route('incidents.create') }}" class="action-btn primary">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M12 5V19M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                                Declarer un incident
+                            </a>
+                        @endcan
+                    </div>
+                </div>
+
+                <form method="GET" action="{{ route('incidents.index') }}" class="panel">
+                    <div class="quick-row">
+                        <div class="search-wrap">
+                            <div class="search-input">
+                                <input type="text" name="q" class="form-control" value="{{ $filters['q'] }}" placeholder="Rechercher par ID, depart ou operateur...">
+                            </div>
+                            <button class="filter-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#advancedFilters" aria-expanded="{{ $showAdvanced ? 'true' : 'false' }}" aria-controls="advancedFilters">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M4 5H20L14 12V19L10 17V12L4 5Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>
+                                Filtres avances
+                            </button>
+                        </div>
+                        <div class="export-group">
+                            <a href="{{ route('reports.daily', ['date' => $dailyDate, 'format' => 'excel']) }}" class="export-link">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 3V16M12 16L7 11M12 16L17 11M5 21H19" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                Exporter Excel
+                            </a>
+                            <a href="{{ route('reports.daily', ['date' => $dailyDate, 'format' => 'pdf']) }}" class="export-link">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 3V16M12 16L7 11M12 16L17 11M5 21H19" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                PDF
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="collapse {{ $showAdvanced ? 'show' : '' }}" id="advancedFilters">
+                        <div class="advanced-grid">
+                            <div>
+                                <label class="form-label small text-muted fw-semibold">Statut</label>
+                                <select name="status_id" class="form-select js-tom-select" data-placeholder="Tous les statuts">
+                                    <option value="">Tous les statuts</option>
+                                    @foreach($statuts as $statut)
+                                        <option value="{{ $statut->id }}" @selected($filters['status_id'] == $statut->id)>{{ $statut->libelle }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div>
+                                <label class="form-label small text-muted fw-semibold">Depart (feeder)</label>
+                                <select name="departement_id" class="form-select js-tom-select" data-placeholder="Tous les departs">
+                                    <option value="">Tous les departs</option>
+                                    @foreach($departements as $dep)
+                                        <option value="{{ $dep->id }}" @selected($filters['departement_id'] == $dep->id)>{{ $dep->nom }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div>
+                                <label class="form-label small text-muted fw-semibold">Type d'incident</label>
+                                <select id="incident-filter-type" name="type_incident_id" class="form-select js-tom-select" data-placeholder="Tous les types">
+                                    <option value="">Tous les types</option>
+                                    @foreach($types as $type)
+                                        <option value="{{ $type->id }}" @selected($filters['type_incident_id'] == $type->id)>{{ $type->libelle }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="advanced-actions">
+                                <a href="{{ route('incidents.index') }}" class="btn btn-link text-muted text-decoration-none">Reinitialiser</a>
+                            </div>
+
+                            <div>
+                                <label class="form-label small text-muted fw-semibold">Cause</label>
+                                <select
+                                    id="incident-filter-cause"
+                                    name="cause_id"
+                                    class="form-select js-tom-select"
+                                    data-placeholder="Toutes les causes"
+                                    data-selected-cause="{{ $filters['cause_id'] }}"
+                                    data-endpoint-template="{{ route('incidents.causes.by-type', ['type' => '__TYPE__']) }}"
+                                >
+                                    <option value="">Toutes les causes</option>
+                                    @foreach($causes as $cause)
+                                        <option value="{{ $cause->id }}" @selected($filters['cause_id'] == $cause->id)>{{ $cause->libelle }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div>
+                                <label class="form-label small text-muted fw-semibold">Priorite</label>
+                                <select name="priorite_id" class="form-select js-tom-select" data-placeholder="Toutes les priorites">
+                                    <option value="">Toutes les priorites</option>
+                                    @foreach($priorites as $priorite)
+                                        <option value="{{ $priorite->id }}" @selected($filters['priorite_id'] == $priorite->id)>{{ $priorite->libelle }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div>
+                                <label class="form-label small text-muted fw-semibold">Operateur</label>
+                                <select name="operateur_id" class="form-select js-tom-select" data-placeholder="Tous les operateurs">
+                                    <option value="">Tous les operateurs</option>
+                                    @foreach($operateurs as $operateur)
+                                        <option value="{{ $operateur->id }}" @selected($filters['operateur_id'] == $operateur->id)>{{ $operateur->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <div class="flex-grow-1">
+                                    <label class="form-label small text-muted fw-semibold">Du</label>
+                                    <input type="date" name="date_from" class="form-control" value="{{ $filters['date_from'] }}">
                                 </div>
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="8" class="text-center py-5 text-muted">Aucun incident trouve pour ce filtre.</td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
+                                <div class="flex-grow-1">
+                                    <label class="form-label small text-muted fw-semibold">Au</label>
+                                    <input type="date" name="date_to" class="form-control" value="{{ $filters['date_to'] }}">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2 mt-3">
+                            <button type="submit" class="btn btn-danger">Appliquer les filtres</button>
+                            <a href="{{ route('incidents.index') }}" class="btn btn-outline-secondary">Annuler</a>
+                        </div>
+                    </div>
+                </form>
+
+                <section class="list-panel">
+                    <div class="table-responsive">
+                        <table class="table list-table align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Date & Heure</th>
+                                    <th>Depart</th>
+                                    <th>Type</th>
+                                    <th>Cause</th>
+                                    <th>Statut</th>
+                                    <th>Duree</th>
+                                    <th>Operateur</th>
+                                    <th class="text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($incidents as $incident)
+                                    @php
+                                        $status = $incident->statut;
+                                        $isClosed = (bool) optional($status)->is_final;
+                                        $duration = $incident->duree_minutes;
+
+                                        if ($duration === null && $incident->date_debut && $incident->date_fin) {
+                                            $duration = $incident->date_debut->diffInMinutes($incident->date_fin);
+                                        }
+
+                                        $durationText = $formatDuration($duration);
+                                    @endphp
+                                    <tr>
+                                        <td>{{ $incident->date_debut?->format('d/m/Y H:i') ?? '-' }}</td>
+                                        <td>{{ $incident->departement?->nom ?? '-' }}</td>
+                                        <td>{{ $incident->typeIncident?->libelle ?? '-' }}</td>
+                                        <td>{{ Str::limit($incident->cause?->libelle ?? '-', 34) }}</td>
+                                        <td>
+                                            <span class="status-pill {{ $isClosed ? 'status-closed' : 'status-open' }}">
+                                                {{ $status?->libelle ?? 'N/A' }}
+                                            </span>
+                                        </td>
+                                        <td class="duration-cell">{{ $durationText }}</td>
+                                        <td>{{ $incident->operateur?->name ?? '-' }}</td>
+                                        <td class="text-end">
+                                            <div class="row-actions">
+                                                <a href="{{ route('incidents.show', $incident) }}" class="icon-action" title="Voir" aria-label="Voir">
+                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M1 12C1 12 5 4 12 4C19 4 23 12 23 12C23 12 19 20 12 20C5 20 1 12 1 12Z" stroke="currentColor" stroke-width="1.7"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.7"/></svg>
+                                                </a>
+                                                @can('incidents.update')
+                                                    <a href="{{ route('incidents.edit', $incident) }}" class="icon-action" title="Editer" aria-label="Editer">
+                                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M16.8 3.2A2.8 2.8 0 0 1 20.8 7.2L8.5 19.5L3 21L4.5 15.5L16.8 3.2Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>
+                                                    </a>
+                                                @endcan
+                                                @can('incidents.delete')
+                                                    <form action="{{ route('incidents.destroy', $incident) }}" method="POST" class="d-inline" onsubmit="return confirm('Supprimer cet incident ?');">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="icon-action" title="Supprimer" aria-label="Supprimer">
+                                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M3 6H21M9 6V4H15V6M7 6L8 20H16L17 6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                                        </button>
+                                                    </form>
+                                                @endcan
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="8" class="text-center py-5 text-muted">Aucun incident trouve pour ces filtres.</td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="list-footer">
+                        <div class="footer-note">Affichage de {{ $from }} a {{ $to }} sur {{ $incidents->total() }} incidents</div>
+                        <div>{{ $incidents->links('pagination::bootstrap-5') }}</div>
+                    </div>
+                </section>
+            </main>
+
+            <footer class="page-footer">
+                <span>&copy; {{ now()->year }} CEET - Gestion des Incidents Reseau</span>
+                <span><span class="status-dot"></span>Systeme Operationnel</span>
+            </footer>
         </div>
-        <div class="card-footer bg-white">
-            {{ $incidents->links('pagination::bootstrap-5') }}
+    </div>
+    <div class="offcanvas offcanvas-start" tabindex="-1" id="mobileSidebar" aria-labelledby="mobileSidebarLabel">
+        <div class="offcanvas-header border-bottom">
+            <h5 class="offcanvas-title fw-bold text-danger" id="mobileSidebarLabel">CEET Incidents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Fermer"></button>
+        </div>
+        <div class="offcanvas-body p-0">
+            <nav class="sidebar-menu">
+                <a href="{{ route('dashboard') }}" class="sidebar-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">Tableau de bord</a>
+                <a href="{{ route('incidents.index') }}" class="sidebar-link {{ request()->routeIs('incidents.*') ? 'active' : '' }}">Incidents</a>
+                @can('catalogues.view')
+                    <a href="{{ route('catalogues.departements.index') }}" class="sidebar-link {{ request()->routeIs('catalogues.departements.*') ? 'active' : '' }}">Departs</a>
+                    <a href="{{ route('catalogues.types.index') }}" class="sidebar-link {{ request()->routeIs('catalogues.types.*') || request()->routeIs('catalogues.causes.*') ? 'active' : '' }}">Types & Causes</a>
+                @endcan
+                @can('incidents.view')
+                    <a href="{{ route('reports.index') }}" class="sidebar-link {{ request()->routeIs('reports.*') ? 'active' : '' }}">Reporting</a>
+                @endcan
+                @role('Administrateur|Superviseur')
+                    <a href="{{ route('historique.index') }}" class="sidebar-link {{ request()->routeIs('historique.*') ? 'active' : '' }}">Audit</a>
+                @endrole
+                @can('users.view')
+                    <a href="{{ route('users.index') }}" class="sidebar-link {{ request()->routeIs('users.*') ? 'active' : '' }}">Utilisateurs</a>
+                @endcan
+                <a href="{{ route('profile.edit') }}" class="sidebar-link {{ request()->routeIs('profile.*') ? 'active' : '' }}">Reglages</a>
+            </nav>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <script>
-        const createChart = (id, config) => {
-            const element = document.getElementById(id);
-            if (element) {
-                new Chart(element, config);
-            }
-        };
-
-        createChart('chartStatus', {
-            type: 'bar',
-            data: {
-                labels: @json($statusChartLabels),
-                datasets: [{
-                    data: @json($statusChartData),
-                    backgroundColor: @json($statusChartColors),
-                    borderRadius: 6
-                }]
-            },
-            options: {
-                plugins: { legend: { display: false } },
-                scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
-            }
-        });
-
-        createChart('chartPriorite', {
-            type: 'doughnut',
-            data: {
-                labels: @json($priorityChartLabels),
-                datasets: [{
-                    data: @json($priorityChartData),
-                    backgroundColor: @json($priorityChartColors)
-                }]
-            },
-            options: {
-                plugins: { legend: { position: 'bottom' } }
-            }
-        });
-
         const typeSelect = document.getElementById('incident-filter-type');
         const causeSelect = document.getElementById('incident-filter-cause');
 
@@ -278,7 +840,7 @@
             const initialCauseId = String(causeSelect.dataset.selectedCause || '');
 
             const setOptions = (items, selectedId = '') => {
-                const options = [{ value: '', text: 'Toutes' }, ...items.map((item) => ({
+                const options = [{ value: '', text: 'Toutes les causes' }, ...items.map((item) => ({
                     value: String(item.id),
                     text: item.libelle
                 }))];
@@ -342,4 +904,7 @@
             }
         }
     </script>
-</x-app-layout>
+</body>
+</html>
+
+

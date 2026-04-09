@@ -7,26 +7,31 @@ use Illuminate\Support\Carbon;
 
 class IncidentReportService
 {
-    public function dailyData(Carbon $date): array
+    public function dailyData(Carbon $date, array $filters = []): array
     {
         $start = $date->copy()->startOfDay();
         $end   = $date->copy()->endOfDay();
 
-        return $this->buildData($start, $end, 'day');
+        return $this->buildData($start, $end, 'day', $filters);
     }
 
-    public function monthlyData(Carbon $month): array
+    public function monthlyData(Carbon $month, array $filters = []): array
     {
         $start = $month->copy()->startOfMonth();
         $end   = $month->copy()->endOfMonth();
 
-        return $this->buildData($start, $end, 'month');
+        return $this->buildData($start, $end, 'month', $filters);
     }
 
-    private function buildData(Carbon $start, Carbon $end, string $granularity): array
+    private function buildData(Carbon $start, Carbon $end, string $granularity, array $filters = []): array
     {
+        $departementId = $filters['departement_id'] ?? null;
+        $causeId = $filters['cause_id'] ?? null;
+
         $base = Incident::with(['statut', 'priorite', 'departement', 'typeIncident', 'cause'])
             ->whereBetween('date_debut', [$start, $end])
+            ->when($departementId, fn ($q, $value) => $q->where('departement_id', $value))
+            ->when($causeId, fn ($q, $value) => $q->where('cause_id', $value))
             ->orderBy('date_debut');
 
         $incidents = $base->get();
@@ -65,6 +70,8 @@ class IncidentReportService
 
         $timeseries = Incident::selectRaw('DATE(date_debut) as d, count(*) as total')
             ->whereBetween('date_debut', [$start, $end])
+            ->when($departementId, fn ($q, $value) => $q->where('departement_id', $value))
+            ->when($causeId, fn ($q, $value) => $q->where('cause_id', $value))
             ->groupBy('d')
             ->orderBy('d')
             ->get();
@@ -86,4 +93,3 @@ class IncidentReportService
         );
     }
 }
-
