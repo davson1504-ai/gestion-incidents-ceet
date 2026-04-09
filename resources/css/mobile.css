@@ -1,173 +1,77 @@
-/* ================================================================
-   CEET — Styles mobile-first
-   ================================================================ */
+/* Mobile-first helper styles for incidents and dashboard pages */
 
-/* ── Variables ────────────────────────────────────────────────── */
-:root {
-    --ceet-primary: #1e3a5f;
-    --ceet-accent:  #0ea5e9;
-}
-
-/* ── Layout général ───────────────────────────────────────────── */
 body {
-    font-size: 0.9rem;
+    font-size: 0.95rem;
 }
 
-main.py-4 {
-    padding-top: 1rem !important;
-    padding-bottom: 2rem !important;
-}
-
-/* ── Navbar ───────────────────────────────────────────────────── */
-.navbar-brand { font-size: 1.1rem; }
-
-@media (max-width: 991px) {
-    .navbar-collapse {
-        padding: 0.75rem 0;
-        border-top: 1px solid rgba(255,255,255,0.1);
-        margin-top: 0.5rem;
-    }
-    .navbar-nav .nav-link {
-        padding: 0.6rem 0.5rem;
-        border-bottom: 1px solid rgba(255,255,255,0.05);
-    }
-    .navbar-nav.ms-auto {
-        margin-top: 0.5rem;
-        border-top: 1px solid rgba(255,255,255,0.1);
-        padding-top: 0.5rem;
-        flex-direction: row !important;
-        flex-wrap: wrap;
-        align-items: center;
-        gap: 0.5rem;
-    }
-}
-
-/* ── Cards KPI ────────────────────────────────────────────────── */
-.kpi-card {
-    border-radius: 10px;
-    transition: transform 0.15s;
-}
-.kpi-card:hover { transform: translateY(-2px); }
-
-@media (max-width: 575px) {
-    .kpi-card .display-6 { font-size: 1.6rem; }
-}
-
-/* ── Header de page ───────────────────────────────────────────── */
 .page-header {
-    flex-wrap: wrap;
     gap: 0.75rem;
 }
-.page-header h1 { font-size: 1.15rem; }
 
-@media (max-width: 767px) {
-    .page-header { flex-direction: column; align-items: flex-start !important; }
-    .page-header .btn-group-actions { width: 100%; }
-    .page-header .btn-group-actions .btn { flex: 1; font-size: 0.8rem; }
+@media (max-width: 991.98px) {
+    .navbar .dropdown-menu {
+        border: 0;
+        padding-top: 0.25rem;
+    }
 }
 
-/* ── Tableaux → cartes sur mobile ─────────────────────────────── */
-@media (max-width: 767px) {
+@media (max-width: 767.98px) {
+    .table-mobile-cards thead {
+        display: none;
+    }
 
-    /* Cache le thead */
-    .table-mobile-cards thead { display: none; }
-
-    /* Chaque ligne devient une carte */
     .table-mobile-cards tbody tr {
         display: block;
         margin-bottom: 0.75rem;
         border: 1px solid #dee2e6;
-        border-radius: 8px;
+        border-radius: 0.5rem;
         overflow: hidden;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.07);
         background: #fff;
     }
 
-    /* Chaque cellule devient une ligne label : valeur */
     .table-mobile-cards tbody td {
         display: flex;
         justify-content: space-between;
         align-items: flex-start;
-        padding: 0.5rem 0.85rem;
-        border-bottom: 1px solid #f0f0f0;
-        font-size: 0.85rem;
-        gap: 0.5rem;
+        gap: 0.75rem;
+        padding: 0.65rem 0.85rem;
+        border-bottom: 1px solid #f1f5f9;
     }
 
     .table-mobile-cards tbody td:last-child {
-        border-bottom: none;
-        background: #f8f9fa;
+        border-bottom: 0;
     }
 
-    /* Label généré depuis data-label */
     .table-mobile-cards tbody td::before {
         content: attr(data-label);
+        font-size: 0.75rem;
         font-weight: 600;
-        color: #555;
-        white-space: nowrap;
-        min-width: 110px;
-        font-size: 0.78rem;
-        text-transform: uppercase;
         letter-spacing: 0.03em;
+        color: #6b7280;
+        text-transform: uppercase;
+        white-space: nowrap;
     }
 
-    /* Ligne "vide" (aucun résultat) */
     .table-mobile-cards tbody td[colspan] {
         display: block;
         text-align: center;
     }
+
     .table-mobile-cards tbody td[colspan]::before {
         display: none;
     }
 }
 
-/* ── Formulaires ──────────────────────────────────────────────── */
-@media (max-width: 575px) {
-    .form-label { margin-bottom: 0.2rem; font-size: 0.82rem; }
-    .form-control, .form-select { font-size: 0.9rem; }
-    .btn { font-size: 0.85rem; }
-}
+@media (max-width: 575.98px) {
+    .metric-value {
+        font-size: 1.35rem;
+    }
 
-/* ── Filtres ──────────────────────────────────────────────────── */
-@media (max-width: 767px) {
-    .filter-card .row > [class*="col-"] {
-        margin-bottom: 0.4rem;
+    .card-body {
+        padding: 0.85rem;
+    }
+
+    .btn {
+        font-size: 0.875rem;
     }
 }
-
-/* ── Pagination ───────────────────────────────────────────────── */
-@media (max-width: 575px) {
-    .pagination { flex-wrap: wrap; gap: 2px; font-size: 0.8rem; }
-    .page-link  { padding: 0.3rem 0.55rem; }
-}
-
-/* ── Dashboard auto-refresh box ───────────────────────────────── */
-@media (max-width: 767px) {
-    #refresh-box {
-        width: 100%;
-        justify-content: space-between;
-    }
-}
-
-/* ── Charts ───────────────────────────────────────────────────── */
-@media (max-width: 575px) {
-    canvas { max-height: 200px; }
-}
-
-/* ── Modals ───────────────────────────────────────────────────── */
-@media (max-width: 575px) {
-    .modal-dialog { margin: 0.5rem; }
-    .modal-body pre { font-size: 0.75rem; }
-}
-
-/* ── Badges ───────────────────────────────────────────────────── */
-.badge { font-size: 0.78em; }
-
-/* ── Boutons d'action dans les tableaux ───────────────────────── */
-@media (max-width: 767px) {
-    .btn-group.btn-group-sm .btn { font-size: 0.78rem; padding: 0.25rem 0.5rem; }
-}
-
-/* ── Cards générales ──────────────────────────────────────────── */
-.card { border-radius: 10px; }
-.card-header { font-size: 0.9rem; }

@@ -1,3 +1,43 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "bootstrap/dist/css/bootstrap.min.css";
+@import "./mobile.css";
+
+:root {
+    --ceet-primary: #1e3a5f;
+    --ceet-primary-dark: #10243d;
+    --ceet-accent: #0ea5e9;
+    --ceet-surface: #f5f7fb;
+}
+
+body {
+    background-color: var(--ceet-surface);
+    color: #1f2937;
+}
+
+.navbar-ceet {
+    background: linear-gradient(90deg, var(--ceet-primary-dark), var(--ceet-primary));
+}
+
+.card {
+    border: 1px solid rgba(15, 23, 42, 0.06);
+    box-shadow: 0 0.5rem 1rem rgba(2, 6, 23, 0.04);
+}
+
+.metric-value {
+    font-weight: 700;
+    font-size: 1.6rem;
+    line-height: 1;
+}
+
+.badge-soft {
+    background-color: rgba(14, 165, 233, 0.12);
+    color: #0369a1;
+}
+
+.table td,
+.table th {
+    vertical-align: middle;
+}
+
+.chart-card {
+    min-height: 360px;
+}

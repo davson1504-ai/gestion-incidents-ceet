@@ -15,7 +15,7 @@ class ReportController extends Controller
 {
     public function __construct(private IncidentReportService $service)
     {
-        $this->middleware(['auth', 'verified', 'role:Administrateur|Superviseur|Opérateur']);
+        $this->middleware(['auth', 'verified', 'permission:incidents.view']);
     }
 
     public function exportDailyReport(DailyReportRequest $request)
@@ -29,7 +29,7 @@ class ReportController extends Controller
     public function exportMonthlyReport(MonthlyReportRequest $request)
     {
         $month = Carbon::createFromFormat('Y-m', $request->input('month', now()->format('Y-m')));
-        $data  = $this->service->monthlyData($month);
+        $data = $this->service->monthlyData($month);
 
         return $this->export($request, $data, "rapport-mensuel-{$month->format('Y-m')}");
     }
@@ -43,7 +43,7 @@ class ReportController extends Controller
         }
 
         $pdf = Pdf::loadView('reports.incidents', $data)->setPaper('a4', 'portrait');
+
         return $pdf->download("{$baseName}.pdf");
     }
 }
-

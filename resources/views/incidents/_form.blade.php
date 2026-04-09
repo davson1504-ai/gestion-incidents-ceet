@@ -21,7 +21,7 @@
         <select
             name="departement_id"
             class="form-select js-tom-select @error('departement_id') is-invalid @enderror"
-            data-placeholder="Choisir un departement..."
+            data-placeholder="Selectionner un departement"
             required
         >
             <option value="">Selectionner</option>
@@ -40,7 +40,7 @@
             id="incident-type-select"
             name="type_incident_id"
             class="form-select js-tom-select @error('type_incident_id') is-invalid @enderror"
-            data-placeholder="Choisir un type..."
+            data-placeholder="Selectionner un type"
             required
         >
             <option value="">Selectionner</option>
@@ -59,11 +59,11 @@
             id="incident-cause-select"
             name="cause_id"
             class="form-select js-tom-select @error('cause_id') is-invalid @enderror"
-            data-placeholder="Choisir une cause..."
+            data-placeholder="Selectionner une cause"
             data-selected-cause="{{ $selectedCauseId }}"
             data-endpoint-template="{{ route('incidents.causes.by-type', ['type' => '__TYPE__']) }}"
         >
-            <option value="">-- Aucune --</option>
+            <option value="">Aucune</option>
             @foreach($causes as $cause)
                 <option value="{{ $cause->id }}" @selected($selectedCauseId == $cause->id)>
                     {{ $cause->libelle }}
@@ -78,7 +78,7 @@
         <select
             name="status_id"
             class="form-select js-tom-select @error('status_id') is-invalid @enderror"
-            data-placeholder="Choisir un statut..."
+            data-placeholder="Selectionner un statut"
             required
         >
             @foreach($statuts as $statut)
@@ -95,7 +95,7 @@
         <select
             name="priorite_id"
             class="form-select js-tom-select @error('priorite_id') is-invalid @enderror"
-            data-placeholder="Choisir une priorite..."
+            data-placeholder="Selectionner une priorite"
             required
         >
             @foreach($priorites as $priorite)
@@ -146,9 +146,9 @@
         <select
             name="responsable_id"
             class="form-select js-tom-select @error('responsable_id') is-invalid @enderror"
-            data-placeholder="Choisir un responsable..."
+            data-placeholder="Selectionner un responsable"
         >
-            <option value="">-- Non assigne --</option>
+            <option value="">Non assigne</option>
             @foreach($users as $user)
                 <option value="{{ $user->id }}" @selected(old('responsable_id', $incident->responsable_id ?? '') == $user->id)>
                     {{ $user->name }} ({{ $user->email }})
@@ -163,9 +163,9 @@
         <select
             name="superviseur_id"
             class="form-select js-tom-select @error('superviseur_id') is-invalid @enderror"
-            data-placeholder="Choisir un superviseur..."
+            data-placeholder="Selectionner un superviseur"
         >
-            <option value="">-- Non assigne --</option>
+            <option value="">Non assigne</option>
             @foreach($users as $user)
                 <option value="{{ $user->id }}" @selected(old('superviseur_id', $incident->superviseur_id ?? '') == $user->id)>
                     {{ $user->name }} ({{ $user->email }})
@@ -177,144 +177,120 @@
 
     <div class="col-12">
         <label class="form-label">Description</label>
-        <textarea
-            name="description"
-            rows="3"
-            class="form-control @error('description') is-invalid @enderror"
-        >{{ old('description', $incident->description ?? '') }}</textarea>
+        <textarea name="description" rows="4" class="form-control @error('description') is-invalid @enderror">{{ old('description', $incident->description ?? '') }}</textarea>
         @error('description')<div class="invalid-feedback">{{ $message }}</div>@enderror
     </div>
 
     <div class="col-12">
         <label class="form-label">Actions menees</label>
-        <textarea
-            name="actions_menees"
-            rows="3"
-            class="form-control @error('actions_menees') is-invalid @enderror"
-        >{{ old('actions_menees', $incident->actions_menees ?? '') }}</textarea>
+        <textarea name="actions_menees" rows="3" class="form-control @error('actions_menees') is-invalid @enderror">{{ old('actions_menees', $incident->actions_menees ?? '') }}</textarea>
         @error('actions_menees')<div class="invalid-feedback">{{ $message }}</div>@enderror
     </div>
 
     <div class="col-12">
         <label class="form-label">Resume de resolution</label>
-        <textarea
-            name="resolution_summary"
-            rows="3"
-            class="form-control @error('resolution_summary') is-invalid @enderror"
-        >{{ old('resolution_summary', $incident->resolution_summary ?? '') }}</textarea>
+        <textarea name="resolution_summary" rows="3" class="form-control @error('resolution_summary') is-invalid @enderror">{{ old('resolution_summary', $incident->resolution_summary ?? '') }}</textarea>
         @error('resolution_summary')<div class="invalid-feedback">{{ $message }}</div>@enderror
     </div>
 
-    <div class="col-12 d-flex justify-content-between align-items-center pt-3">
+    <div class="col-12 pt-2 d-flex justify-content-between gap-2">
         <a href="{{ route('incidents.index') }}" class="btn btn-outline-secondary">Annuler</a>
-        <button type="submit" class="btn btn-primary">
-            {{ $isEdit ? 'Mettre a jour' : 'Creer l incident' }}
-        </button>
+        <button type="submit" class="btn btn-primary">{{ $isEdit ? 'Mettre a jour' : 'Creer incident' }}</button>
     </div>
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', () => {
-    const typeSelect = document.getElementById('incident-type-select');
-    const causeSelect = document.getElementById('incident-cause-select');
+    document.addEventListener('DOMContentLoaded', () => {
+        const typeSelect = document.getElementById('incident-type-select');
+        const causeSelect = document.getElementById('incident-cause-select');
 
-    if (!typeSelect || !causeSelect) {
-        return;
-    }
-
-    const endpointTemplate = causeSelect.dataset.endpointTemplate;
-    const initialCauseId = String(causeSelect.dataset.selectedCause || causeSelect.value || '');
-
-    const setCauseDisabled = (disabled) => {
-        causeSelect.disabled = disabled;
-
-        if (causeSelect.tomselect) {
-            if (disabled) {
-                causeSelect.tomselect.disable();
-            } else {
-                causeSelect.tomselect.enable();
-            }
-        }
-    };
-
-    const setCauseOptions = (items, selectedId = '') => {
-        const normalizedSelectedId = String(selectedId || '');
-        const options = [{ value: '', text: '-- Aucune --' }, ...items.map((item) => ({
-            value: String(item.id),
-            text: item.libelle,
-        }))];
-
-        if (causeSelect.tomselect) {
-            const control = causeSelect.tomselect;
-            control.clear(true);
-            control.clearOptions();
-            control.addOptions(options);
-            control.refreshOptions(false);
-            control.setValue(normalizedSelectedId, true);
+        if (!typeSelect || !causeSelect) {
             return;
         }
 
-        causeSelect.innerHTML = '';
-        options.forEach((option) => {
-            const element = document.createElement('option');
-            element.value = option.value;
-            element.textContent = option.text;
-            if (option.value === normalizedSelectedId) {
-                element.selected = true;
+        const endpointTemplate = causeSelect.dataset.endpointTemplate;
+        const initialCauseId = String(causeSelect.dataset.selectedCause || causeSelect.value || '');
+
+        const setDisabled = (disabled) => {
+            causeSelect.disabled = disabled;
+            if (causeSelect.tomselect) {
+                if (disabled) {
+                    causeSelect.tomselect.disable();
+                } else {
+                    causeSelect.tomselect.enable();
+                }
             }
-            causeSelect.appendChild(element);
-        });
-    };
+        };
 
-    const setCauseLoading = () => {
-        const loadingOption = [{ id: '', libelle: 'Chargement...' }];
-        setCauseOptions(loadingOption, '');
-        setCauseDisabled(true);
-    };
+        const setOptions = (items, selectedId = '') => {
+            const options = [{ value: '', text: 'Aucune' }, ...items.map((item) => ({
+                value: String(item.id),
+                text: item.libelle
+            }))];
 
-    const loadCausesByType = async (typeId, selectedCauseId = '') => {
-        const normalizedTypeId = String(typeId || '');
+            if (causeSelect.tomselect) {
+                const control = causeSelect.tomselect;
+                control.clear(true);
+                control.clearOptions();
+                control.addOptions(options);
+                control.refreshOptions(false);
+                control.setValue(String(selectedId || ''), true);
+                return;
+            }
 
-        if (!normalizedTypeId) {
-            setCauseOptions([], '');
-            setCauseDisabled(true);
-            return;
-        }
-
-        setCauseLoading();
-
-        try {
-            const endpoint = endpointTemplate.replace('__TYPE__', encodeURIComponent(normalizedTypeId));
-            const response = await fetch(endpoint, {
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'application/json',
-                },
+            causeSelect.innerHTML = '';
+            options.forEach((option) => {
+                const element = document.createElement('option');
+                element.value = option.value;
+                element.textContent = option.text;
+                if (option.value === String(selectedId || '')) {
+                    element.selected = true;
+                }
+                causeSelect.appendChild(element);
             });
+        };
 
-            if (!response.ok) {
-                throw new Error('Impossible de charger les causes.');
+        const loadCausesByType = async (typeId, selectedId = '') => {
+            if (!typeId) {
+                setOptions([], '');
+                setDisabled(true);
+                return;
             }
 
-            const causes = await response.json();
-            setCauseOptions(causes, selectedCauseId);
-            setCauseDisabled(false);
-        } catch (error) {
-            setCauseOptions([], '');
-            setCauseDisabled(true);
+            setDisabled(true);
+            setOptions([{ id: '', libelle: 'Chargement...' }], '');
+
+            try {
+                const endpoint = endpointTemplate.replace('__TYPE__', encodeURIComponent(typeId));
+                const response = await fetch(endpoint, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        Accept: 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Unable to fetch causes');
+                }
+
+                const causes = await response.json();
+                setOptions(causes, selectedId);
+                setDisabled(false);
+            } catch (error) {
+                setOptions([], '');
+                setDisabled(true);
+            }
+        };
+
+        typeSelect.addEventListener('change', () => {
+            loadCausesByType(typeSelect.value, '');
+        });
+
+        if (typeSelect.value) {
+            loadCausesByType(typeSelect.value, initialCauseId);
+        } else if (!initialCauseId) {
+            setOptions([], '');
+            setDisabled(true);
         }
-    };
-
-    typeSelect.addEventListener('change', () => {
-        loadCausesByType(typeSelect.value, '');
     });
-
-    if (typeSelect.value) {
-        loadCausesByType(typeSelect.value, initialCauseId);
-    } else if (!initialCauseId) {
-        setCauseOptions([], '');
-        setCauseDisabled(true);
-    }
-});
 </script>
-

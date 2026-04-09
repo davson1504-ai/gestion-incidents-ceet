@@ -1,102 +1,114 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="d-flex justify-content-between align-items-center">
+        <div class="w-100 d-flex justify-content-between align-items-center flex-wrap gap-2">
             <div>
-                <h1 class="h4 mb-0">{{ $incident->code_incident }} — {{ $incident->titre }}</h1>
-                <small class="text-muted">Créé le {{ $incident->created_at->format('d/m/Y H:i') }}</small>
+                <h1 class="h4 mb-0">{{ $incident->code_incident }} - {{ $incident->titre }}</h1>
+                <p class="text-muted mb-0">Cree le {{ $incident->created_at?->format('d/m/Y H:i') }}</p>
             </div>
-            <span class="badge"
-                  style="background-color: {{ $incident->statut?->couleur ?? '#6c757d' }}; color:#fff;">
-                {{ $incident->statut?->libelle }}
-            </span>
+            <div class="d-flex gap-2">
+                <span class="badge" style="background-color: {{ $incident->statut?->couleur ?? '#6c757d' }}">
+                    {{ $incident->statut?->libelle ?? 'N/A' }}
+                </span>
+                @can('incidents.update')
+                    <a href="{{ route('incidents.edit', $incident) }}" class="btn btn-sm btn-outline-primary">Editer</a>
+                @endcan
+            </div>
         </div>
     </x-slot>
 
-    @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            {{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    @endif
-
-    <div class="row g-3 mb-3">
-        <div class="col-md-8">
-            <div class="card shadow-sm h-100">
-                <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                    <span>Détails</span>
-                    @can('incidents.update')
-                        <a href="{{ route('incidents.edit', $incident) }}" class="btn btn-sm btn-outline-primary">Éditer</a>
-                    @endcan
-                </div>
+    <div class="row g-3">
+        <div class="col-12 col-lg-8">
+            <div class="card h-100">
+                <div class="card-header bg-white fw-semibold">Details de l'incident</div>
                 <div class="card-body">
                     <dl class="row mb-0">
-                        <dt class="col-sm-4">Département</dt>
-                        <dd class="col-sm-8">{{ $incident->departement?->nom }}</dd>
+                        <dt class="col-sm-4">Departement</dt>
+                        <dd class="col-sm-8">{{ $incident->departement?->nom ?? '-' }}</dd>
 
                         <dt class="col-sm-4">Type / Cause</dt>
-                        <dd class="col-sm-8">{{ $incident->typeIncident?->libelle }} @if($incident->cause) — {{ $incident->cause?->libelle }} @endif</dd>
-
-                        <dt class="col-sm-4">Priorité</dt>
                         <dd class="col-sm-8">
-                            <span class="badge" style="background: {{ $incident->priorite?->couleur ?? '#e9ecef' }};">
-                                {{ $incident->priorite?->libelle }}
+                            {{ $incident->typeIncident?->libelle ?? '-' }}
+                            @if($incident->cause)
+                                - {{ $incident->cause->libelle }}
+                            @endif
+                        </dd>
+
+                        <dt class="col-sm-4">Priorite</dt>
+                        <dd class="col-sm-8">
+                            <span class="badge" style="background-color: {{ $incident->priorite?->couleur ?? '#adb5bd' }}">
+                                {{ $incident->priorite?->libelle ?? 'N/A' }}
                             </span>
                         </dd>
 
                         <dt class="col-sm-4">Localisation</dt>
-                        <dd class="col-sm-8">{{ $incident->localisation ?? '—' }}</dd>
+                        <dd class="col-sm-8">{{ $incident->localisation ?? '-' }}</dd>
 
-                        <dt class="col-sm-4">Dates</dt>
-                        <dd class="col-sm-8">
-                            Début : {{ $incident->date_debut?->format('d/m/Y H:i') }}<br>
-                            Fin : {{ $incident->date_fin?->format('d/m/Y H:i') ?? '—' }}<br>
-                            Durée (min) : {{ $incident->duree_minutes ?? '—' }}
-                        </dd>
+                        <dt class="col-sm-4">Date debut</dt>
+                        <dd class="col-sm-8">{{ $incident->date_debut?->format('d/m/Y H:i') ?? '-' }}</dd>
 
-                        <dt class="col-sm-4">Responsables</dt>
-                        <dd class="col-sm-8">
-                            Opérateur : {{ $incident->operateur?->name ?? '—' }}<br>
-                            Responsable terrain : {{ $incident->responsable?->name ?? '—' }}<br>
-                            Superviseur : {{ $incident->superviseur?->name ?? '—' }}
-                        </dd>
+                        <dt class="col-sm-4">Date fin</dt>
+                        <dd class="col-sm-8">{{ $incident->date_fin?->format('d/m/Y H:i') ?? '-' }}</dd>
+
+                        <dt class="col-sm-4">Duree (minutes)</dt>
+                        <dd class="col-sm-8">{{ $incident->duree_minutes ?? '-' }}</dd>
+
+                        <dt class="col-sm-4">Operateur</dt>
+                        <dd class="col-sm-8">{{ $incident->operateur?->name ?? '-' }}</dd>
+
+                        <dt class="col-sm-4">Responsable terrain</dt>
+                        <dd class="col-sm-8">{{ $incident->responsable?->name ?? '-' }}</dd>
+
+                        <dt class="col-sm-4">Superviseur</dt>
+                        <dd class="col-sm-8">{{ $incident->superviseur?->name ?? '-' }}</dd>
 
                         <dt class="col-sm-4">Description</dt>
-                        <dd class="col-sm-8">{{ $incident->description ?? '—' }}</dd>
+                        <dd class="col-sm-8">{{ $incident->description ?: '-' }}</dd>
 
-                        <dt class="col-sm-4">Actions menées</dt>
-                        <dd class="col-sm-8">{{ $incident->actions_menees ?? '—' }}</dd>
+                        <dt class="col-sm-4">Actions menees</dt>
+                        <dd class="col-sm-8">{{ $incident->actions_menees ?: '-' }}</dd>
 
-                        <dt class="col-sm-4">Résumé de résolution</dt>
-                        <dd class="col-sm-8">{{ $incident->resolution_summary ?? '—' }}</dd>
+                        <dt class="col-sm-4">Resume resolution</dt>
+                        <dd class="col-sm-8">{{ $incident->resolution_summary ?: '-' }}</dd>
                     </dl>
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="card shadow-sm h-100">
-                <div class="card-header bg-white">Historique</div>
+
+        <div class="col-12 col-lg-4">
+            <div class="card h-100">
+                <div class="card-header bg-white fw-semibold">Historique des actions</div>
                 <div class="card-body">
-                    @forelse($incident->actions()->latest('action_date')->limit(10)->get() as $action)
-                        <div class="mb-3">
-                            <div class="fw-semibold">{{ ucfirst($action->action_type) }}</div>
-                            <div class="text-muted small">
-                                {{ $action->action_date?->format('d/m/Y H:i') }} — {{ $action->user?->name }}
+                    @php
+                        $actions = $incident->actions->sortByDesc('action_date')->take(10);
+                    @endphp
+
+                    @forelse($actions as $action)
+                        <div class="border-bottom pb-2 mb-2">
+                            <div class="fw-semibold text-capitalize">{{ $action->action_type }}</div>
+                            <div class="small text-muted">
+                                {{ $action->action_date?->format('d/m/Y H:i') ?? '-' }}
+                                -
+                                {{ $action->user?->name ?? 'Systeme' }}
                             </div>
                             <div class="small">{{ $action->description }}</div>
                         </div>
                     @empty
-                        <p class="text-muted mb-0">Aucune action enregistrée.</p>
+                        <p class="text-muted mb-0">Aucune action enregistree pour cet incident.</p>
                     @endforelse
                 </div>
             </div>
         </div>
     </div>
 
-    @can('incidents.delete')
-    <form action="{{ route('incidents.destroy', $incident) }}" method="POST" onsubmit="return confirm('Supprimer cet incident ?')">
-        @csrf
-        @method('DELETE')
-        <button class="btn btn-outline-danger">Supprimer l'incident</button>
-    </form>
-    @endcan
+    <div class="mt-3 d-flex justify-content-between flex-wrap gap-2">
+        <a href="{{ route('incidents.index') }}" class="btn btn-outline-secondary">Retour a la liste</a>
+
+        @can('incidents.delete')
+            <form action="{{ route('incidents.destroy', $incident) }}" method="POST" onsubmit="return confirm('Supprimer cet incident ?')">
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="btn btn-outline-danger">Supprimer</button>
+            </form>
+        @endcan
+    </div>
 </x-app-layout>

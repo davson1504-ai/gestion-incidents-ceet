@@ -1,381 +1,345 @@
 @php
-    $statusChartLabels = $stats['byStatus']->pluck('label');
-    $statusChartData   = $stats['byStatus']->pluck('total');
-    $statusChartColors = $stats['byStatus']->pluck('color');
+    $statusChartLabels = collect($stats['byStatus'])->pluck('label');
+    $statusChartData = collect($stats['byStatus'])->pluck('total');
+    $statusChartColors = collect($stats['byStatus'])->pluck('color');
 
-    $priorityChartLabels = $stats['byPriorite']->pluck('label');
-    $priorityChartData   = $stats['byPriorite']->pluck('total');
-    $priorityChartColors = $stats['byPriorite']->pluck('color');
+    $priorityChartLabels = collect($stats['byPriorite'])->pluck('label');
+    $priorityChartData = collect($stats['byPriorite'])->pluck('total');
+    $priorityChartColors = collect($stats['byPriorite'])->pluck('color');
 @endphp
 
 <x-app-layout>
     <x-slot name="header">
-        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 w-100">
+        <div class="w-100 d-flex justify-content-between align-items-center flex-wrap gap-2">
             <div>
-                <h1 class="h4 mb-0">🚨 Incidents</h1>
-                <small class="text-muted">Liste et tableau de bord filtrable</small>
+                <h1 class="h4 mb-0">Gestion des incidents</h1>
+                <p class="text-muted mb-0">Pilotage, filtrage et suivi du cycle de vie des incidents</p>
             </div>
-            @can('incidents.create')
-                <a href="{{ route('incidents.create') }}" class="btn btn-primary btn-sm">
-                    + Nouvel incident
+            <div class="d-flex gap-2">
+                <a href="{{ route('incidents.export', request()->query()) }}" class="btn btn-outline-secondary">
+                    Export CSV
                 </a>
-            @endcan
+                @can('incidents.create')
+                    <a href="{{ route('incidents.create') }}" class="btn btn-primary">Nouvel incident</a>
+                @endcan
+            </div>
         </div>
     </x-slot>
 
-    {{-- ── Filtres ──────────────────────────────────────────────────────── --}}
-    <div class="card mb-4 shadow-sm filter-card">
+    <div class="card mb-4">
         <div class="card-body">
-            <form class="row g-2" method="GET" action="{{ route('incidents.index') }}">
-                <div class="col-6 col-md-3">
-                    <label class="form-label">Département</label>
-                    <select name="departement_id" class="form-select form-select-sm js-tom-select" data-placeholder="Tous les departements">
+            <form class="row g-3" method="GET" action="{{ route('incidents.index') }}">
+                <div class="col-12 col-md-3">
+                    <label class="form-label">Departement</label>
+                    <select name="departement_id" class="form-select js-tom-select" data-placeholder="Tous les departements">
                         <option value="">Tous</option>
                         @foreach($departements as $dep)
-                            <option value="{{ $dep->id }}" @selected($filters['departement_id'] == $dep->id)>
-                                {{ $dep->nom }}
-                            </option>
+                            <option value="{{ $dep->id }}" @selected($filters['departement_id'] == $dep->id)>{{ $dep->nom }}</option>
                         @endforeach
                     </select>
                 </div>
-                <div class="col-6 col-md-3">
+                <div class="col-12 col-md-3">
                     <label class="form-label">Statut</label>
-                    <select name="status_id" class="form-select form-select-sm js-tom-select" data-placeholder="Tous les statuts">
+                    <select name="status_id" class="form-select js-tom-select" data-placeholder="Tous les statuts">
                         <option value="">Tous</option>
                         @foreach($statuts as $statut)
-                            <option value="{{ $statut->id }}" @selected($filters['status_id'] == $statut->id)>
-                                {{ $statut->libelle }}
-                            </option>
+                            <option value="{{ $statut->id }}" @selected($filters['status_id'] == $statut->id)>{{ $statut->libelle }}</option>
                         @endforeach
                     </select>
                 </div>
-                <div class="col-6 col-md-2">
-                    <label class="form-label">Priorité</label>
-                    <select name="priorite_id" class="form-select form-select-sm js-tom-select" data-placeholder="Toutes les priorites">
+                <div class="col-12 col-md-3">
+                    <label class="form-label">Priorite</label>
+                    <select name="priorite_id" class="form-select js-tom-select" data-placeholder="Toutes les priorites">
                         <option value="">Toutes</option>
                         @foreach($priorites as $priorite)
-                            <option value="{{ $priorite->id }}" @selected($filters['priorite_id'] == $priorite->id)>
-                                {{ $priorite->libelle }}
-                            </option>
+                            <option value="{{ $priorite->id }}" @selected($filters['priorite_id'] == $priorite->id)>{{ $priorite->libelle }}</option>
                         @endforeach
                     </select>
                 </div>
-                <div class="col-6 col-md-2">
-                    <label class="form-label">Type</label>
-                    <select id="incident-filter-type" name="type_incident_id" class="form-select form-select-sm js-tom-select" data-placeholder="Tous les types">
+                <div class="col-12 col-md-3">
+                    <label class="form-label">Type incident</label>
+                    <select id="incident-filter-type" name="type_incident_id" class="form-select js-tom-select" data-placeholder="Tous les types">
                         <option value="">Tous</option>
                         @foreach($types as $type)
-                            <option value="{{ $type->id }}" @selected($filters['type_incident_id'] == $type->id)>
-                                {{ $type->libelle }}
-                            </option>
+                            <option value="{{ $type->id }}" @selected($filters['type_incident_id'] == $type->id)>{{ $type->libelle }}</option>
                         @endforeach
                     </select>
                 </div>
-                <div class="col-6 col-md-3">
+                <div class="col-12 col-md-3">
                     <label class="form-label">Cause</label>
                     <select
                         id="incident-filter-cause"
                         name="cause_id"
-                        class="form-select form-select-sm js-tom-select"
+                        class="form-select js-tom-select"
                         data-placeholder="Toutes les causes"
                         data-selected-cause="{{ $filters['cause_id'] }}"
                         data-endpoint-template="{{ route('incidents.causes.by-type', ['type' => '__TYPE__']) }}"
                     >
                         <option value="">Toutes</option>
                         @foreach($causes as $cause)
-                            <option value="{{ $cause->id }}" @selected($filters['cause_id'] == $cause->id)>
-                                {{ $cause->libelle }}
-                            </option>
+                            <option value="{{ $cause->id }}" @selected($filters['cause_id'] == $cause->id)>{{ $cause->libelle }}</option>
                         @endforeach
                     </select>
                 </div>
-                <div class="col-6 col-md-3">
+                <div class="col-12 col-md-3">
                     <label class="form-label">Operateur</label>
-                    <select name="operateur_id" class="form-select form-select-sm js-tom-select" data-placeholder="Tous les operateurs">
+                    <select name="operateur_id" class="form-select js-tom-select" data-placeholder="Tous les operateurs">
                         <option value="">Tous</option>
                         @foreach($operateurs as $operateur)
-                            <option value="{{ $operateur->id }}" @selected($filters['operateur_id'] == $operateur->id)>
-                                {{ $operateur->name }}
-                            </option>
+                            <option value="{{ $operateur->id }}" @selected($filters['operateur_id'] == $operateur->id)>{{ $operateur->name }}</option>
                         @endforeach
                     </select>
                 </div>
                 <div class="col-6 col-md-2">
                     <label class="form-label">Du</label>
-                    <input type="date" name="date_from" class="form-control form-control-sm"
-                           value="{{ $filters['date_from'] }}">
+                    <input type="date" name="date_from" class="form-control" value="{{ $filters['date_from'] }}">
                 </div>
                 <div class="col-6 col-md-2">
                     <label class="form-label">Au</label>
-                    <input type="date" name="date_to" class="form-control form-control-sm"
-                           value="{{ $filters['date_to'] }}">
+                    <input type="date" name="date_to" class="form-control" value="{{ $filters['date_to'] }}">
                 </div>
                 <div class="col-12 col-md-4">
                     <label class="form-label">Recherche (code ou titre)</label>
-                    <input type="text" name="q" class="form-control form-control-sm"
-                           placeholder="INC-2026… / Titre"
-                           value="{{ $filters['q'] }}">
+                    <input type="text" name="q" class="form-control" placeholder="INC-2026..., titre..." value="{{ $filters['q'] }}">
                 </div>
-                <div class="col-12 col-md-2 d-flex align-items-end gap-2">
-                    <button class="btn btn-primary btn-sm flex-fill">🔍 Filtrer</button>
-                    <a href="{{ route('incidents.index') }}" class="btn btn-outline-secondary btn-sm flex-fill">✕</a>
+                <div class="col-12 col-md-4 d-flex gap-2 align-items-end">
+                    <button type="submit" class="btn btn-primary flex-grow-1">Filtrer</button>
+                    <a href="{{ route('incidents.index') }}" class="btn btn-outline-secondary">Reset</a>
                 </div>
             </form>
         </div>
     </div>
 
-    {{-- ── KPIs ──────────────────────────────────────────────────────────── --}}
     <div class="row g-3 mb-4">
-        <div class="col-6 col-md-3">
-            <div class="card shadow-sm kpi-card border-0 border-start border-4 border-warning h-100">
-                <div class="card-body text-center py-3">
-                    <div class="h3 fw-bold text-warning mb-0">{{ $stats['openCount'] }}</div>
-                    <div class="text-muted small">En cours</div>
+        <div class="col-6 col-lg-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <p class="text-muted mb-1">Incidents en cours</p>
+                    <div class="metric-value text-warning">{{ number_format($stats['openCount']) }}</div>
                 </div>
             </div>
         </div>
-        <div class="col-6 col-md-3">
-            <div class="card shadow-sm kpi-card border-0 border-start border-4 border-success h-100">
-                <div class="card-body text-center py-3">
-                    <div class="h3 fw-bold text-success mb-0">{{ $stats['closedCount'] }}</div>
-                    <div class="text-muted small">Clôturés</div>
+        <div class="col-6 col-lg-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <p class="text-muted mb-1">Incidents clotures</p>
+                    <div class="metric-value text-success">{{ number_format($stats['closedCount']) }}</div>
                 </div>
             </div>
         </div>
-        <div class="col-6 col-md-3">
-            <div class="card shadow-sm kpi-card border-0 border-start border-4 border-info h-100">
-                <div class="card-body text-center py-3">
-                    <div class="h3 fw-bold text-info mb-0">
-                        {{ number_format($stats['avgDuration'] ?? 0, 0, ',', ' ') }}
-                    </div>
-                    <div class="text-muted small">Durée moy. (min)</div>
+        <div class="col-6 col-lg-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <p class="text-muted mb-1">Duree moyenne (min)</p>
+                    <div class="metric-value text-info">{{ number_format($stats['avgDuration'] ?? 0, 0, ',', ' ') }}</div>
                 </div>
             </div>
         </div>
-        <div class="col-6 col-md-3">
-            <div class="card shadow-sm kpi-card border-0 border-start border-4 border-dark h-100">
-                <div class="card-body text-center py-3">
-                    <div class="h3 fw-bold mb-0">{{ $incidents->total() }}</div>
-                    <div class="text-muted small">Total filtré</div>
+        <div class="col-6 col-lg-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <p class="text-muted mb-1">Resultats filtres</p>
+                    <div class="metric-value text-primary">{{ number_format($incidents->total()) }}</div>
                 </div>
             </div>
         </div>
     </div>
 
-    {{-- ── Graphiques (masqués sur très petit écran) ────────────────────── --}}
-    <div class="row g-3 mb-4 d-none d-md-flex">
-        <div class="col-md-6">
-            <div class="card shadow-sm border-0 h-100">
-                <div class="card-header bg-white fw-semibold border-0">Répartition par statut</div>
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-lg-6">
+            <div class="card h-100">
+                <div class="card-header bg-white fw-semibold">Repartition par statut</div>
                 <div class="card-body">
-                    <canvas id="chartStatus" height="140"></canvas>
+                    <canvas id="chartStatus" height="160"></canvas>
                 </div>
             </div>
         </div>
-        <div class="col-md-6">
-            <div class="card shadow-sm border-0 h-100">
-                <div class="card-header bg-white fw-semibold border-0">Répartition par priorité</div>
+        <div class="col-12 col-lg-6">
+            <div class="card h-100">
+                <div class="card-header bg-white fw-semibold">Repartition par priorite</div>
                 <div class="card-body">
-                    <canvas id="chartPriorite" height="140"></canvas>
+                    <canvas id="chartPriorite" height="160"></canvas>
                 </div>
             </div>
         </div>
     </div>
 
-    {{-- ── Tableau des incidents ─────────────────────────────────────────── --}}
-    <div class="card shadow-sm border-0">
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0 table-mobile-cards">
-                    <thead class="table-dark">
+    <div class="card">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+            <span class="fw-semibold">Liste des incidents</span>
+            <span class="badge text-bg-secondary">{{ $incidents->total() }} resultat(s)</span>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover mb-0 table-mobile-cards">
+                <thead class="table-light">
+                    <tr>
+                        <th>Code</th>
+                        <th>Titre</th>
+                        <th class="d-none d-md-table-cell">Departement</th>
+                        <th>Statut</th>
+                        <th class="d-none d-sm-table-cell">Priorite</th>
+                        <th class="d-none d-lg-table-cell">Debut</th>
+                        <th class="d-none d-lg-table-cell">Duree (min)</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($incidents as $incident)
                         <tr>
-                            <th>Code</th>
-                            <th>Titre</th>
-                            <th class="d-none d-md-table-cell">Département</th>
-                            <th>Statut</th>
-                            <th class="d-none d-sm-table-cell">Priorité</th>
-                            <th class="d-none d-lg-table-cell">Début</th>
-                            <th class="d-none d-lg-table-cell">Durée (min)</th>
-                            <th class="text-end">Actions</th>
+                            <td data-label="Code"><span class="fw-semibold text-primary">{{ $incident->code_incident }}</span></td>
+                            <td data-label="Titre">{{ \Illuminate\Support\Str::limit($incident->titre, 50) }}</td>
+                            <td data-label="Departement" class="d-none d-md-table-cell">{{ $incident->departement?->nom ?? '-' }}</td>
+                            <td data-label="Statut">
+                                <span class="badge" style="background-color: {{ $incident->statut?->couleur ?? '#6c757d' }}">
+                                    {{ $incident->statut?->libelle ?? 'N/A' }}
+                                </span>
+                            </td>
+                            <td data-label="Priorite" class="d-none d-sm-table-cell">
+                                <span class="badge" style="background-color: {{ $incident->priorite?->couleur ?? '#adb5bd' }}">
+                                    {{ $incident->priorite?->libelle ?? 'N/A' }}
+                                </span>
+                            </td>
+                            <td data-label="Debut" class="d-none d-lg-table-cell">{{ $incident->date_debut?->format('d/m/Y H:i') ?? '-' }}</td>
+                            <td data-label="Duree (min)" class="d-none d-lg-table-cell">{{ $incident->duree_minutes ?? '-' }}</td>
+                            <td data-label="Actions" class="text-end">
+                                <div class="d-flex justify-content-end gap-1 flex-wrap">
+                                    <a href="{{ route('incidents.show', $incident) }}" class="btn btn-sm btn-outline-secondary">Voir</a>
+                                    @can('incidents.update')
+                                        <a href="{{ route('incidents.edit', $incident) }}" class="btn btn-sm btn-outline-primary">Editer</a>
+                                    @endcan
+                                    @can('incidents.delete')
+                                        <form action="{{ route('incidents.destroy', $incident) }}" method="POST" onsubmit="return confirm('Supprimer cet incident ?')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">Supprimer</button>
+                                        </form>
+                                    @endcan
+                                </div>
+                            </td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($incidents as $incident)
-                            <tr>
-                                <td data-label="Code">
-                                    <span class="fw-semibold text-primary">
-                                        {{ $incident->code_incident }}
-                                    </span>
-                                </td>
-                                <td data-label="Titre">
-                                    {{ \Illuminate\Support\Str::limit($incident->titre, 40) }}
-                                </td>
-                                <td data-label="Département" class="d-none d-md-table-cell">
-                                    {{ $incident->departement?->nom ?? '—' }}
-                                </td>
-                                <td data-label="Statut">
-                                    <span class="badge"
-                                          style="background-color:{{ $incident->statut?->couleur ?? '#6c757d' }}">
-                                        {{ $incident->statut?->libelle ?? 'N/A' }}
-                                    </span>
-                                </td>
-                                <td data-label="Priorité" class="d-none d-sm-table-cell">
-                                    <span class="badge"
-                                          style="background-color:{{ $incident->priorite?->couleur ?? '#e9ecef' }}">
-                                        {{ $incident->priorite?->libelle ?? 'N/A' }}
-                                    </span>
-                                </td>
-                                <td data-label="Début" class="d-none d-lg-table-cell text-nowrap">
-                                    {{ optional($incident->date_debut)->format('d/m/Y H:i') }}
-                                </td>
-                                <td data-label="Durée (min)" class="d-none d-lg-table-cell">
-                                    {{ $incident->duree_minutes ?? '—' }}
-                                </td>
-                                <td data-label="Actions" class="text-end">
-                                    <div class="d-flex gap-1 justify-content-end flex-wrap">
-                                        <a href="{{ route('incidents.show', $incident) }}"
-                                           class="btn btn-outline-secondary btn-sm">
-                                            👁️
-                                        </a>
-                                        @can('incidents.update')
-                                            <a href="{{ route('incidents.edit', $incident) }}"
-                                               class="btn btn-outline-primary btn-sm">
-                                                ✏️
-                                            </a>
-                                        @endcan
-                                        @can('incidents.delete')
-                                            <form action="{{ route('incidents.destroy', $incident) }}"
-                                                  method="POST"
-                                                  onsubmit="return confirm('Supprimer cet incident ?')">
-                                                @csrf @method('DELETE')
-                                                <button class="btn btn-outline-danger btn-sm">🗑️</button>
-                                            </form>
-                                        @endcan
-                                    </div>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="8" class="text-center py-5 text-muted">
-                                    Aucun incident trouvé.
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
+                    @empty
+                        <tr>
+                            <td colspan="8" class="text-center py-5 text-muted">Aucun incident trouve pour ce filtre.</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
         </div>
         <div class="card-footer bg-white">
             {{ $incidents->links('pagination::bootstrap-5') }}
         </div>
     </div>
 
-    {{-- ── Chart.js ─────────────────────────────────────────────────────── --}}
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <script>
-        new Chart(document.getElementById('chartStatus'), {
+        const createChart = (id, config) => {
+            const element = document.getElementById(id);
+            if (element) {
+                new Chart(element, config);
+            }
+        };
+
+        createChart('chartStatus', {
             type: 'bar',
             data: {
-                labels: {!! $statusChartLabels->toJson() !!},
+                labels: @json($statusChartLabels),
                 datasets: [{
-                    data: {!! $statusChartData->toJson() !!},
-                    backgroundColor: {!! $statusChartColors->toJson() !!},
-                    borderRadius: 4,
+                    data: @json($statusChartData),
+                    backgroundColor: @json($statusChartColors),
+                    borderRadius: 6
                 }]
             },
             options: {
                 plugins: { legend: { display: false } },
-                scales:  { y: { beginAtZero: true, ticks: { precision: 0 } } }
+                scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
             }
         });
 
-        new Chart(document.getElementById('chartPriorite'), {
+        createChart('chartPriorite', {
             type: 'doughnut',
             data: {
-                labels: {!! $priorityChartLabels->toJson() !!},
+                labels: @json($priorityChartLabels),
                 datasets: [{
-                    data: {!! $priorityChartData->toJson() !!},
-                    backgroundColor: {!! $priorityChartColors->toJson() !!},
+                    data: @json($priorityChartData),
+                    backgroundColor: @json($priorityChartColors)
                 }]
             },
-            options: { plugins: { legend: { position: 'bottom' } } }
+            options: {
+                plugins: { legend: { position: 'bottom' } }
+            }
         });
 
-        const filterTypeSelect = document.getElementById('incident-filter-type');
-        const filterCauseSelect = document.getElementById('incident-filter-cause');
+        const typeSelect = document.getElementById('incident-filter-type');
+        const causeSelect = document.getElementById('incident-filter-cause');
 
-        if (filterTypeSelect && filterCauseSelect) {
-            const allCauses = @json($causes->map(fn($cause) => ['id' => $cause->id, 'libelle' => $cause->libelle])->values());
-            const endpointTemplate = filterCauseSelect.dataset.endpointTemplate;
-            const initialCauseId = String(filterCauseSelect.dataset.selectedCause || '');
+        if (typeSelect && causeSelect) {
+            const allCauses = @json($causes->map(fn ($cause) => ['id' => $cause->id, 'libelle' => $cause->libelle])->values());
+            const endpointTemplate = causeSelect.dataset.endpointTemplate;
+            const initialCauseId = String(causeSelect.dataset.selectedCause || '');
 
-            const setCauseOptions = (items, selectedId = '') => {
-                const normalizedSelectedId = String(selectedId || '');
+            const setOptions = (items, selectedId = '') => {
                 const options = [{ value: '', text: 'Toutes' }, ...items.map((item) => ({
                     value: String(item.id),
-                    text: item.libelle,
+                    text: item.libelle
                 }))];
 
-                if (filterCauseSelect.tomselect) {
-                    const control = filterCauseSelect.tomselect;
+                if (causeSelect.tomselect) {
+                    const control = causeSelect.tomselect;
                     control.clear(true);
                     control.clearOptions();
                     control.addOptions(options);
                     control.refreshOptions(false);
-                    control.setValue(normalizedSelectedId, true);
+                    control.setValue(String(selectedId || ''), true);
                     return;
                 }
 
-                filterCauseSelect.innerHTML = '';
+                causeSelect.innerHTML = '';
                 options.forEach((option) => {
                     const element = document.createElement('option');
                     element.value = option.value;
                     element.textContent = option.text;
-                    if (option.value === normalizedSelectedId) {
+                    if (option.value === String(selectedId || '')) {
                         element.selected = true;
                     }
-                    filterCauseSelect.appendChild(element);
+                    causeSelect.appendChild(element);
                 });
             };
 
-            const loadCausesByType = async (typeId, selectedCauseId = '') => {
-                const normalizedTypeId = String(typeId || '');
-
-                if (!normalizedTypeId) {
-                    setCauseOptions(allCauses, selectedCauseId);
+            const loadCauses = async (typeId, selected = '') => {
+                if (!typeId) {
+                    setOptions(allCauses, selected);
                     return;
                 }
 
                 try {
-                    const endpoint = endpointTemplate.replace('__TYPE__', encodeURIComponent(normalizedTypeId));
+                    const endpoint = endpointTemplate.replace('__TYPE__', encodeURIComponent(typeId));
                     const response = await fetch(endpoint, {
                         headers: {
                             'X-Requested-With': 'XMLHttpRequest',
-                            'Accept': 'application/json',
-                        },
+                            Accept: 'application/json'
+                        }
                     });
 
                     if (!response.ok) {
-                        throw new Error('Impossible de charger les causes.');
+                        throw new Error('Failed to load causes');
                     }
 
                     const causes = await response.json();
-                    setCauseOptions(causes, selectedCauseId);
+                    setOptions(causes, selected);
                 } catch (error) {
-                    setCauseOptions([], '');
+                    setOptions([], '');
                 }
             };
 
-            filterTypeSelect.addEventListener('change', () => {
-                loadCausesByType(filterTypeSelect.value, '');
+            typeSelect.addEventListener('change', () => {
+                loadCauses(typeSelect.value, '');
             });
 
-            if (filterTypeSelect.value) {
-                loadCausesByType(filterTypeSelect.value, initialCauseId);
+            if (typeSelect.value) {
+                loadCauses(typeSelect.value, initialCauseId);
             } else {
-                setCauseOptions(allCauses, initialCauseId);
+                setOptions(allCauses, initialCauseId);
             }
         }
     </script>
-
 </x-app-layout>
