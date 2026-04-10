@@ -12,12 +12,47 @@
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700&display=swap" rel="stylesheet">
 
         @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+        <style>
+            :root {
+                --ceet-sidebar-width: 280px;
+            }
+
+            html,
+            body {
+                height: 100%;
+            }
+
+            .ceet-main-wrapper {
+                margin-left: var(--ceet-sidebar-width);
+                min-height: 100vh;
+            }
+
+            @media (min-width: 992px) {
+                body {
+                    overflow: hidden;
+                }
+
+                .ceet-main-wrapper {
+                    height: 100vh;
+                    overflow-y: auto;
+                    overflow-x: hidden;
+                }
+            }
+
+            @media (max-width: 991.98px) {
+                .ceet-main-wrapper {
+                    margin-left: 0;
+                    min-height: auto;
+                }
+            }
+        </style>
     </head>
     <body>
         @include('layouts.navigation')
 
-        <main class="py-4">
-            <div class="container">
+        <main class="ceet-main-wrapper py-4">
+            <div class="container-fluid px-3 px-lg-4">
                 @isset($header)
                     <div class="mb-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
                         {{ $header }}
