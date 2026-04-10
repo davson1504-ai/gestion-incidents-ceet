@@ -29,6 +29,12 @@
         margin-left: 0.35rem;
     }
 
+    .ceet-mobile-topbar {
+        position: sticky;
+        top: 0;
+        z-index: 1025;
+    }
+
 </style>
 
 <aside class="ceet-sidebar navbar-ceet text-white shadow-sm d-none d-lg-flex flex-column vh-100">
@@ -62,17 +68,17 @@
 
             @can('catalogues.view')
                 <li class="nav-item">
-                    <a class="nav-link d-flex justify-content-between align-items-center {{ request()->routeIs('catalogues.*') ? 'active fw-semibold' : '' }}" data-bs-toggle="collapse" href="#desktopCataloguesMenu" role="button" aria-expanded="{{ request()->routeIs('catalogues.*') ? 'true' : 'false' }}" aria-controls="desktopCataloguesMenu">
-                        <span>Catalogues</span>
+                    <a class="nav-link d-flex justify-content-between align-items-center {{ request()->routeIs('catalogues.*') ? 'active fw-semibold' : '' }}" data-bs-toggle="collapse" href="#desktopCatalogueMenu" role="button" aria-expanded="{{ request()->routeIs('catalogues.*') ? 'true' : 'false' }}" aria-controls="desktopCatalogueMenu">
+                        <span>Catalogue</span>
                         <span class="small">v</span>
                     </a>
-                    <div class="collapse {{ request()->routeIs('catalogues.*') ? 'show' : '' }}" id="desktopCataloguesMenu">
+                    <div class="collapse {{ request()->routeIs('catalogues.*') ? 'show' : '' }}" id="desktopCatalogueMenu">
                         <ul class="nav flex-column mt-1 gap-1">
-                            <li><a class="nav-link submenu-link {{ request()->routeIs('catalogues.departements.*') ? 'active fw-semibold' : '' }}" href="{{ route('catalogues.departements.index') }}">Departements</a></li>
-                            <li><a class="nav-link submenu-link {{ request()->routeIs('catalogues.types.*') ? 'active fw-semibold' : '' }}" href="{{ route('catalogues.types.index') }}">Types incidents</a></li>
+                            <li><a class="nav-link submenu-link {{ request()->routeIs('catalogues.departements.*') ? 'active fw-semibold' : '' }}" href="{{ route('catalogues.departements.index') }}">Départements</a></li>
+                            <li><a class="nav-link submenu-link {{ request()->routeIs('catalogues.types.*') ? 'active fw-semibold' : '' }}" href="{{ route('catalogues.types.index') }}">Types d'incidents</a></li>
                             <li><a class="nav-link submenu-link {{ request()->routeIs('catalogues.causes.*') ? 'active fw-semibold' : '' }}" href="{{ route('catalogues.causes.index') }}">Causes</a></li>
                             <li><a class="nav-link submenu-link {{ request()->routeIs('catalogues.statuts.*') ? 'active fw-semibold' : '' }}" href="{{ route('catalogues.statuts.index') }}">Statuts</a></li>
-                            <li><a class="nav-link submenu-link {{ request()->routeIs('catalogues.priorites.*') ? 'active fw-semibold' : '' }}" href="{{ route('catalogues.priorites.index') }}">Priorites</a></li>
+                            <li><a class="nav-link submenu-link {{ request()->routeIs('catalogues.priorites.*') ? 'active fw-semibold' : '' }}" href="{{ route('catalogues.priorites.index') }}">Priorités</a></li>
                         </ul>
                     </div>
                 </li>
@@ -102,7 +108,7 @@
     @endauth
 </aside>
 
-<nav class="navbar navbar-expand-lg navbar-dark navbar-ceet shadow-sm d-lg-none">
+<nav class="navbar navbar-expand-lg navbar-dark navbar-ceet shadow-sm d-lg-none ceet-mobile-topbar">
     <div class="container-fluid">
         <a class="navbar-brand fw-semibold" href="{{ route('dashboard') }}">CEET Incidents</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileSidebar" aria-controls="mobileSidebar" aria-label="Toggle navigation">
@@ -127,17 +133,17 @@
             @endrole
             @can('catalogues.view')
                 <li class="nav-item">
-                    <a class="nav-link d-flex justify-content-between align-items-center {{ request()->routeIs('catalogues.*') ? 'active fw-semibold' : '' }}" data-bs-toggle="collapse" href="#mobileCataloguesMenu" role="button" aria-expanded="{{ request()->routeIs('catalogues.*') ? 'true' : 'false' }}" aria-controls="mobileCataloguesMenu">
-                        <span>Catalogues</span>
+                    <a class="nav-link d-flex justify-content-between align-items-center {{ request()->routeIs('catalogues.*') ? 'active fw-semibold' : '' }}" data-bs-toggle="collapse" href="#mobileCatalogueMenu" role="button" aria-expanded="{{ request()->routeIs('catalogues.*') ? 'true' : 'false' }}" aria-controls="mobileCatalogueMenu">
+                        <span>Catalogue</span>
                         <span class="small">v</span>
                     </a>
-                    <div class="collapse {{ request()->routeIs('catalogues.*') ? 'show' : '' }}" id="mobileCataloguesMenu">
+                    <div class="collapse {{ request()->routeIs('catalogues.*') ? 'show' : '' }}" id="mobileCatalogueMenu">
                         <ul class="nav flex-column mt-1 gap-1 ms-2">
-                            <li><a class="nav-link {{ request()->routeIs('catalogues.departements.*') ? 'active fw-semibold' : '' }}" href="{{ route('catalogues.departements.index') }}">Departements</a></li>
-                            <li><a class="nav-link {{ request()->routeIs('catalogues.types.*') ? 'active fw-semibold' : '' }}" href="{{ route('catalogues.types.index') }}">Types incidents</a></li>
+                            <li><a class="nav-link {{ request()->routeIs('catalogues.departements.*') ? 'active fw-semibold' : '' }}" href="{{ route('catalogues.departements.index') }}">Départements</a></li>
+                            <li><a class="nav-link {{ request()->routeIs('catalogues.types.*') ? 'active fw-semibold' : '' }}" href="{{ route('catalogues.types.index') }}">Types d'incidents</a></li>
                             <li><a class="nav-link {{ request()->routeIs('catalogues.causes.*') ? 'active fw-semibold' : '' }}" href="{{ route('catalogues.causes.index') }}">Causes</a></li>
                             <li><a class="nav-link {{ request()->routeIs('catalogues.statuts.*') ? 'active fw-semibold' : '' }}" href="{{ route('catalogues.statuts.index') }}">Statuts</a></li>
-                            <li><a class="nav-link {{ request()->routeIs('catalogues.priorites.*') ? 'active fw-semibold' : '' }}" href="{{ route('catalogues.priorites.index') }}">Priorites</a></li>
+                            <li><a class="nav-link {{ request()->routeIs('catalogues.priorites.*') ? 'active fw-semibold' : '' }}" href="{{ route('catalogues.priorites.index') }}">Priorités</a></li>
                         </ul>
                     </div>
                 </li>

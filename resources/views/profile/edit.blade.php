@@ -20,7 +20,12 @@
         :root{--ceet-red:#ef2433;--ceet-red-dark:#ce1220;--ceet-bg:#f5f6f8;--ceet-border:#e5e7eb;--ceet-muted:#6b7280;--ceet-shadow:0 14px 32px rgba(15,23,42,.04)}
         html,body{margin:0;min-height:100%;background:var(--ceet-bg);color:#1f2937;font-family:"Figtree","Segoe UI",sans-serif}
         .page-shell{min-height:100dvh;display:grid;grid-template-columns:250px 1fr}
-        .sidebar{border-right:1px solid var(--ceet-border);background:#f8f9fb;display:flex;flex-direction:column}
+        .sidebar {border-right:1px solid var(--ceet-border);background:#f8f9fb;display:flex;flex-direction:column;
+            position: sticky;
+            top: 0;
+            height: 100dvh;
+            z-index: 1010;
+        }
         .sidebar-brand{min-height:72px;padding:1rem 1.2rem;border-bottom:1px solid var(--ceet-border);display:flex;align-items:center;gap:.6rem;color:var(--ceet-red);font-weight:700;font-size:1.03rem}
         .sidebar-brand-badge{width:24px;height:24px;border-radius:.35rem;background:var(--ceet-red);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:.8rem}
         .sidebar-menu{padding:.8rem;display:grid;gap:.25rem}
@@ -29,7 +34,11 @@
         .sidebar-bottom{margin-top:auto;border-top:1px solid var(--ceet-border);padding:.8rem}
         .sidebar-create{width:100%;border:1px solid var(--ceet-border);border-radius:.62rem;background:#fff;color:#111827;font-weight:600;text-decoration:none;display:inline-flex;justify-content:center;gap:.5rem;padding:.62rem .8rem;font-size:.9rem}
         .main-area{min-width:0;display:flex;flex-direction:column;min-height:100dvh}
-        .topbar{min-height:72px;border-bottom:1px solid var(--ceet-border);background:#fff;display:flex;align-items:center;justify-content:flex-end;gap:.9rem;padding:.8rem 1.2rem}
+        .topbar {min-height:72px;border-bottom:1px solid var(--ceet-border);background:#fff;display:flex;align-items:center;justify-content:flex-end;gap:.9rem;padding:.8rem 1.2rem;
+            position: sticky;
+            top: 0;
+            z-index: 1020;
+        }
         .icon-btn{border:1px solid transparent;border-radius:.5rem;background:#fff;color:#111827;width:36px;height:36px;display:inline-flex;align-items:center;justify-content:center}
         .icon-btn:hover{border-color:var(--ceet-border);background:#f8fafc}
         .user-chip{border-left:1px solid var(--ceet-border);padding-left:.8rem;display:inline-flex;align-items:center;gap:.7rem}
@@ -77,8 +86,17 @@
                 <a href="{{ route('dashboard') }}" class="sidebar-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">Tableau de bord</a>
                 @can('incidents.view')<a href="{{ route('incidents.index') }}" class="sidebar-link {{ request()->routeIs('incidents.*') ? 'active' : '' }}">Incidents</a>@endcan
                 @can('catalogues.view')
-                    <a href="{{ route('catalogues.departements.index') }}" class="sidebar-link {{ request()->routeIs('catalogues.departements.*') ? 'active' : '' }}">Departs</a>
-                    <a href="{{ route('catalogues.types.index') }}" class="sidebar-link {{ request()->routeIs('catalogues.types.*') || request()->routeIs('catalogues.causes.*') ? 'active' : '' }}">Types & Causes</a>
+                    <a class="sidebar-link d-flex justify-content-between align-items-center {{ request()->routeIs('catalogues.*') ? 'active' : '' }}" data-bs-toggle="collapse" href="#desktopCatalogueMenu" role="button" aria-expanded="{{ request()->routeIs('catalogues.*') ? 'true' : 'false' }}" aria-controls="desktopCatalogueMenu">
+                        <span>Catalogue</span>
+                        <span class="small">v</span>
+                    </a>
+                    <div class="collapse {{ request()->routeIs('catalogues.*') ? 'show' : '' }}" id="desktopCatalogueMenu">
+                        <a href="{{ route('catalogues.departements.index') }}" class="sidebar-link ps-4 {{ request()->routeIs('catalogues.departements.*') ? 'active' : '' }}">Départements</a>
+                        <a href="{{ route('catalogues.types.index') }}" class="sidebar-link ps-4 {{ request()->routeIs('catalogues.types.*') ? 'active' : '' }}">Types d'incidents</a>
+                        <a href="{{ route('catalogues.causes.index') }}" class="sidebar-link ps-4 {{ request()->routeIs('catalogues.causes.*') ? 'active' : '' }}">Causes</a>
+                        <a href="{{ route('catalogues.statuts.index') }}" class="sidebar-link ps-4 {{ request()->routeIs('catalogues.statuts.*') ? 'active' : '' }}">Statuts</a>
+                        <a href="{{ route('catalogues.priorites.index') }}" class="sidebar-link ps-4 {{ request()->routeIs('catalogues.priorites.*') ? 'active' : '' }}">Priorités</a>
+                    </div>
                 @endcan
                 @can('incidents.view')<a href="{{ route('reports.index') }}" class="sidebar-link {{ request()->routeIs('reports.*') ? 'active' : '' }}">Reporting</a>@endcan
                 @role('Administrateur|Superviseur')<a href="{{ route('historique.index') }}" class="sidebar-link {{ request()->routeIs('historique.*') ? 'active' : '' }}">Audit</a>@endrole
@@ -241,8 +259,17 @@
                 <a href="{{ route('dashboard') }}" class="sidebar-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">Tableau de bord</a>
                 @can('incidents.view')<a href="{{ route('incidents.index') }}" class="sidebar-link {{ request()->routeIs('incidents.*') ? 'active' : '' }}">Incidents</a>@endcan
                 @can('catalogues.view')
-                    <a href="{{ route('catalogues.departements.index') }}" class="sidebar-link {{ request()->routeIs('catalogues.departements.*') ? 'active' : '' }}">Departs</a>
-                    <a href="{{ route('catalogues.types.index') }}" class="sidebar-link {{ request()->routeIs('catalogues.types.*') || request()->routeIs('catalogues.causes.*') ? 'active' : '' }}">Types & Causes</a>
+                    <a class="sidebar-link d-flex justify-content-between align-items-center {{ request()->routeIs('catalogues.*') ? 'active' : '' }}" data-bs-toggle="collapse" href="#mobileCatalogueMenu" role="button" aria-expanded="{{ request()->routeIs('catalogues.*') ? 'true' : 'false' }}" aria-controls="mobileCatalogueMenu">
+                        <span>Catalogue</span>
+                        <span class="small">v</span>
+                    </a>
+                    <div class="collapse {{ request()->routeIs('catalogues.*') ? 'show' : '' }}" id="mobileCatalogueMenu">
+                        <a href="{{ route('catalogues.departements.index') }}" class="sidebar-link ps-4 {{ request()->routeIs('catalogues.departements.*') ? 'active' : '' }}">Départements</a>
+                        <a href="{{ route('catalogues.types.index') }}" class="sidebar-link ps-4 {{ request()->routeIs('catalogues.types.*') ? 'active' : '' }}">Types d'incidents</a>
+                        <a href="{{ route('catalogues.causes.index') }}" class="sidebar-link ps-4 {{ request()->routeIs('catalogues.causes.*') ? 'active' : '' }}">Causes</a>
+                        <a href="{{ route('catalogues.statuts.index') }}" class="sidebar-link ps-4 {{ request()->routeIs('catalogues.statuts.*') ? 'active' : '' }}">Statuts</a>
+                        <a href="{{ route('catalogues.priorites.index') }}" class="sidebar-link ps-4 {{ request()->routeIs('catalogues.priorites.*') ? 'active' : '' }}">Priorités</a>
+                    </div>
                 @endcan
                 @can('incidents.view')<a href="{{ route('reports.index') }}" class="sidebar-link {{ request()->routeIs('reports.*') ? 'active' : '' }}">Reporting</a>@endcan
                 @role('Administrateur|Superviseur')<a href="{{ route('historique.index') }}" class="sidebar-link {{ request()->routeIs('historique.*') ? 'active' : '' }}">Audit</a>@endrole
