@@ -16,6 +16,7 @@
         <style>
             :root {
                 --ceet-sidebar-width: 280px;
+                --ceet-topbar-height: 72px;
             }
 
             html,
@@ -26,6 +27,7 @@
             .ceet-main-wrapper {
                 margin-left: var(--ceet-sidebar-width);
                 min-height: 100vh;
+                padding-top: calc(var(--ceet-topbar-height) + 1rem);
             }
 
             @media (min-width: 992px) {
@@ -44,6 +46,7 @@
                 .ceet-main-wrapper {
                     margin-left: 0;
                     min-height: auto;
+                    padding-top: calc(var(--ceet-topbar-height) + 0.75rem);
                 }
             }
         </style>
@@ -51,7 +54,7 @@
     <body>
         @include('layouts.navigation')
 
-        <main class="ceet-main-wrapper py-4">
+        <main class="ceet-main-wrapper pb-4">
             <div class="container-fluid px-3 px-lg-4">
                 @isset($header)
                     <div class="mb-4 d-flex justify-content-between align-items-center flex-wrap gap-2">

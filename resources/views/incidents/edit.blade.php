@@ -116,6 +116,22 @@
             background: #eceff3;
             font-weight: 700;
         }
+        .sidebar-link.catalogue-toggle.active,
+        .sidebar-link.catalogue-toggle[aria-expanded="true"] {
+            background: #fff5f5;
+            color: var(--ceet-red);
+            font-weight: 700;
+            box-shadow: inset 0 0 0 1px #fecaca;
+        }
+
+        .catalogue-toggle .catalogue-chevron {
+            margin-left: auto;
+            transition: transform 0.18s ease;
+        }
+
+        .catalogue-toggle[aria-expanded="true"] .catalogue-chevron {
+            transform: rotate(180deg);
+        }
 
         .sidebar-icon {
             width: 16px;
@@ -522,16 +538,16 @@
                     <span>Incidents</span>
                 </a>
                 @can('catalogues.view')
-                    <a class="sidebar-link d-flex justify-content-between align-items-center {{ request()->routeIs('catalogues.*') ? 'active' : '' }}" data-bs-toggle="collapse" href="#desktopCatalogueMenu" role="button" aria-expanded="{{ request()->routeIs('catalogues.*') ? 'true' : 'false' }}" aria-controls="desktopCatalogueMenu">
+                    <a class="sidebar-link catalogue-toggle d-flex justify-content-between align-items-center {{ request()->routeIs('catalogues.*') ? 'active fw-semibold is-catalogue-current' : '' }}" data-bs-toggle="collapse" href="#desktopCatalogueMenu" role="button" aria-expanded="{{ request()->routeIs('catalogues.*') ? 'true' : 'false' }}" aria-controls="desktopCatalogueMenu">
                         <span>Catalogue</span>
-                        <span class="small">v</span>
+                        <span class="catalogue-chevron small">v</span>
                     </a>
                     <div class="collapse {{ request()->routeIs('catalogues.*') ? 'show' : '' }}" id="desktopCatalogueMenu">
-                        <a href="{{ route('catalogues.departements.index') }}" class="sidebar-link ps-4 {{ request()->routeIs('catalogues.departements.*') ? 'active' : '' }}">Départements</a>
+                        <a href="{{ route('catalogues.departements.index') }}" class="sidebar-link ps-4 {{ request()->routeIs('catalogues.departements.*') ? 'active' : '' }}">D&eacute;partements</a>
                         <a href="{{ route('catalogues.types.index') }}" class="sidebar-link ps-4 {{ request()->routeIs('catalogues.types.*') ? 'active' : '' }}">Types d'incidents</a>
                         <a href="{{ route('catalogues.causes.index') }}" class="sidebar-link ps-4 {{ request()->routeIs('catalogues.causes.*') ? 'active' : '' }}">Causes</a>
                         <a href="{{ route('catalogues.statuts.index') }}" class="sidebar-link ps-4 {{ request()->routeIs('catalogues.statuts.*') ? 'active' : '' }}">Statuts</a>
-                        <a href="{{ route('catalogues.priorites.index') }}" class="sidebar-link ps-4 {{ request()->routeIs('catalogues.priorites.*') ? 'active' : '' }}">Priorités</a>
+                        <a href="{{ route('catalogues.priorites.index') }}" class="sidebar-link ps-4 {{ request()->routeIs('catalogues.priorites.*') ? 'active' : '' }}">Priorit&eacute;s</a>
                     </div>
                 @endcan
                 @can('incidents.view')
@@ -801,16 +817,16 @@
                 <a href="{{ route('dashboard') }}" class="sidebar-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">Tableau de bord</a>
                 <a href="{{ route('incidents.index') }}" class="sidebar-link {{ request()->routeIs('incidents.*') ? 'active' : '' }}">Incidents</a>
                 @can('catalogues.view')
-                    <a class="sidebar-link d-flex justify-content-between align-items-center {{ request()->routeIs('catalogues.*') ? 'active' : '' }}" data-bs-toggle="collapse" href="#mobileCatalogueMenu" role="button" aria-expanded="{{ request()->routeIs('catalogues.*') ? 'true' : 'false' }}" aria-controls="mobileCatalogueMenu">
+                    <a class="sidebar-link catalogue-toggle d-flex justify-content-between align-items-center {{ request()->routeIs('catalogues.*') ? 'active fw-semibold is-catalogue-current' : '' }}" data-bs-toggle="collapse" href="#mobileCatalogueMenu" role="button" aria-expanded="{{ request()->routeIs('catalogues.*') ? 'true' : 'false' }}" aria-controls="mobileCatalogueMenu">
                         <span>Catalogue</span>
-                        <span class="small">v</span>
+                        <span class="catalogue-chevron small">v</span>
                     </a>
                     <div class="collapse {{ request()->routeIs('catalogues.*') ? 'show' : '' }}" id="mobileCatalogueMenu">
-                        <a href="{{ route('catalogues.departements.index') }}" class="sidebar-link ps-4 {{ request()->routeIs('catalogues.departements.*') ? 'active' : '' }}">Départements</a>
+                        <a href="{{ route('catalogues.departements.index') }}" class="sidebar-link ps-4 {{ request()->routeIs('catalogues.departements.*') ? 'active' : '' }}">D&eacute;partements</a>
                         <a href="{{ route('catalogues.types.index') }}" class="sidebar-link ps-4 {{ request()->routeIs('catalogues.types.*') ? 'active' : '' }}">Types d'incidents</a>
                         <a href="{{ route('catalogues.causes.index') }}" class="sidebar-link ps-4 {{ request()->routeIs('catalogues.causes.*') ? 'active' : '' }}">Causes</a>
                         <a href="{{ route('catalogues.statuts.index') }}" class="sidebar-link ps-4 {{ request()->routeIs('catalogues.statuts.*') ? 'active' : '' }}">Statuts</a>
-                        <a href="{{ route('catalogues.priorites.index') }}" class="sidebar-link ps-4 {{ request()->routeIs('catalogues.priorites.*') ? 'active' : '' }}">Priorités</a>
+                        <a href="{{ route('catalogues.priorites.index') }}" class="sidebar-link ps-4 {{ request()->routeIs('catalogues.priorites.*') ? 'active' : '' }}">Priorit&eacute;s</a>
                     </div>
                 @endcan
                 @can('incidents.view')
@@ -987,5 +1003,6 @@
     </script>
 </body>
 </html>
+
 
 
