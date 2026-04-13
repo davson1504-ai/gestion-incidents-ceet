@@ -25,12 +25,6 @@
         </div>
     </x-slot>
 
-    <style>
-        .dashboard-chart-box {
-            height: 280px;
-        }
-    </style>
-
     <div class="row g-3 mb-4">
         <div class="col-12 col-xl-3">
             <div class="card h-100">
@@ -221,7 +215,6 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <script>
         window.dashboardChartData = @json($dashboardChartPayload);
     </script>

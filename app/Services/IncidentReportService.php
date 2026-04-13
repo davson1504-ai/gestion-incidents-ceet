@@ -28,7 +28,7 @@ class IncidentReportService
         $departementId = $filters['departement_id'] ?? null;
         $causeId = $filters['cause_id'] ?? null;
 
-        $base = Incident::with(['statut', 'priorite', 'departement', 'typeIncident', 'cause'])
+        $base = Incident::with(['status', 'priorite', 'departement', 'typeIncident', 'cause'])
             ->whereBetween('date_debut', [$start, $end])
             ->when($departementId, fn ($q, $value) => $q->where('departement_id', $value))
             ->when($causeId, fn ($q, $value) => $q->where('cause_id', $value))
@@ -40,8 +40,8 @@ class IncidentReportService
         $avgDuration = $incidents->whereNotNull('duree_minutes')->avg('duree_minutes');
 
         $byStatus = $incidents->groupBy('status_id')->map(fn ($g) => [
-            'label' => optional($g->first()->statut)->libelle ?? 'N/A',
-            'color' => optional($g->first()->statut)->couleur ?? '#6c757d',
+            'label' => optional($g->first()->status)->libelle ?? 'N/A',
+            'color' => optional($g->first()->status)->couleur ?? '#6c757d',
             'total' => $g->count(),
         ])->values();
 

@@ -1,10 +1,12 @@
 import './bootstrap';
 
 import Alpine from 'alpinejs';
+import Chart from 'chart.js/auto';
 import TomSelect from 'tom-select';
 import 'tom-select/dist/css/tom-select.bootstrap5.css';
 
 window.Alpine = Alpine;
+window.Chart = Chart;
 
 Alpine.start();
 

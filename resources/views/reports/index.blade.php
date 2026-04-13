@@ -35,12 +35,6 @@
         </div>
     </x-slot>
 
-    <style>
-        .reports-chart-box {
-            height: 320px;
-        }
-    </style>
-
     <div class="card mb-4">
         <div class="card-body">
             <form method="GET" action="{{ route('reports.index') }}" class="row g-3 align-items-end">
@@ -193,14 +187,16 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-    <script>
-        window.reportsChartData = @json([
+    @php
+        $reportsChartData = [
             'evolutionLabels' => $evolutionLabels,
             'evolutionIncidentData' => $evolutionIncidentData,
             'evolutionDurationData' => $evolutionDurationData,
-            'byType' => collect($byType)->values(),
-        ]);
+            'byType' => collect($byType)->values()->all(),
+        ];
+    @endphp
+    <script>
+        window.reportsChartData = {{ \Illuminate\Support\Js::from($reportsChartData) }};
     </script>
     @vite('resources/js/charts/reports.js')
 </x-app-layout>

@@ -41,3 +41,62 @@ body {
 .chart-card {
     min-height: 360px;
 }
+
+.dashboard-chart-box {
+    height: 280px;
+}
+
+.reports-chart-box {
+    height: 320px;
+}
+
+.ceet-avatar-circle {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.ceet-avatar-circle-sm {
+    width: 2rem;
+    height: 2rem;
+    font-size: 0.75rem;
+}
+
+.ceet-action-pill {
+    border-radius: 999px;
+    padding: 0.2rem 0.55rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    display: inline-block;
+    white-space: nowrap;
+}
+
+.ceet-action-pill-modification {
+    background: #eff6ff;
+    color: #1d4ed8;
+}
+
+.ceet-action-pill-creation {
+    background: #ecfdf3;
+    color: #15803d;
+}
+
+.ceet-action-pill-cloture {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.ceet-action-pill-connexion {
+    background: #f3f4f6;
+    color: #4b5563;
+}
+
+.ceet-action-pill-systeme {
+    background: #fee2e2;
+    color: #b91c1c;
+}

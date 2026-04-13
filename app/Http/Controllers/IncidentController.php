@@ -21,7 +21,6 @@ use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Maatwebsite\Excel\Facades\Excel;
 
-// TODO: update views that still reference $incident->statut to use $incident->status.
 class IncidentController extends Controller
 {
     public function __construct(private readonly IncidentService $incidentService)
@@ -176,14 +175,14 @@ class IncidentController extends Controller
             $incident,
             $userId,
             'create',
-            "CrÃ©ation de l'incident",
+            "Création de l'incident",
             [],
             $incident->only($incident->getFillable())
         );
-        $this->incidentService->logAudit($incident, $userId, 'create', ['message' => 'Incident crÃ©Ã©']);
+        $this->incidentService->logAudit($incident, $userId, 'create', ['message' => 'Incident créé']);
         broadcast(new IncidentChanged('created', $incident))->toOthers();
 
-        return redirect()->route('incidents.show', $incident)->with('success', 'Incident crÃ©Ã© avec succÃ¨s.');
+        return redirect()->route('incidents.show', $incident)->with('success', 'Incident créé avec succès.');
     }
 
     public function show(Incident $incident): View
@@ -228,14 +227,14 @@ class IncidentController extends Controller
             $incident,
             $userId,
             'update',
-            "Mise Ã  jour de l'incident",
+            "Mise à jour de l'incident",
             $oldValues,
             $incident->only($incident->getFillable())
         );
-        $this->incidentService->logAudit($incident, $userId, 'update', ['message' => 'Incident mis Ã  jour']);
+        $this->incidentService->logAudit($incident, $userId, 'update', ['message' => 'Incident mis à jour']);
         broadcast(new IncidentChanged('updated', $incident))->toOthers();
 
-        return redirect()->route('incidents.show', $incident)->with('success', 'Incident mis Ã  jour avec succÃ¨s.');
+        return redirect()->route('incidents.show', $incident)->with('success', 'Incident mis à jour avec succès.');
     }
 
     public function destroy(Incident $incident): RedirectResponse
@@ -243,12 +242,12 @@ class IncidentController extends Controller
         $userId = auth()->id();
 
         $this->incidentService->logAction($incident, $userId, 'delete', "Suppression de l'incident");
-        $this->incidentService->logAudit($incident, $userId, 'delete', ['message' => 'Incident supprimÃ©']);
+        $this->incidentService->logAudit($incident, $userId, 'delete', ['message' => 'Incident supprimé']);
         broadcast(new IncidentChanged('deleted', $incident))->toOthers();
 
         $incident->delete();
 
-        return redirect()->route('incidents.index')->with('success', 'Incident supprimÃ©.');
+        return redirect()->route('incidents.index')->with('success', 'Incident supprimé.');
     }
 
     private function renderIncidentList(Request $request, bool $onlyMine = false): View
@@ -308,8 +307,8 @@ class IncidentController extends Controller
             'listContext' => [
                 'title' => $onlyMine ? 'Mes incidents' : 'Liste des incidents',
                 'subtitle' => $onlyMine
-                    ? 'Consultez les incidents qui vous sont attribuÃ©s, supervisÃ©s ou dÃ©clarÃ©s.'
-                    : "Consultez et gÃ©rez l'ensemble des anomalies dÃ©tectÃ©es sur le rÃ©seau national.",
+                    ? 'Consultez les incidents qui vous sont attribués, supervisés ou déclarés.'
+                    : "Consultez et gérez l'ensemble des anomalies détectées sur le réseau national.",
                 'indexRoute' => $onlyMine ? 'incidents.mine' : 'incidents.index',
                 'isMine' => $onlyMine,
             ],

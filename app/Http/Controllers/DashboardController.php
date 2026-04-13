@@ -9,7 +9,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
-// TODO: update views that still reference $incident->statut to use $incident->status.
 class DashboardController extends Controller
 {
     public function __construct()

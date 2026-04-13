@@ -64,6 +64,14 @@
         "dev:lite": [
             "Composer\\Config::disableProcessTimeout",
             "npx concurrently -c \"#93c5fd,#fdba74,#34d399\" \"php artisan serve\" \"php artisan reverb:start --host=0.0.0.0 --port=8080\" \"npm run dev\" --names=server,reverb,vite"
+        ],
+        "optimize:production": [
+            "@php artisan config:cache --ansi",
+            "@php artisan route:cache --ansi",
+            "@php artisan view:cache --ansi"
+        ],
+        "optimize:clear": [
+            "@php artisan optimize:clear --ansi"
         ]
     },
     "extra": {
