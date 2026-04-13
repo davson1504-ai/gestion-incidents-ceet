@@ -1,8 +1,8 @@
 <x-app-layout>
     <x-slot name="header">
         <div>
-            <h1 class="h4 mb-0">Creation d'un incident</h1>
-            <p class="text-muted mb-0">Saisir les informations de declaration et de suivi</p>
+            <h1 class="h3 mb-1">Déclarer un incident</h1>
+            <p class="text-muted mb-0">Saisissez les informations de déclaration et d’affectation pour ouvrir un nouvel incident.</p>
         </div>
     </x-slot>
 
@@ -10,7 +10,7 @@
         <div class="card-body">
             @if($errors->any())
                 <div class="alert alert-danger">
-                    <div class="fw-semibold mb-1">Le formulaire contient des erreurs.</div>
+                    <div class="fw-semibold mb-2">Le formulaire contient des erreurs.</div>
                     <ul class="mb-0">
                         @foreach($errors->all() as $error)
                             <li>{{ $error }}</li>
@@ -19,7 +19,7 @@
                 </div>
             @endif
 
-            <form method="POST" action="{{ route('incidents.store') }}">
+            <form method="POST" action="{{ route('incidents.store') }}" data-incident-form>
                 @csrf
                 @include('incidents._form')
             </form>

@@ -3,27 +3,30 @@
 namespace App\Http\Controllers;
 
 use App\Events\IncidentChanged;
+use App\Exports\IncidentsExport;
 use App\Http\Requests\StoreIncidentRequest;
 use App\Http\Requests\UpdateIncidentRequest;
 use App\Models\Cause;
 use App\Models\Departement;
 use App\Models\Incident;
-use App\Models\IncidentAction;
-use App\Models\Log;
 use App\Models\Priorite;
 use App\Models\Statut;
 use App\Models\TypeIncident;
 use App\Models\User;
+use App\Services\IncidentService;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 use Illuminate\View\View;
+use Maatwebsite\Excel\Facades\Excel;
 
+// TODO: update views that still reference $incident->statut to use $incident->status.
 class IncidentController extends Controller
 {
-    public function __construct()
+    public function __construct(private readonly IncidentService $incidentService)
     {
-        $this->middleware('permission:incidents.view')->only(['index', 'show', 'export']);
+        $this->middleware('permission:incidents.view')->only(['index', 'mine', 'show', 'export', 'enCours']);
         $this->middleware('permission:incidents.create')->only(['create', 'store']);
         $this->middleware('permission:incidents.update')->only(['edit', 'update']);
         $this->middleware('permission:incidents.delete')->only(['destroy']);
@@ -31,139 +34,116 @@ class IncidentController extends Controller
 
     public function index(Request $request): View
     {
-        $filters = array_merge(
-            [
-                'departement_id'   => null,
-                'status_id'        => null,
-                'priorite_id'      => null,
-                'type_incident_id' => null,
-                'cause_id'         => null,
-                'operateur_id'     => null,
-                'date_from'        => null,
-                'date_to'          => null,
-                'q'                => null,
-            ],
-            $request->only([
-                'departement_id', 'status_id', 'priorite_id',
-                'type_incident_id', 'cause_id', 'operateur_id',
-                'date_from', 'date_to', 'q',
-            ])
-        );
+        return $this->renderIncidentList($request);
+    }
 
-        $baseQuery = Incident::query()
-            ->when($filters['departement_id'],   fn ($q, $v) => $q->where('departement_id', $v))
-            ->when($filters['status_id'],         fn ($q, $v) => $q->where('status_id', $v))
-            ->when($filters['priorite_id'],       fn ($q, $v) => $q->where('priorite_id', $v))
-            ->when($filters['type_incident_id'],  fn ($q, $v) => $q->where('type_incident_id', $v))
-            ->when($filters['cause_id'],          fn ($q, $v) => $q->where('cause_id', $v))
-            ->when($filters['operateur_id'],      fn ($q, $v) => $q->where('operateur_id', $v))
-            ->when($filters['date_from'],         fn ($q, $v) => $q->whereDate('date_debut', '>=', $v))
-            ->when($filters['date_to'],           fn ($q, $v) => $q->whereDate('date_debut', '<=', $v))
-            ->when($filters['q'], function ($q, $v) {
-                $q->where(function ($sq) use ($v) {
-                    $sq->where('code_incident', 'like', "%{$v}%")
-                       ->orWhere('titre', 'like', "%{$v}%");
-                });
-            });
+    public function mine(Request $request): View
+    {
+        return $this->renderIncidentList($request, true);
+    }
+
+    public function enCours(Request $request): View|JsonResponse
+    {
+        $filters = $this->extractOpenIncidentFilters($request);
+        $baseQuery = $this->openIncidentQuery($filters);
 
         $incidents = (clone $baseQuery)
-            ->with(['departement', 'typeIncident', 'cause', 'statut', 'priorite', 'operateur', 'superviseur'])
-            ->latest('date_debut')
-            ->paginate(15)
+            ->with(['departement', 'typeIncident', 'priorite', 'status'])
+            ->paginate(20)
             ->withQueryString();
 
-        $statRows = (clone $baseQuery)
-            ->selectRaw('status_id, priorite_id, duree_minutes')
-            ->get();
+        $incidents->getCollection()->transform(fn (Incident $incident) => $this->withWaitingDuration($incident));
 
-        $allStatuts   = Statut::all()->keyBy('id');
-        $allPriorites = Priorite::all()->keyBy('id');
+        $totalEnCours = (clone $baseQuery)->count();
+        $critiquesCount = (clone $baseQuery)->where('priorites.niveau', 1)->count();
+        $plusAncien = (clone $baseQuery)
+            ->with(['departement', 'priorite', 'status'])
+            ->first();
 
-        $byStatus = $statRows->groupBy('status_id')->map(function ($g, $statusId) use ($allStatuts) {
-            $s = $allStatuts->get($statusId);
-            return ['label' => $s?->libelle ?? 'Inconnu', 'color' => $s?->couleur ?? '#6c757d', 'total' => $g->count()];
-        })->values();
+        if ($plusAncien) {
+            $plusAncien = $this->withWaitingDuration($plusAncien);
+        }
 
-        $byPriorite = $statRows->groupBy('priorite_id')->map(function ($g, $pId) use ($allPriorites) {
-            $p = $allPriorites->get($pId);
-            return ['label' => $p?->libelle ?? 'Inconnu', 'color' => $p?->couleur ?? '#6c757d', 'total' => $g->count()];
-        })->values();
+        if ($request->expectsJson()) {
+            return response()->json([
+                'totalEnCours' => $totalEnCours,
+                'critiquesCount' => $critiquesCount,
+                'plusAncien' => $plusAncien ? [
+                    'code_incident' => $plusAncien->code_incident,
+                    'duree_minutes' => $plusAncien->duree_en_attente,
+                    'label' => $this->formatDurationLabel($plusAncien->duree_en_attente),
+                ] : null,
+                'updatedAt' => now()->format('H:i:s'),
+            ]);
+        }
 
-        $avgDuration = $statRows->whereNotNull('duree_minutes')->avg('duree_minutes');
-
-        $openIds     = $allStatuts->where('is_final', false)->pluck('id');
-        $closedIds   = $allStatuts->where('is_final', true)->pluck('id');
-        $openCount   = $statRows->whereIn('status_id', $openIds)->count();
-        $closedCount = $statRows->whereIn('status_id', $closedIds)->count();
-
-        return view('incidents.index', [
-            'incidents'    => $incidents,
-            'departements' => Departement::orderBy('nom')->get(),
-            'statuts'      => Statut::orderBy('ordre')->get(),
-            'priorites'    => Priorite::orderBy('niveau')->get(),
-            'types'        => TypeIncident::orderBy('libelle')->get(),
-            'causes'       => Cause::orderBy('libelle')->get(),
-            'operateurs'   => User::active()->orderBy('name')->get(),
-            'filters'      => $filters,
-            'stats'        => [
-                'byStatus'    => $byStatus,
-                'byPriorite'  => $byPriorite,
-                'avgDuration' => $avgDuration,
-                'openCount'   => $openCount,
-                'closedCount' => $closedCount,
-            ],
+        return view('incidents.en-cours', [
+            'incidents' => $incidents,
+            'departements' => Departement::where('is_active', true)->orderBy('nom')->get(),
+            'priorites' => Priorite::where('is_active', true)->orderBy('niveau')->get(),
+            'filters' => $filters,
+            'totalEnCours' => $totalEnCours,
+            'critiquesCount' => $critiquesCount,
+            'plusAncien' => $plusAncien,
         ]);
     }
 
     public function export(Request $request)
     {
-        // ✅ CORRECTION #2: Utiliser can() au lieu de authorize() pour les permissions Spatie
         if (! $request->user()->can('incidents.view')) {
             abort(403);
         }
 
-        $filters = $request->only([
-            'departement_id', 'status_id', 'priorite_id',
-            'type_incident_id', 'cause_id', 'operateur_id',
-            'date_from', 'date_to', 'q',
-        ]);
+        $filters = $this->extractIncidentFilters($request);
+        $format = (string) $request->input('format', 'csv');
 
-        $rows = Incident::with(['departement', 'typeIncident', 'cause', 'statut', 'priorite', 'operateur'])
-            ->when($filters['departement_id']   ?? null, fn ($q, $v) => $q->where('departement_id', $v))
-            ->when($filters['status_id']        ?? null, fn ($q, $v) => $q->where('status_id', $v))
-            ->when($filters['priorite_id']      ?? null, fn ($q, $v) => $q->where('priorite_id', $v))
-            ->when($filters['type_incident_id'] ?? null, fn ($q, $v) => $q->where('type_incident_id', $v))
-            ->when($filters['cause_id']         ?? null, fn ($q, $v) => $q->where('cause_id', $v))
-            ->when($filters['operateur_id']     ?? null, fn ($q, $v) => $q->where('operateur_id', $v))
-            ->when($filters['date_from']        ?? null, fn ($q, $v) => $q->whereDate('date_debut', '>=', $v))
-            ->when($filters['date_to']          ?? null, fn ($q, $v) => $q->whereDate('date_debut', '<=', $v))
-            ->when($filters['q']                ?? null, function ($q, $v) {
-                $q->where(fn ($sq) => $sq->where('code_incident', 'like', "%{$v}%")->orWhere('titre', 'like', "%{$v}%"));
-            })
+        if ($format === 'excel') {
+            return Excel::download(
+                new IncidentsExport($filters),
+                'incidents-' . now()->format('Y-m-d') . '.xlsx'
+            );
+        }
+
+        $rows = $this->baseIncidentQuery($filters)
+            ->with(['departement', 'typeIncident', 'cause', 'status', 'priorite', 'operateur'])
             ->orderByDesc('date_debut')
             ->get();
 
-        $callback = function () use ($rows) {
-            $out = fopen('php://output', 'w');
-            // BOM UTF-8 pour Excel
-            fprintf($out, chr(0xEF) . chr(0xBB) . chr(0xBF));
-            fputcsv($out, ['Code', 'Titre', 'Département', 'Statut', 'Priorité', 'Type', 'Cause', 'Début', 'Fin', 'Durée (min)', 'Opérateur'], ';');
-            foreach ($rows as $inc) {
-                fputcsv($out, [
-                    $inc->code_incident,
-                    $inc->titre,
-                    optional($inc->departement)->nom,
-                    optional($inc->statut)->libelle,
-                    optional($inc->priorite)->libelle,
-                    optional($inc->typeIncident)->libelle,
-                    optional($inc->cause)->libelle,
-                    optional($inc->date_debut)?->format('d/m/Y H:i'),
-                    optional($inc->date_fin)?->format('d/m/Y H:i'),
-                    $inc->duree_minutes,
-                    optional($inc->operateur)->name,
+        $callback = function () use ($rows): void {
+            $output = fopen('php://output', 'w');
+            fprintf($output, chr(0xEF) . chr(0xBB) . chr(0xBF));
+
+            fputcsv($output, [
+                'Code',
+                'Titre',
+                'Département',
+                'Statut',
+                'Priorité',
+                'Type',
+                'Cause',
+                'Début',
+                'Fin',
+                'Durée (min)',
+                'Opérateur',
+            ], ';');
+
+            foreach ($rows as $incident) {
+                fputcsv($output, [
+                    $incident->code_incident,
+                    $incident->titre,
+                    optional($incident->departement)->nom,
+                    optional($incident->status)->libelle,
+                    optional($incident->priorite)->libelle,
+                    optional($incident->typeIncident)->libelle,
+                    optional($incident->cause)->libelle,
+                    optional($incident->date_debut)?->format('d/m/Y H:i'),
+                    optional($incident->date_fin)?->format('d/m/Y H:i'),
+                    $incident->duree_minutes,
+                    optional($incident->operateur)->name,
                 ], ';');
             }
-            fclose($out);
+
+            fclose($output);
         };
 
         return response()->streamDownload($callback, 'incidents-export-' . now()->format('Y-m-d') . '.csv', [
@@ -175,35 +155,48 @@ class IncidentController extends Controller
     {
         return view('incidents.create', [
             'departements' => Departement::where('is_active', true)->orderBy('nom')->get(),
-            'statuts'      => Statut::where('is_active', true)->orderBy('ordre')->get(),
-            'priorites'    => Priorite::where('is_active', true)->orderBy('niveau')->get(),
-            'types'        => TypeIncident::where('is_active', true)->orderBy('libelle')->get(),
-            'causes'       => Cause::where('is_active', true)->orderBy('libelle')->get(),
-            'users'        => User::where('is_active', true)->orderBy('name')->get(),
+            'statuts' => Statut::where('is_active', true)->orderBy('ordre')->get(),
+            'priorites' => Priorite::where('is_active', true)->orderBy('niveau')->get(),
+            'types' => TypeIncident::where('is_active', true)->orderBy('libelle')->get(),
+            'causes' => Cause::where('is_active', true)->orderBy('libelle')->get(),
+            'users' => User::where('is_active', true)->orderBy('name')->get(),
         ]);
     }
 
     public function store(StoreIncidentRequest $request): RedirectResponse
     {
+        $userId = $request->user()->id;
         $data = $request->validated();
-        $data['code_incident'] = $this->generateCode();
-        $data['operateur_id']  = $request->user()->id;
+        $data['code_incident'] = $this->incidentService->generateCode();
+        $data['operateur_id'] = $userId;
 
         $incident = Incident::create($data);
-        $this->syncDurationOnClosure($incident);
-
-        $this->logAction($incident, 'create', "Création de l'incident", [], $incident->only($incident->getFillable()));
-        $this->logAudit($incident, 'create', ['message' => 'Incident créé']);
+        $this->incidentService->syncDurationOnClosure($incident);
+        $this->incidentService->logAction(
+            $incident,
+            $userId,
+            'create',
+            "CrÃ©ation de l'incident",
+            [],
+            $incident->only($incident->getFillable())
+        );
+        $this->incidentService->logAudit($incident, $userId, 'create', ['message' => 'Incident crÃ©Ã©']);
         broadcast(new IncidentChanged('created', $incident))->toOthers();
 
-        return redirect()->route('incidents.show', $incident)->with('success', 'Incident créé avec succès.');
+        return redirect()->route('incidents.show', $incident)->with('success', 'Incident crÃ©Ã© avec succÃ¨s.');
     }
 
     public function show(Incident $incident): View
     {
         $incident->load([
-            'departement', 'typeIncident', 'cause', 'statut',
-            'priorite', 'operateur', 'responsable', 'superviseur',
+            'departement',
+            'typeIncident',
+            'cause',
+            'status',
+            'priorite',
+            'operateur',
+            'responsable',
+            'superviseur',
             'actions.user',
         ]);
 
@@ -213,91 +206,252 @@ class IncidentController extends Controller
     public function edit(Incident $incident): View
     {
         return view('incidents.edit', [
-            'incident'     => $incident,
+            'incident' => $incident,
             'departements' => Departement::where('is_active', true)->orderBy('nom')->get(),
-            'statuts'      => Statut::where('is_active', true)->orderBy('ordre')->get(),
-            'priorites'    => Priorite::where('is_active', true)->orderBy('niveau')->get(),
-            'types'        => TypeIncident::where('is_active', true)->orderBy('libelle')->get(),
-            'causes'       => Cause::where('is_active', true)->orderBy('libelle')->get(),
-            'users'        => User::where('is_active', true)->orderBy('name')->get(),
+            'statuts' => Statut::where('is_active', true)->orderBy('ordre')->get(),
+            'priorites' => Priorite::where('is_active', true)->orderBy('niveau')->get(),
+            'types' => TypeIncident::where('is_active', true)->orderBy('libelle')->get(),
+            'causes' => Cause::where('is_active', true)->orderBy('libelle')->get(),
+            'users' => User::where('is_active', true)->orderBy('name')->get(),
         ]);
     }
 
     public function update(UpdateIncidentRequest $request, Incident $incident): RedirectResponse
     {
-        $old = $incident->only($incident->getFillable());
+        $userId = $request->user()->id;
+        $oldValues = $incident->only($incident->getFillable());
 
         $incident->fill($request->validated());
         $incident->save();
-        $this->syncDurationOnClosure($incident);
-
-        $this->logAction($incident, 'update', "Mise à jour de l'incident", $old, $incident->only($incident->getFillable()));
-        $this->logAudit($incident, 'update', ['message' => 'Incident mis à jour']);
+        $this->incidentService->syncDurationOnClosure($incident);
+        $this->incidentService->logAction(
+            $incident,
+            $userId,
+            'update',
+            "Mise Ã  jour de l'incident",
+            $oldValues,
+            $incident->only($incident->getFillable())
+        );
+        $this->incidentService->logAudit($incident, $userId, 'update', ['message' => 'Incident mis Ã  jour']);
         broadcast(new IncidentChanged('updated', $incident))->toOthers();
 
-        return redirect()->route('incidents.show', $incident)->with('success', 'Incident mis à jour avec succès.');
+        return redirect()->route('incidents.show', $incident)->with('success', 'Incident mis Ã  jour avec succÃ¨s.');
     }
 
     public function destroy(Incident $incident): RedirectResponse
     {
-        $this->logAction($incident, 'delete', "Suppression de l'incident");
-        $this->logAudit($incident, 'delete', ['message' => 'Incident supprimé']);
+        $userId = auth()->id();
+
+        $this->incidentService->logAction($incident, $userId, 'delete', "Suppression de l'incident");
+        $this->incidentService->logAudit($incident, $userId, 'delete', ['message' => 'Incident supprimÃ©']);
         broadcast(new IncidentChanged('deleted', $incident))->toOthers();
 
         $incident->delete();
 
-        return redirect()->route('incidents.index')->with('success', 'Incident supprimé.');
+        return redirect()->route('incidents.index')->with('success', 'Incident supprimÃ©.');
     }
 
-    // ── Helpers ───────────────────────────────────────────────────────────
-
-    private function generateCode(): string
+    private function renderIncidentList(Request $request, bool $onlyMine = false): View
     {
-        return 'INC-' . now()->format('Ymd') . '-' . Str::upper(Str::random(5));
-    }
+        $filters = $this->extractIncidentFilters($request);
+        $currentUser = $request->user();
+        $baseQuery = $this->baseIncidentQuery($filters, $onlyMine ? $currentUser : null);
 
-    private function syncDurationOnClosure(Incident $incident): void
-    {
-        $incident->loadMissing('statut');
+        $incidents = (clone $baseQuery)
+            ->with(['departement', 'typeIncident', 'cause', 'status', 'priorite', 'operateur', 'superviseur'])
+            ->latest('date_debut')
+            ->paginate(15)
+            ->withQueryString();
 
-        if ($incident->statut?->is_final && is_null($incident->date_fin)) {
-            $incident->date_fin = now();
-        }
+        $statRows = (clone $baseQuery)
+            ->selectRaw('status_id, priorite_id, duree_minutes')
+            ->get();
 
-        if ($incident->date_fin) {
-            $incident->duree_minutes = $incident->date_debut
-                ? $incident->date_debut->diffInMinutes($incident->date_fin)
-                : null;
-            $incident->clotured_at = $incident->date_fin;
-            $incident->save();
-        }
-    }
+        $allStatuts = Statut::all()->keyBy('id');
+        $allPriorites = Priorite::all()->keyBy('id');
 
-    private function logAction(Incident $incident, string $type, string $description, ?array $old = null, ?array $new = null): void
-    {
-        IncidentAction::create([
-            'incident_id' => $incident->id,
-            'user_id'     => auth()->id(),
-            'action_type' => $type,
-            'description' => $description,
-            'action_date' => now(),
-            'old_values'  => $old,
-            'new_values'  => $new,
+        $byStatus = $statRows->groupBy('status_id')->map(function ($group, $statusId) use ($allStatuts) {
+            $status = $allStatuts->get($statusId);
+
+            return [
+                'label' => $status?->libelle ?? 'Inconnu',
+                'color' => $status?->couleur ?? '#6c757d',
+                'total' => $group->count(),
+            ];
+        })->values();
+
+        $byPriorite = $statRows->groupBy('priorite_id')->map(function ($group, $prioriteId) use ($allPriorites) {
+            $priorite = $allPriorites->get($prioriteId);
+
+            return [
+                'label' => $priorite?->libelle ?? 'Inconnu',
+                'color' => $priorite?->couleur ?? '#6c757d',
+                'total' => $group->count(),
+            ];
+        })->values();
+
+        $avgDuration = $statRows->whereNotNull('duree_minutes')->avg('duree_minutes');
+        $openIds = $allStatuts->where('is_final', false)->pluck('id');
+        $closedIds = $allStatuts->where('is_final', true)->pluck('id');
+        $openCount = $statRows->whereIn('status_id', $openIds)->count();
+        $closedCount = $statRows->whereIn('status_id', $closedIds)->count();
+
+        return view('incidents.index', [
+            'incidents' => $incidents,
+            'departements' => Departement::orderBy('nom')->get(),
+            'statuts' => Statut::orderBy('ordre')->get(),
+            'priorites' => Priorite::orderBy('niveau')->get(),
+            'types' => TypeIncident::orderBy('libelle')->get(),
+            'causes' => Cause::orderBy('libelle')->get(),
+            'operateurs' => User::active()->orderBy('name')->get(),
+            'filters' => $filters,
+            'listContext' => [
+                'title' => $onlyMine ? 'Mes incidents' : 'Liste des incidents',
+                'subtitle' => $onlyMine
+                    ? 'Consultez les incidents qui vous sont attribuÃ©s, supervisÃ©s ou dÃ©clarÃ©s.'
+                    : "Consultez et gÃ©rez l'ensemble des anomalies dÃ©tectÃ©es sur le rÃ©seau national.",
+                'indexRoute' => $onlyMine ? 'incidents.mine' : 'incidents.index',
+                'isMine' => $onlyMine,
+            ],
+            'stats' => [
+                'byStatus' => $byStatus,
+                'byPriorite' => $byPriorite,
+                'avgDuration' => $avgDuration,
+                'openCount' => $openCount,
+                'closedCount' => $closedCount,
+            ],
         ]);
     }
 
-    private function logAudit(Incident $incident, string $action, array $details = []): void
+    private function extractIncidentFilters(Request $request): array
     {
-        Log::create([
-            'user_id'     => auth()->id(),
-            'action'      => $action,
-            'module'      => 'incidents',
-            'target_type' => Incident::class,
-            'target_id'   => $incident->id,
-            'incident_id' => $incident->id,
-            'ip_address'  => request()->ip(),
-            'user_agent'  => request()->userAgent(),
-            'details'     => $details,
-        ]);
+        return array_merge(
+            [
+                'departement_id' => null,
+                'status_id' => null,
+                'priorite_id' => null,
+                'type_incident_id' => null,
+                'cause_id' => null,
+                'operateur_id' => null,
+                'date_from' => null,
+                'date_to' => null,
+                'q' => null,
+            ],
+            $request->only([
+                'departement_id',
+                'status_id',
+                'priorite_id',
+                'type_incident_id',
+                'cause_id',
+                'operateur_id',
+                'date_from',
+                'date_to',
+                'q',
+            ])
+        );
+    }
+
+    private function extractOpenIncidentFilters(Request $request): array
+    {
+        return array_merge(
+            [
+                'departement_id' => null,
+                'priorite_id' => null,
+                'date_from' => null,
+                'date_to' => null,
+                'q' => null,
+            ],
+            $request->only([
+                'departement_id',
+                'priorite_id',
+                'date_from',
+                'date_to',
+                'q',
+            ])
+        );
+    }
+
+    private function baseIncidentQuery(array $filters, ?User $currentUser = null): Builder
+    {
+        return Incident::query()
+            ->when($currentUser, function (Builder $query) use ($currentUser) {
+                $query->where(function (Builder $incidentQuery) use ($currentUser) {
+                    $incidentQuery
+                        ->where('operateur_id', $currentUser->id)
+                        ->orWhere('responsable_id', $currentUser->id)
+                        ->orWhere('superviseur_id', $currentUser->id);
+                });
+            })
+            ->when($filters['departement_id'], fn (Builder $query, $value) => $query->where('departement_id', $value))
+            ->when($filters['status_id'], fn (Builder $query, $value) => $query->where('status_id', $value))
+            ->when($filters['priorite_id'], fn (Builder $query, $value) => $query->where('priorite_id', $value))
+            ->when($filters['type_incident_id'], fn (Builder $query, $value) => $query->where('type_incident_id', $value))
+            ->when($filters['cause_id'], fn (Builder $query, $value) => $query->where('cause_id', $value))
+            ->when($filters['operateur_id'], fn (Builder $query, $value) => $query->where('operateur_id', $value))
+            ->when($filters['date_from'], fn (Builder $query, $value) => $query->whereDate('date_debut', '>=', $value))
+            ->when($filters['date_to'], fn (Builder $query, $value) => $query->whereDate('date_debut', '<=', $value))
+            ->when($filters['q'], function (Builder $query, $value) {
+                $query->where(function (Builder $searchQuery) use ($value) {
+                    $searchQuery
+                        ->where('code_incident', 'like', "%{$value}%")
+                        ->orWhere('titre', 'like', "%{$value}%");
+                });
+            });
+    }
+
+    private function openIncidentQuery(array $filters): Builder
+    {
+        return Incident::query()
+            ->select('incidents.*')
+            ->join('statuses', 'statuses.id', '=', 'incidents.status_id')
+            ->leftJoin('priorites', 'priorites.id', '=', 'incidents.priorite_id')
+            ->where('statuses.is_final', false)
+            ->when($filters['departement_id'], fn (Builder $query, $value) => $query->where('incidents.departement_id', $value))
+            ->when($filters['priorite_id'], fn (Builder $query, $value) => $query->where('incidents.priorite_id', $value))
+            ->when($filters['date_from'], fn (Builder $query, $value) => $query->whereDate('incidents.date_debut', '>=', $value))
+            ->when($filters['date_to'], fn (Builder $query, $value) => $query->whereDate('incidents.date_debut', '<=', $value))
+            ->when($filters['q'], function (Builder $query, $value) {
+                $query->where(function (Builder $searchQuery) use ($value) {
+                    $searchQuery
+                        ->where('incidents.code_incident', 'like', "%{$value}%")
+                        ->orWhere('incidents.titre', 'like', "%{$value}%");
+                });
+            })
+            ->orderByRaw('CASE WHEN priorites.niveau IS NULL THEN 999 ELSE priorites.niveau END ASC')
+            ->orderBy('incidents.date_debut');
+    }
+
+    private function withWaitingDuration(Incident $incident): Incident
+    {
+        $incident->duree_en_attente = $incident->date_debut
+            ? $incident->date_debut->diffInMinutes(now())
+            : null;
+
+        return $incident;
+    }
+
+    private function formatDurationLabel(?int $minutes): string
+    {
+        if ($minutes === null) {
+            return '-';
+        }
+
+        $days = intdiv($minutes, 1440);
+        $hours = intdiv($minutes % 1440, 60);
+        $remainingMinutes = $minutes % 60;
+
+        $parts = [];
+
+        if ($days > 0) {
+            $parts[] = $days . 'j';
+        }
+
+        if ($hours > 0 || $days > 0) {
+            $parts[] = $hours . 'h';
+        }
+
+        $parts[] = $remainingMinutes . 'min';
+
+        return implode(' ', $parts);
     }
 }

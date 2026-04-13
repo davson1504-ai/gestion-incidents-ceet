@@ -31,13 +31,11 @@ class Incident extends Model
     ];
 
     protected $casts = [
-        'date_debut'     => 'datetime',
-        'date_fin'       => 'datetime',
-        'clotured_at'    => 'datetime',
-        'duree_minutes'  => 'integer',
+        'date_debut' => 'datetime',
+        'date_fin' => 'datetime',
+        'clotured_at' => 'datetime',
+        'duree_minutes' => 'integer',
     ];
-
-    // ====================== RELATIONS ======================
 
     public function departement()
     {
@@ -54,9 +52,14 @@ class Incident extends Model
         return $this->belongsTo(Cause::class);
     }
 
-    public function statut()
+    public function status()
     {
         return $this->belongsTo(Statut::class, 'status_id');
+    }
+
+    public function statut()
+    {
+        return $this->status();
     }
 
     public function priorite()
@@ -89,8 +92,16 @@ class Incident extends Model
         return $this->hasMany(Log::class);
     }
 
-    // Méthode utile : calcul automatique de la durée
-    public function calculerDuree()
+    public function getStatutAttribute(): ?Statut
+    {
+        if ($this->relationLoaded('status')) {
+            return $this->getRelation('status');
+        }
+
+        return $this->status()->getResults();
+    }
+
+    public function calculerDuree(): void
     {
         if ($this->date_fin) {
             $this->duree_minutes = $this->date_debut->diffInMinutes($this->date_fin);

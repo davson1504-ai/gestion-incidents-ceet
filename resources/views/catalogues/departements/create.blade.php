@@ -1,9 +1,12 @@
 <x-app-layout>
     <x-slot name="header">
-        <h1 class="h4 mb-0">Nouveau départ</h1>
+        <div>
+            <h1 class="h3 mb-1">Nouveau départ</h1>
+            <p class="text-muted mb-0">Ajoutez un départ CEET avec ses caractéristiques techniques et sa charge maximale.</p>
+        </div>
     </x-slot>
 
-    <div class="card shadow-sm">
+    <div class="card">
         <div class="card-body">
             <form method="POST" action="{{ route('catalogues.departements.store') }}">
                 @csrf

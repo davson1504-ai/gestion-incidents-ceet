@@ -4,9 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\Incident;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
+// TODO: update views that still reference $incident->statut to use $incident->status.
 class DashboardController extends Controller
 {
     public function __construct()
@@ -21,125 +24,149 @@ class DashboardController extends Controller
             'date_to' => $request->input('date_to'),
         ];
 
-        $base = Incident::query()
-            ->when($filters['date_from'], fn ($q, $v) => $q->whereDate('date_debut', '>=', $v))
-            ->when($filters['date_to'], fn ($q, $v) => $q->whereDate('date_debut', '<=', $v));
+        $aggregateRow = $this->filteredIncidents($filters)
+            ->leftJoin('statuses', 'statuses.id', '=', 'incidents.status_id')
+            ->selectRaw('COUNT(*) as total')
+            ->selectRaw('SUM(CASE WHEN statuses.is_final = 0 THEN 1 ELSE 0 END) as open_count')
+            ->selectRaw('SUM(CASE WHEN statuses.is_final = 1 THEN 1 ELSE 0 END) as closed_count')
+            ->selectRaw('AVG(incidents.duree_minutes) as avg_duration')
+            ->first();
 
-        $rows = (clone $base)
-            ->with(['statut', 'priorite', 'typeIncident', 'departement', 'cause'])
-            ->latest('date_debut')
-            ->get();
+        $total = (int) ($aggregateRow->total ?? 0);
+        $openCount = (int) ($aggregateRow->open_count ?? 0);
+        $closedCount = (int) ($aggregateRow->closed_count ?? 0);
+        $avgDuration = $aggregateRow->avg_duration !== null ? (float) $aggregateRow->avg_duration : null;
 
-        $total = $rows->count();
-        $openCount = $rows->filter(fn ($i) => $i->statut && ! $i->statut->is_final)->count();
-        $closedCount = $rows->filter(fn ($i) => $i->statut && $i->statut->is_final)->count();
-        $avgDuration = $rows->whereNotNull('duree_minutes')->avg('duree_minutes');
-        $todayResolved = $rows->filter(fn ($i) => $i->statut?->is_final && $i->date_fin?->isToday())->count();
-        $availabilityRate = $total > 0 ? round((($total - $openCount) / $total) * 100, 1) : 100.0;
+        $todayResolved = (int) $this->filteredIncidents($filters)
+            ->join('statuses', 'statuses.id', '=', 'incidents.status_id')
+            ->where('statuses.is_final', true)
+            ->whereDate('incidents.date_fin', now()->toDateString())
+            ->count();
 
-        $byStatus = $rows->groupBy('status_id')->map(function ($g) {
-            $s = $g->first()->statut;
+        $availabilityRate = $total > 0
+            ? round((($total - $openCount) / $total) * 100, 1)
+            : 100.0;
 
-            return [
-                'label' => $s?->libelle ?? 'N/A',
-                'color' => $s?->couleur ?? '#6c757d',
-                'total' => $g->count(),
-            ];
-        })->values();
+        $byStatus = $this->filteredIncidents($filters)
+            ->leftJoin('statuses', 'statuses.id', '=', 'incidents.status_id')
+            ->selectRaw("COALESCE(statuses.libelle, 'N/A') as label")
+            ->selectRaw("COALESCE(statuses.couleur, '#6c757d') as color")
+            ->selectRaw('COUNT(*) as total')
+            ->groupBy('incidents.status_id', 'statuses.libelle', 'statuses.couleur')
+            ->orderByDesc('total')
+            ->get()
+            ->map(fn ($row) => [
+                'label' => $row->label,
+                'color' => $row->color,
+                'total' => (int) $row->total,
+            ])
+            ->values();
 
-        $byPriorite = $rows->groupBy('priorite_id')->map(function ($g) {
-            $p = $g->first()->priorite;
+        $byPriorite = $this->filteredIncidents($filters)
+            ->leftJoin('priorites', 'priorites.id', '=', 'incidents.priorite_id')
+            ->selectRaw("COALESCE(priorites.libelle, 'N/A') as label")
+            ->selectRaw("COALESCE(priorites.couleur, '#e9ecef') as color")
+            ->selectRaw('COUNT(*) as total')
+            ->groupBy('incidents.priorite_id', 'priorites.libelle', 'priorites.couleur')
+            ->orderByDesc('total')
+            ->get()
+            ->map(fn ($row) => [
+                'label' => $row->label,
+                'color' => $row->color,
+                'total' => (int) $row->total,
+            ])
+            ->values();
 
-            return [
-                'label' => $p?->libelle ?? 'N/A',
-                'color' => $p?->couleur ?? '#e9ecef',
-                'total' => $g->count(),
-            ];
-        })->values();
+        $byType = $this->filteredIncidents($filters)
+            ->leftJoin('type_incidents', 'type_incidents.id', '=', 'incidents.type_incident_id')
+            ->selectRaw("COALESCE(type_incidents.libelle, 'N/A') as label")
+            ->selectRaw('COUNT(*) as total')
+            ->groupBy('incidents.type_incident_id', 'type_incidents.libelle')
+            ->orderByDesc('total')
+            ->get()
+            ->map(fn ($row) => [
+                'label' => $row->label,
+                'total' => (int) $row->total,
+            ])
+            ->values();
 
-        $byType = $rows->groupBy('type_incident_id')->map(function ($g) {
-            $t = $g->first()->typeIncident;
+        $byCause = $this->filteredIncidents($filters)
+            ->leftJoin('causes', 'causes.id', '=', 'incidents.cause_id')
+            ->selectRaw("COALESCE(causes.libelle, 'N/A') as label")
+            ->selectRaw('COUNT(*) as total')
+            ->groupBy('incidents.cause_id', 'causes.libelle')
+            ->orderByDesc('total')
+            ->limit(10)
+            ->get()
+            ->map(fn ($row) => [
+                'label' => $row->label,
+                'total' => (int) $row->total,
+            ])
+            ->values();
 
-            return [
-                'label' => $t?->libelle ?? 'N/A',
-                'total' => $g->count(),
-            ];
-        })->values();
+        $topDepart = $this->filteredIncidents($filters)
+            ->leftJoin('departements', 'departements.id', '=', 'incidents.departement_id')
+            ->selectRaw("COALESCE(departements.nom, 'N/A') as label")
+            ->selectRaw('COUNT(*) as total')
+            ->groupBy('incidents.departement_id', 'departements.nom')
+            ->orderByDesc('total')
+            ->limit(7)
+            ->get()
+            ->map(fn ($row) => [
+                'label' => $row->label,
+                'total' => (int) $row->total,
+            ])
+            ->values();
 
-        $byCause = $rows->groupBy('cause_id')->map(function ($g) {
-            $c = $g->first()->cause;
-
-            return [
-                'label' => $c?->libelle ?? 'N/A',
-                'total' => $g->count(),
-            ];
-        })->sortByDesc('total')->take(10)->values();
-
-        $topDepart = $rows->groupBy('departement_id')->map(function ($g) {
-            return [
-                'label' => optional($g->first()->departement)->nom ?? 'N/A',
-                'total' => $g->count(),
-            ];
-        })->sortByDesc('total')->take(7)->values();
-
-        $timeseries = Incident::query()
-            ->when($filters['date_from'], fn ($q, $v) => $q->whereDate('date_debut', '>=', $v))
-            ->when($filters['date_to'], fn ($q, $v) => $q->whereDate('date_debut', '<=', $v))
-            ->when(! $filters['date_from'], fn ($q) => $q->whereDate('date_debut', '>=', now()->subDays(30)->toDateString()))
-            ->selectRaw('DATE(date_debut) as d, count(*) as total')
-            ->groupBy('d')
+        $timeseries = $this->filteredIncidents($filters)
+            ->when(! $filters['date_from'], fn (Builder $query) => $query->whereDate('incidents.date_debut', '>=', now()->subDays(30)->toDateString()))
+            ->selectRaw('DATE(incidents.date_debut) as d, COUNT(*) as total')
+            ->groupBy(DB::raw('DATE(incidents.date_debut)'))
             ->orderBy('d')
             ->get();
 
-        $recentIncidents = (clone $base)
-            ->with(['departement', 'statut', 'cause'])
-            ->latest('date_debut')
+        $recentIncidents = $this->filteredIncidents($filters)
+            ->with(['departement', 'status', 'cause'])
+            ->latest('incidents.date_debut')
             ->limit(5)
             ->get();
 
-        $countUsersByRole = static function (array $exactNames, array $likePatterns = []): int {
-            return User::query()
-                ->whereHas('roles', function ($q) use ($exactNames, $likePatterns) {
-                    $q->where(function ($roleQuery) use ($exactNames, $likePatterns) {
-                        if (count($exactNames) > 0) {
-                            $roleQuery->whereIn('name', $exactNames);
-                        }
-
-                        foreach ($likePatterns as $pattern) {
-                            $roleQuery->orWhere('name', 'like', $pattern);
-                        }
-                    });
-                })
-                ->count();
-        };
-
-        $adminCount = $countUsersByRole(['Administrateur', 'ADMINISTRATEUR'], ['Admin%']);
-        $supervisorCount = $countUsersByRole(['Superviseur', 'SUPERVISEUR'], ['Super%']);
-        $operatorCount = $countUsersByRole(['Operateur', 'Operateur Terrain'], ['Op%rateur%']);
+        $roleCountsRow = DB::query()
+            ->selectRaw('1 as anchor')
+            ->selectSub($this->roleCountSubquery(['Administrateur', 'ADMINISTRATEUR'], ['Admin%']), 'admin_count')
+            ->selectSub($this->roleCountSubquery(['Superviseur', 'SUPERVISEUR'], ['Super%']), 'supervisor_count')
+            ->selectSub($this->roleCountSubquery(['Opérateur', 'Operateur', 'Opérateur Terrain', 'Operateur Terrain'], ['Op%rateur%']), 'operator_count')
+            ->first();
 
         $roleCounts = [
-            ['label' => 'Administrateur', 'count' => $adminCount],
-            ['label' => 'Superviseur', 'count' => $supervisorCount],
-            ['label' => 'Operateur Terrain', 'count' => $operatorCount],
+            ['label' => 'Administrateur', 'count' => (int) ($roleCountsRow->admin_count ?? 0)],
+            ['label' => 'Superviseur', 'count' => (int) ($roleCountsRow->supervisor_count ?? 0)],
+            ['label' => 'Operateur Terrain', 'count' => (int) ($roleCountsRow->operator_count ?? 0)],
         ];
 
-        $currentWeekAvg = Incident::query()
-            ->whereDate('date_debut', '>=', now()->subDays(7)->toDateString())
-            ->whereNotNull('duree_minutes')
-            ->avg('duree_minutes');
-        $previousWeekAvg = Incident::query()
-            ->whereDate('date_debut', '>=', now()->subDays(14)->toDateString())
-            ->whereDate('date_debut', '<', now()->subDays(7)->toDateString())
-            ->whereNotNull('duree_minutes')
-            ->avg('duree_minutes');
+        $currentWeekAvg = (float) ($this->filteredIncidents($filters)
+            ->whereDate('incidents.date_debut', '>=', now()->subDays(7)->toDateString())
+            ->whereNotNull('incidents.duree_minutes')
+            ->avg('incidents.duree_minutes') ?? 0);
+
+        $previousWeekAvg = (float) ($this->filteredIncidents($filters)
+            ->whereDate('incidents.date_debut', '>=', now()->subDays(14)->toDateString())
+            ->whereDate('incidents.date_debut', '<', now()->subDays(7)->toDateString())
+            ->whereNotNull('incidents.duree_minutes')
+            ->avg('incidents.duree_minutes') ?? 0);
 
         $weekDelta = null;
-        if ($previousWeekAvg && $previousWeekAvg > 0) {
-            $weekDelta = round((($previousWeekAvg - ($currentWeekAvg ?? 0)) / $previousWeekAvg) * 100, 1);
+        if ($previousWeekAvg > 0) {
+            $weekDelta = round((($previousWeekAvg - $currentWeekAvg) / $previousWeekAvg) * 100, 1);
         }
 
-        $focusZones = $topDepart->take(2)->pluck('label')->filter(fn ($l) => $l !== 'N/A')->values();
-        $focusText = $focusZones->count() > 0
+        $focusZones = collect($topDepart)
+            ->take(2)
+            ->pluck('label')
+            ->filter(fn (string $label) => $label !== 'N/A')
+            ->values();
+
+        $focusText = $focusZones->isNotEmpty()
             ? $focusZones->implode(' et ')
             : 'les zones critiques';
 
@@ -161,5 +188,28 @@ class DashboardController extends Controller
             'lastCheckAt' => now()->format('H:i:s'),
         ]);
     }
-}
 
+    private function filteredIncidents(array $filters): Builder
+    {
+        return Incident::query()
+            ->when($filters['date_from'], fn (Builder $query, string $value) => $query->whereDate('incidents.date_debut', '>=', $value))
+            ->when($filters['date_to'], fn (Builder $query, string $value) => $query->whereDate('incidents.date_debut', '<=', $value));
+    }
+
+    private function roleCountSubquery(array $exactNames, array $likePatterns = [])
+    {
+        return DB::table('model_has_roles as mhr')
+            ->join('roles as r', 'r.id', '=', 'mhr.role_id')
+            ->selectRaw('COUNT(DISTINCT mhr.model_id)')
+            ->where('mhr.model_type', User::class)
+            ->where(function ($query) use ($exactNames, $likePatterns) {
+                if ($exactNames !== []) {
+                    $query->whereIn('r.name', $exactNames);
+                }
+
+                foreach ($likePatterns as $pattern) {
+                    $query->orWhere('r.name', 'like', $pattern);
+                }
+            });
+    }
+}

@@ -99,7 +99,7 @@ class DepartementController extends Controller
         $created = Departement::create($data);
 
         return redirect()
-            ->route('catalogues.departements.index', ['selected' => $created->id])
+            ->route('catalogues.departements.index')
             ->with('success', 'Departement cree.');
     }
 
@@ -130,7 +130,7 @@ class DepartementController extends Controller
         $departement->update($data);
 
         return redirect()
-            ->route('catalogues.departements.index', ['selected' => $departement->id])
+            ->route('catalogues.departements.index')
             ->with('success', 'Departement mis a jour.');
     }
 

@@ -26,7 +26,18 @@ Route::middleware(['auth', 'verified'])->group(function (): void {
         ->middleware('permission:incidents.view')
         ->name('incidents.causes.by-type');
 
-    Route::get('incidents-export', [IncidentController::class, 'export'])->name('incidents.export');
+    Route::get('mes-incidents', [IncidentController::class, 'mine'])
+        ->middleware('permission:incidents.view')
+        ->name('incidents.mine');
+
+    Route::get('incidents/en-cours', [IncidentController::class, 'enCours'])
+        ->middleware('permission:incidents.view')
+        ->name('incidents.en-cours');
+
+    Route::get('incidents-export', [IncidentController::class, 'export'])
+        ->middleware('permission:incidents.view')
+        ->name('incidents.export');
+
     Route::resource('incidents', IncidentController::class);
 
     Route::get('reports', [ReportController::class, 'index'])

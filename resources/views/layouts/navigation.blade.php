@@ -273,9 +273,17 @@
         </a>
 
         @can('incidents.view')
-            <a class="ceet-nav-link {{ request()->routeIs('incidents.*') ? 'active' : '' }}" href="{{ route('incidents.index') }}">
+            <a class="ceet-nav-link {{ request()->routeIs('incidents.index', 'incidents.show', 'incidents.create', 'incidents.edit') ? 'active' : '' }}" href="{{ route('incidents.index') }}">
                 <svg class="ceet-nav-icon" viewBox="0 0 24 24" fill="none"><path d="M12 9V13M12 17H12.01M12 3L21 19H3L12 3Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
                 <span>Incidents</span>
+            </a>
+            <a class="ceet-nav-link {{ request()->routeIs('incidents.en-cours') ? 'active' : '' }}" href="{{ route('incidents.en-cours') }}">
+                <svg class="ceet-nav-icon" viewBox="0 0 24 24" fill="none"><path d="M12 7V12L15 15" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 21C16.9706 21 21 16.9706 21 12C21 7.02944 16.9706 3 12 3C7.02944 3 3 7.02944 3 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span>Incidents en cours</span>
+            </a>
+            <a class="ceet-nav-link {{ request()->routeIs('incidents.mine') ? 'active' : '' }}" href="{{ route('incidents.mine') }}">
+                <svg class="ceet-nav-icon" viewBox="0 0 24 24" fill="none"><path d="M12 12A4 4 0 1 0 12 4A4 4 0 0 0 12 12ZM5 20A7 7 0 0 1 19 20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span>Mes incidents</span>
             </a>
         @endcan
 
@@ -389,9 +397,17 @@
             </a>
 
             @can('incidents.view')
-                <a class="ceet-nav-link {{ request()->routeIs('incidents.*') ? 'active' : '' }}" href="{{ route('incidents.index') }}">
+                <a class="ceet-nav-link {{ request()->routeIs('incidents.index', 'incidents.show', 'incidents.create', 'incidents.edit') ? 'active' : '' }}" href="{{ route('incidents.index') }}">
                     <svg class="ceet-nav-icon" viewBox="0 0 24 24" fill="none"><path d="M12 9V13M12 17H12.01M12 3L21 19H3L12 3Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
                     <span>Incidents</span>
+                </a>
+                <a class="ceet-nav-link {{ request()->routeIs('incidents.en-cours') ? 'active' : '' }}" href="{{ route('incidents.en-cours') }}">
+                    <svg class="ceet-nav-icon" viewBox="0 0 24 24" fill="none"><path d="M12 7V12L15 15" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 21C16.9706 21 21 16.9706 21 12C21 7.02944 16.9706 3 12 3C7.02944 3 3 7.02944 3 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    <span>Incidents en cours</span>
+                </a>
+                <a class="ceet-nav-link {{ request()->routeIs('incidents.mine') ? 'active' : '' }}" href="{{ route('incidents.mine') }}">
+                    <svg class="ceet-nav-icon" viewBox="0 0 24 24" fill="none"><path d="M12 12A4 4 0 1 0 12 4A4 4 0 0 0 12 12ZM5 20A7 7 0 0 1 19 20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    <span>Mes incidents</span>
                 </a>
             @endcan
 
