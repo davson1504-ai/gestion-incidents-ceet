@@ -169,7 +169,7 @@ class DashboardController extends Controller
             ? $focusZones->implode(' et ')
             : 'les zones critiques';
 
-        return view('dashboard', [
+        $viewData = [
             'filters' => $filters,
             'kpis' => compact('total', 'openCount', 'closedCount', 'avgDuration'),
             'todayResolved' => $todayResolved,
@@ -185,7 +185,174 @@ class DashboardController extends Controller
             'weekDelta' => $weekDelta,
             'focusText' => $focusText,
             'lastCheckAt' => now()->format('H:i:s'),
-        ]);
+        ];
+
+        $user = auth()->user();
+
+        if ($user->hasRole('Opérateur')) {
+            return view('dashboard-operator', array_merge($viewData, $this->operatorData($user)));
+        }
+
+        if ($user->hasRole('Superviseur')) {
+            return view('dashboard-supervisor', array_merge($viewData, $this->supervisorData($user)));
+        }
+
+        // Administrateur ou fallback
+        return view('dashboard', $viewData);
+    }
+
+    private function operatorData(User $user): array
+    {
+        // Incidents assignés à cet opérateur non clôturés
+        $myOpenIncidents = Incident::query()
+            ->with(['departement', 'typeIncident', 'priorite', 'status'])
+            ->where(function ($query) use ($user) {
+                $query->where('operateur_id', $user->id)
+                    ->orWhere('responsable_id', $user->id);
+            })
+            ->join('statuses', 'statuses.id', '=', 'incidents.status_id')
+            ->where('statuses.is_final', false)
+            ->select('incidents.*')
+            ->leftJoin('priorites', 'priorites.id', '=', 'incidents.priorite_id')
+            ->orderByRaw('CASE WHEN priorites.niveau IS NULL THEN 999 ELSE priorites.niveau END ASC')
+            ->orderBy('incidents.date_debut')
+            ->limit(10)
+            ->get()
+            ->map(function ($incident) {
+                $incident->duree_en_attente = $incident->date_debut
+                    ? $incident->date_debut->diffInMinutes(now())
+                    : null;
+
+                return $incident;
+            });
+
+        // Compteurs personnels
+        $myTotalOpen = Incident::query()
+            ->where(function ($query) use ($user) {
+                $query->where('operateur_id', $user->id)
+                    ->orWhere('responsable_id', $user->id);
+            })
+            ->join('statuses', 'statuses.id', '=', 'incidents.status_id')
+            ->where('statuses.is_final', false)
+            ->count();
+
+        $myResolvedToday = Incident::query()
+            ->where('operateur_id', $user->id)
+            ->join('statuses', 'statuses.id', '=', 'incidents.status_id')
+            ->where('statuses.is_final', true)
+            ->whereDate('incidents.date_fin', now()->toDateString())
+            ->count();
+
+        $myTotalMonth = Incident::query()
+            ->where('operateur_id', $user->id)
+            ->whereMonth('date_debut', now()->month)
+            ->whereYear('date_debut', now()->year)
+            ->count();
+
+        // Dernières actions de cet opérateur
+        $myRecentActions = \App\Models\IncidentAction::query()
+            ->with(['incident'])
+            ->where('user_id', $user->id)
+            ->latest('action_date')
+            ->limit(5)
+            ->get();
+
+        return compact(
+            'myOpenIncidents',
+            'myTotalOpen',
+            'myResolvedToday',
+            'myTotalMonth',
+            'myRecentActions'
+        );
+    }
+
+    private function supervisorData(User $user): array
+    {
+        // Incidents supervisés par lui ou déclarés par son équipe
+        $teamOpenIncidents = Incident::query()
+            ->with(['departement', 'typeIncident', 'priorite', 'status', 'operateur'])
+            ->where(function ($query) use ($user) {
+                $query->where('superviseur_id', $user->id)
+                    ->orWhere('responsable_id', $user->id);
+            })
+            ->join('statuses', 'statuses.id', '=', 'incidents.status_id')
+            ->where('statuses.is_final', false)
+            ->select('incidents.*')
+            ->leftJoin('priorites', 'priorites.id', '=', 'incidents.priorite_id')
+            ->orderByRaw('CASE WHEN priorites.niveau IS NULL THEN 999 ELSE priorites.niveau END ASC')
+            ->orderBy('incidents.date_debut')
+            ->limit(15)
+            ->get()
+            ->map(function ($incident) {
+                $incident->duree_en_attente = $incident->date_debut
+                    ? $incident->date_debut->diffInMinutes(now())
+                    : null;
+
+                return $incident;
+            });
+
+        // Incidents critiques en attente de validation superviseur
+        $pendingValidation = Incident::query()
+            ->with(['departement', 'priorite', 'status', 'operateur'])
+            ->where('superviseur_id', $user->id)
+            ->join('statuses', 'statuses.id', '=', 'incidents.status_id')
+            ->where('statuses.is_final', false)
+            ->join('priorites', 'priorites.id', '=', 'incidents.priorite_id')
+            ->where('priorites.niveau', 1)
+            ->select('incidents.*')
+            ->orderBy('incidents.date_debut')
+            ->limit(5)
+            ->get();
+
+        // Taux de résolution de son équipe ce mois
+        $teamTotal = Incident::query()
+            ->where('superviseur_id', $user->id)
+            ->whereMonth('date_debut', now()->month)
+            ->whereYear('date_debut', now()->year)
+            ->count();
+
+        $teamResolved = Incident::query()
+            ->where('superviseur_id', $user->id)
+            ->whereMonth('date_debut', now()->month)
+            ->whereYear('date_debut', now()->year)
+            ->join('statuses', 'statuses.id', '=', 'incidents.status_id')
+            ->where('statuses.is_final', true)
+            ->count();
+
+        $teamResolutionRate = $teamTotal > 0
+            ? round(($teamResolved / $teamTotal) * 100, 1)
+            : 0.0;
+
+        $teamOpenCount = Incident::query()
+            ->where('superviseur_id', $user->id)
+            ->join('statuses', 'statuses.id', '=', 'incidents.status_id')
+            ->where('statuses.is_final', false)
+            ->count();
+
+        // Opérateurs actifs sous supervision
+        $teamOperators = User::query()
+            ->with('departement')
+            ->where('is_active', true)
+            ->whereHas('roles', fn ($query) => $query->where('name', 'like', 'Op%rateur%'))
+            ->withCount([
+                'incidentsDeclares as open_count' => function ($query) {
+                    $query->join('statuses', 'statuses.id', '=', 'incidents.status_id')
+                        ->where('statuses.is_final', false);
+                },
+            ])
+            ->orderByDesc('open_count')
+            ->limit(8)
+            ->get();
+
+        return compact(
+            'teamOpenIncidents',
+            'pendingValidation',
+            'teamTotal',
+            'teamResolved',
+            'teamResolutionRate',
+            'teamOpenCount',
+            'teamOperators'
+        );
     }
 
     private function filteredIncidents(array $filters): Builder
