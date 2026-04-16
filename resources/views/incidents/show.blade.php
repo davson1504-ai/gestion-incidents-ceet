@@ -1,4 +1,117 @@
 <x-app-layout>
+    <style>
+        /* ========================================
+           VARIABLES & BASE
+           ======================================== */
+        :root {
+            --ceet-red: #ef2433;
+            --ceet-red-dark: #ce1220;
+            --ceet-gold: #f59e0b;
+            --ceet-blue-night: #0f172a;
+            --ceet-blue-deep: #1e293b;
+            --ceet-gray-light: #f8fafc;
+            --ceet-border-light: #e2e8f0;
+            --ceet-text-muted: #64748b;
+            --ceet-success: #22c55e;
+        }
+
+        /* ========================================
+           ANIMATIONS
+           ======================================== */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse-light {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.85;
+            }
+        }
+
+        /* ========================================
+           CARDS - Modern Design
+           ======================================== */
+        .card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.88));
+            border: 1px solid rgba(226, 232, 240, 0.6);
+            border-radius: 16px;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 6px rgba(15, 23, 42, 0.07);
+            animation: fadeInUp 0.6s ease both;
+        }
+
+        .card:hover {
+            box-shadow: 0 12px 24px rgba(15, 23, 42, 0.12);
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.5), rgba(248, 250, 252, 0.3));
+            border-bottom: 1px solid rgba(226, 232, 240, 0.4);
+        }
+
+        /* ========================================
+           BUTTONS
+           ======================================== */
+        .btn-outline-primary {
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-outline-primary:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-outline-secondary {
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-outline-secondary:hover {
+            transform: translateY(-2px);
+        }
+
+        /* ========================================
+           DESCRIPTION LIST
+           ======================================== */
+        dl.row dt {
+            animation: slideInDown 0.4s ease;
+        }
+
+        dl.row dd {
+            animation: fadeInUp 0.4s ease;
+        }
+
+        dl.row dt:nth-child(1) { animation-delay: 0.1s; }
+        dl.row dd:nth-child(2) { animation-delay: 0.15s; }
+        dl.row dt:nth-child(3) { animation-delay: 0.2s; }
+        dl.row dd:nth-child(4) { animation-delay: 0.25s; }
+        dl.row dt:nth-child(5) { animation-delay: 0.3s; }
+        dl.row dd:nth-child(6) { animation-delay: 0.35s; }
+    </style>
     <x-slot name="header">
         <div class="w-100 d-flex justify-content-between align-items-center flex-wrap gap-2">
             <div>

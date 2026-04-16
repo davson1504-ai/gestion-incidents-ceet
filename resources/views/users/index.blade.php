@@ -10,6 +10,170 @@
 @endphp
 
 <x-app-layout>
+    <style>
+        /* ========================================
+           VARIABLES & BASE
+           ======================================== */
+        :root {
+            --ceet-red: #ef2433;
+            --ceet-red-dark: #ce1220;
+            --ceet-gold: #f59e0b;
+            --ceet-blue-night: #0f172a;
+            --ceet-blue-deep: #1e293b;
+            --ceet-gray-light: #f8fafc;
+            --ceet-border-light: #e2e8f0;
+            --ceet-text-muted: #64748b;
+            --ceet-success: #22c55e;
+        }
+
+        /* ========================================
+           ANIMATIONS
+           ======================================== */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse-light {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.85;
+            }
+        }
+
+        /* ========================================
+           CARDS KPI - Modern Design
+           ======================================== */
+        .row.g-3.mb-4:first-of-type .card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.88));
+            border: 1px solid rgba(226, 232, 240, 0.6);
+            border-radius: 16px;
+            padding: 24px;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 6px rgba(15, 23, 42, 0.07);
+            animation: fadeInUp 0.6s ease both;
+        }
+
+        .row.g-3.mb-4:first-of-type .col-12:nth-child(1) .card {
+            animation-delay: 0.1s;
+            border-left: 4px solid var(--ceet-red);
+        }
+
+        .row.g-3.mb-4:first-of-type .col-12:nth-child(2) .card {
+            animation-delay: 0.2s;
+            border-left: 4px solid var(--ceet-gold);
+        }
+
+        .row.g-3.mb-4:first-of-type .card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 16px 32px rgba(15, 23, 42, 0.15);
+            border-color: rgba(226, 232, 240, 0.8);
+        }
+
+        /* ========================================
+           GENERAL CARDS
+           ======================================== */
+        .card {
+            border-radius: 16px;
+            border: 1px solid var(--ceet-border-light);
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            animation: fadeInUp 0.6s ease both;
+        }
+
+        .card:hover {
+            box-shadow: 0 12px 24px rgba(15, 23, 42, 0.12);
+        }
+
+        /* ========================================
+           FORMS & INPUTS
+           ======================================== */
+        .form-control, .form-select {
+            border-radius: 10px;
+            border: 1px solid var(--ceet-border-light);
+            transition: all 0.2s ease;
+            background: linear-gradient(to right, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.95));
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--ceet-red);
+            box-shadow: 0 0 0 3px rgba(239, 36, 51, 0.1);
+        }
+
+        /* ========================================
+           TABLE ANIMATION
+           ======================================== */
+        table tbody tr {
+            animation: fadeInUp 0.6s ease backwards;
+        }
+
+        table tbody tr:nth-child(1) { animation-delay: 0.1s; }
+        table tbody tr:nth-child(2) { animation-delay: 0.15s; }
+        table tbody tr:nth-child(3) { animation-delay: 0.2s; }
+        table tbody tr:nth-child(4) { animation-delay: 0.25s; }
+        table tbody tr:nth-child(5) { animation-delay: 0.3s; }
+        table tbody tr:nth-child(n+6) { animation-delay: 0.35s; }
+
+        table tbody tr:hover {
+            background-color: rgba(239, 36, 51, 0.03);
+            transition: all 0.2s ease;
+        }
+
+        /* ========================================
+           BUTTONS
+           ======================================== */
+        .btn-danger {
+            background: linear-gradient(135deg, var(--ceet-red), var(--ceet-red-dark));
+            border: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(239, 36, 51, 0.3);
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(239, 36, 51, 0.4);
+        }
+
+        .btn-outline-secondary {
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-outline-secondary:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-outline-danger, .btn-sm {
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-outline-danger:hover, .btn-sm:hover {
+            transform: translateY(-2px);
+        }
+    </style>
     <x-slot name="header">
         <div class="d-flex w-100 flex-column flex-lg-row justify-content-between align-items-lg-start gap-3">
             <div>

@@ -18,7 +18,7 @@ class ReportController extends Controller
 {
     public function __construct(private IncidentReportService $service)
     {
-        $this->middleware(['auth', 'verified', 'permission:incidents.view']);
+        $this->middleware(['auth', 'verified', 'permission:reporting.view']);
     }
 
     public function index(Request $request): View

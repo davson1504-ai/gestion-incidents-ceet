@@ -79,5 +79,22 @@
                 {{ $slot }}
             </div>
         </main>
+
+        <script>
+            // Horloge digitale du topbar
+            function updateClock() {
+                const timeElement = document.getElementById('topbar-time');
+                if (timeElement) {
+                    const now = new Date();
+                    const hours = String(now.getHours()).padStart(2, '0');
+                    const minutes = String(now.getMinutes()).padStart(2, '0');
+                    timeElement.textContent = `${hours}:${minutes}`;
+                }
+            }
+
+            // Mise à jour initiale et puis chaque 10 secondes
+            updateClock();
+            setInterval(updateClock, 10000);
+        </script>
     </body>
 </html>

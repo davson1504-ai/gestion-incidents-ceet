@@ -41,13 +41,13 @@ Route::middleware(['auth', 'verified'])->group(function (): void {
     Route::resource('incidents', IncidentController::class);
 
     Route::get('reports', [ReportController::class, 'index'])
-        ->middleware('permission:incidents.view')
+        ->middleware('permission:reporting.view')
         ->name('reports.index');
     Route::get('reports/daily', [ReportController::class, 'exportDailyReport'])
-        ->middleware('permission:incidents.view')
+        ->middleware('permission:reporting.view')
         ->name('reports.daily');
     Route::get('reports/monthly', [ReportController::class, 'exportMonthlyReport'])
-        ->middleware('permission:incidents.view')
+        ->middleware('permission:reporting.view')
         ->name('reports.monthly');
 
     Route::middleware('role:Administrateur|Superviseur')->group(function (): void {
@@ -55,7 +55,7 @@ Route::middleware(['auth', 'verified'])->group(function (): void {
         Route::get('historique/export', [HistoriqueController::class, 'export'])->name('historique.export');
     });
 
-    Route::prefix('catalogues')->name('catalogues.')->group(function (): void {
+    Route::prefix('catalogues')->name('catalogues.')->middleware('permission:catalogues.view')->group(function (): void {
         Route::resource('departements', DepartementController::class)->except('show');
         Route::resource('types', TypeIncidentController::class)->except('show');
         Route::resource('causes', CauseController::class)->except('show');
