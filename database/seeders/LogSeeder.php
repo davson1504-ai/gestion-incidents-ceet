@@ -32,7 +32,7 @@ class LogSeeder extends Seeder
 
         for ($i = 1; $i <= 120; $i++) {
             $event = Arr::random($events);
-            $isIncidentEvent = $event['target_type'] === 'Incident' && !empty($incidentIds);
+            $isIncidentEvent = $event['target_type'] === 'Incident' && ! empty($incidentIds);
             $incidentId = $isIncidentEvent ? Arr::random($incidentIds) : null;
             $targetId = $isIncidentEvent ? $incidentId : Arr::random($userIds);
             $createdAt = now()->subDays(random_int(0, 30))->subMinutes(random_int(0, 1440));
@@ -44,7 +44,7 @@ class LogSeeder extends Seeder
                 'target_type' => $event['target_type'],
                 'target_id' => $targetId,
                 'incident_id' => $incidentId,
-                'ip_address' => '192.168.' . random_int(0, 10) . '.' . random_int(1, 254),
+                'ip_address' => '192.168.'.random_int(0, 10).'.'.random_int(1, 254),
                 'user_agent' => 'SeederBot/1.0',
                 'details' => [
                     'source' => 'database-seeder',
@@ -61,4 +61,3 @@ class LogSeeder extends Seeder
         $this->command?->info('120 logs de demonstration ont ete crees.');
     }
 }
-

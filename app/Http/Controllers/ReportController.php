@@ -127,7 +127,7 @@ class ReportController extends Controller
         }
 
         $typeDonutGradient = count($segments) > 0
-            ? 'conic-gradient(' . implode(', ', $segments) . ')'
+            ? 'conic-gradient('.implode(', ', $segments).')'
             : 'conic-gradient(#e5e7eb 0% 100%)';
 
         $causeRows = collect($currentData['byCause'])

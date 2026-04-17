@@ -35,7 +35,7 @@ class Log extends Model
     ];
 
     protected $casts = [
-        'details'    => 'array',
+        'details' => 'array',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];

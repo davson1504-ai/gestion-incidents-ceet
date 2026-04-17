@@ -67,7 +67,7 @@ class PrioriteController extends Controller
     {
         $uniqueRule = 'unique:priorites,code';
         if ($ignoreId !== null) {
-            $uniqueRule .= ',' . $ignoreId;
+            $uniqueRule .= ','.$ignoreId;
         }
 
         return $request->validate([
@@ -80,4 +80,3 @@ class PrioriteController extends Controller
         ]);
     }
 }
-

@@ -207,7 +207,7 @@
     <form id="generalSettingsForm" method="POST" action="{{ route('profile.update') }}">
         @csrf
         @method('PATCH')
-        <input type="hidden" name="email" value="{{ old('email', Str::lower($user->email)) }}">
+        <input type="hidden" name="email" value="{{ old('email', $user->email) }}">
 
         <div class="row g-4 mb-4">
             <div class="col-12 col-xl-3">
@@ -226,6 +226,10 @@
                         <p class="text-muted mb-3">Informations affichées sur les rapports et l'interface utilisateur.</p>
 
                         <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Email (lecture seule)</label>
+                                <input type="email" class="form-control" value="{{ $user->email }}" readonly disabled>
+                            </div>
                             <div class="col-md-6">
                                 <label class="form-label" for="name">Nom de l'instance</label>
                                 <input id="name" name="name" type="text" class="form-control @error('name') is-invalid @enderror" value="{{ old('name', $user->name) }}" required>

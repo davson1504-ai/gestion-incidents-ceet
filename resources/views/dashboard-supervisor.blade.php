@@ -247,7 +247,9 @@
             </p>
         </div>
         <div class="d-flex gap-2">
-            <a href="{{ route('reports.index') }}" class="btn btn-outline-secondary">Rapports</a>
+            @can('reporting.view')
+                <a href="{{ route('reports.index') }}" class="btn btn-outline-secondary">Rapports</a>
+            @endcan
             @can('incidents.create')
                 <a href="{{ route('incidents.create') }}" class="btn btn-danger">+ Incident</a>
             @endcan
@@ -450,9 +452,11 @@
                     </div>
                 </div>
                 <div class="card-footer bg-white">
-                    <a href="{{ route('reports.index') }}" class="btn btn-outline-danger btn-sm w-100">
-                        Voir les rapports complets
-                    </a>
+                    @can('reporting.view')
+                        <a href="{{ route('reports.index') }}" class="btn btn-outline-danger btn-sm w-100">
+                            Voir les rapports complets
+                        </a>
+                    @endcan
                 </div>
             </div>
 

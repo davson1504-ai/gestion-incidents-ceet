@@ -11,8 +11,8 @@ use Tests\TestCase;
 
 class IncidentReportServiceTest extends TestCase
 {
-    use RefreshDatabase;
     use BuildsIncidentContext;
+    use RefreshDatabase;
 
     public function test_daily_data_aggregates_only_the_selected_day(): void
     {
@@ -76,4 +76,3 @@ class IncidentReportServiceTest extends TestCase
         $this->assertSame('INC-APRIL', $data['incidents']->first()->code_incident);
     }
 }
-

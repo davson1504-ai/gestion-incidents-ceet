@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Incident;
+use App\Models\IncidentAction;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
@@ -189,7 +190,7 @@ class DashboardController extends Controller
 
         $user = auth()->user();
 
-        if ($user->hasRole('Opérateur')) {
+        if ($user->hasRole('Opérateur') || $user->hasRole('Operateur')) {
             return view('dashboard-operator', array_merge($viewData, $this->operatorData($user)));
         }
 
@@ -250,7 +251,7 @@ class DashboardController extends Controller
             ->count();
 
         // Dernières actions de cet opérateur
-        $myRecentActions = \App\Models\IncidentAction::query()
+        $myRecentActions = IncidentAction::query()
             ->with(['incident'])
             ->where('user_id', $user->id)
             ->latest('action_date')

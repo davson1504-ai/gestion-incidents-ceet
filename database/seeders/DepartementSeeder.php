@@ -224,6 +224,6 @@ class DepartementSeeder extends Seeder
             return $nom;
         }
 
-        return $transformateur ? 'Arrivée ' . $transformateur : null;
+        return $transformateur ? 'Arrivée '.$transformateur : null;
     }
 }

@@ -10,12 +10,12 @@ return new class extends Migration
     {
         Schema::create('type_incidents', function (Blueprint $table) {
             $table->id();
-            
+
             $table->string('code', 50)->nullable()->unique();     // ex: DISJ, MT, VAND, SURC
             $table->string('libelle', 150);                       // ex: Disjonction franche, Manque de tension, Vandalisme
             $table->text('description')->nullable();
             $table->boolean('is_active')->default(true);
-            
+
             $table->timestamps();
 
             // Index pour optimiser les recherches

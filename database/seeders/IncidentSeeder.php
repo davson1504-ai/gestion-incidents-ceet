@@ -125,4 +125,3 @@ class IncidentSeeder extends Seeder
         $this->command?->info('40 incidents de demonstration ont ete crees/mis a jour.');
     }
 }
-

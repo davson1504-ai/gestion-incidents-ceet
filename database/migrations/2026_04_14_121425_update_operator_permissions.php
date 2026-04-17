@@ -18,17 +18,24 @@ return new class extends Migration
             'guard_name' => 'web',
         ]);
 
-        // Mettre à jour le rôle Opérateur : retirer catalogues.view et reporting
-        $operateur = Role::where('name', 'Opérateur')->first();
+        // Mettre à jour le rôle Opérateur : ajouter reporting.view
+        $operateur = Role::where('name', 'LIKE', 'Op%rateur')
+            ->orWhere('name', 'Opérateur')
+            ->orWhere('name', 'Operateur')
+            ->first();
         if ($operateur) {
             $operateur->syncPermissions([
                 'incidents.view',
                 'incidents.create',
+                'catalogues.view',
+                'reporting.view',
             ]);
         }
 
         // Mettre à jour le rôle Superviseur : ajouter reporting.view
-        $superviseur = Role::where('name', 'Superviseur')->first();
+        $superviseur = Role::where('name', 'LIKE', 'Supervis%')
+            ->orWhere('name', 'Superviseur')
+            ->first();
         if ($superviseur) {
             $superviseur->syncPermissions([
                 'incidents.view',
@@ -42,7 +49,9 @@ return new class extends Migration
         }
 
         // Mettre à jour le rôle Administrateur : ajouter reporting.view
-        $admin = Role::where('name', 'Administrateur')->first();
+        $admin = Role::where('name', 'LIKE', 'Admin%')
+            ->orWhere('name', 'Administrateur')
+            ->first();
         if ($admin) {
             $admin->syncPermissions([
                 'incidents.view',
@@ -65,8 +74,11 @@ return new class extends Migration
     {
         app()[PermissionRegistrar::class]->forgetCachedPermissions();
 
-        // Remettre les permissions originales à l'Opérateur
-        $operateur = Role::where('name', 'Opérateur')->first();
+        // Remettre les permissions originales à l'Opérateur (rollback)
+        $operateur = Role::where('name', 'LIKE', 'Op%rateur')
+            ->orWhere('name', 'Opérateur')
+            ->orWhere('name', 'Operateur')
+            ->first();
         if ($operateur) {
             $operateur->syncPermissions([
                 'incidents.view',
@@ -74,11 +86,6 @@ return new class extends Migration
                 'catalogues.view',
             ]);
         }
-
-        // Supprimer la permission reporting.view
-        Permission::where('name', 'reporting.view')
-            ->where('guard_name', 'web')
-            ->delete();
 
         app()[PermissionRegistrar::class]->forgetCachedPermissions();
     }

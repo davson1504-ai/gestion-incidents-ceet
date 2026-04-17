@@ -19,36 +19,34 @@ class HistoriqueController extends Controller
     public function index(Request $request): View
     {
         $filters = array_merge([
-            'user_id'     => null,
+            'user_id' => null,
             'action_type' => null,
-            'date_from'   => null,
-            'date_to'     => null,
-            'q'           => null,
+            'date_from' => null,
+            'date_to' => null,
+            'q' => null,
         ], $request->only(['user_id', 'action_type', 'date_from', 'date_to', 'q']));
 
         $actions = IncidentAction::with(['user.roles', 'incident'])
-            ->when($filters['user_id'],     fn ($q, $v) => $q->where('user_id', $v))
+            ->when($filters['user_id'], fn ($q, $v) => $q->where('user_id', $v))
             ->when($filters['action_type'], fn ($q, $v) => $q->where('action_type', $v))
-            ->when($filters['date_from'],   fn ($q, $v) => $q->whereDate('action_date', '>=', $v))
-            ->when($filters['date_to'],     fn ($q, $v) => $q->whereDate('action_date', '<=', $v))
+            ->when($filters['date_from'], fn ($q, $v) => $q->whereDate('action_date', '>=', $v))
+            ->when($filters['date_to'], fn ($q, $v) => $q->whereDate('action_date', '<=', $v))
             ->when($filters['q'], function ($q, $v) {
                 $q->where(function ($sq) use ($v) {
                     $sq->where('description', 'like', "%{$v}%")
-                       ->orWhereHas('incident', fn ($i) =>
-                           $i->where('code_incident', 'like', "%{$v}%")
-                             ->orWhere('titre', 'like', "%{$v}%")
-                       )
-                       ->orWhereHas('user', fn ($u) =>
-                           $u->where('name', 'like', "%{$v}%")
-                             ->orWhere('email', 'like', "%{$v}%")
-                       );
+                        ->orWhereHas('incident', fn ($i) => $i->where('code_incident', 'like', "%{$v}%")
+                            ->orWhere('titre', 'like', "%{$v}%")
+                        )
+                        ->orWhereHas('user', fn ($u) => $u->where('name', 'like', "%{$v}%")
+                            ->orWhere('email', 'like', "%{$v}%")
+                        );
                 });
             })
             ->latest('action_date')
             ->paginate(25)
             ->withQueryString();
 
-        $users       = User::orderBy('name')->get();
+        $users = User::orderBy('name')->get();
         $actionTypes = IncidentAction::distinct()->pluck('action_type')->sort()->values();
 
         return view('historique.index', compact('actions', 'filters', 'users', 'actionTypes'));
@@ -57,26 +55,25 @@ class HistoriqueController extends Controller
     public function export(Request $request)
     {
         $filters = $request->only(['user_id', 'action_type', 'date_from', 'date_to', 'q']);
-        $format  = $request->input('format', 'pdf');
+        $format = $request->input('format', 'pdf');
 
         $actions = IncidentAction::with(['user', 'incident'])
-            ->when($filters['user_id']     ?? null, fn ($q, $v) => $q->where('user_id', $v))
+            ->when($filters['user_id'] ?? null, fn ($q, $v) => $q->where('user_id', $v))
             ->when($filters['action_type'] ?? null, fn ($q, $v) => $q->where('action_type', $v))
-            ->when($filters['date_from']   ?? null, fn ($q, $v) => $q->whereDate('action_date', '>=', $v))
-            ->when($filters['date_to']     ?? null, fn ($q, $v) => $q->whereDate('action_date', '<=', $v))
-            ->when($filters['q']           ?? null, function ($q, $v) {
+            ->when($filters['date_from'] ?? null, fn ($q, $v) => $q->whereDate('action_date', '>=', $v))
+            ->when($filters['date_to'] ?? null, fn ($q, $v) => $q->whereDate('action_date', '<=', $v))
+            ->when($filters['q'] ?? null, function ($q, $v) {
                 $q->where(function ($sq) use ($v) {
                     $sq->where('description', 'like', "%{$v}%")
-                       ->orWhereHas('incident', fn ($i) =>
-                           $i->where('code_incident', 'like', "%{$v}%")
-                             ->orWhere('titre', 'like', "%{$v}%")
-                       );
+                        ->orWhereHas('incident', fn ($i) => $i->where('code_incident', 'like', "%{$v}%")
+                            ->orWhere('titre', 'like', "%{$v}%")
+                        );
                 });
             })
             ->latest('action_date')
             ->get();
 
-        $fileName = 'historique-' . now()->format('Y-m-d');
+        $fileName = 'historique-'.now()->format('Y-m-d');
 
         if ($format === 'excel') {
             // Export CSV simple (pas besoin de maatwebsite pour l'historique)
@@ -103,7 +100,7 @@ class HistoriqueController extends Controller
 
         // PDF
         $pdf = Pdf::loadView('historique.export-pdf', compact('actions', 'filters'))
-                  ->setPaper('a4', 'landscape');
+            ->setPaper('a4', 'landscape');
 
         return $pdf->download("{$fileName}.pdf");
     }

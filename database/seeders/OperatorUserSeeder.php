@@ -26,14 +26,14 @@ class OperatorUserSeeder extends Seeder
             $user = User::updateOrCreate(
                 ['email' => $row['email']],
                 [
-                    'name'           => $row['name'],
-                    'password'       => Hash::make('password'),
+                    'name' => $row['name'],
+                    'password' => Hash::make('password'),
                     // ✅ CORRECTION #5: Numéros de téléphone uniques et valides (8 chiffres Togo)
-                    'telephone'      => $row['tel'],
+                    'telephone' => $row['tel'],
                     'departement_id' => ! empty($departementIds)
                         ? $departementIds[$index % count($departementIds)]
                         : null,
-                    'is_active'      => true,
+                    'is_active' => true,
                 ]
             );
 

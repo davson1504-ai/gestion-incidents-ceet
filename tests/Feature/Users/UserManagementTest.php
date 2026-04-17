@@ -10,8 +10,8 @@ use Tests\TestCase;
 
 class UserManagementTest extends TestCase
 {
-    use RefreshDatabase;
     use BuildsIncidentContext;
+    use RefreshDatabase;
 
     public function test_supervisor_can_create_user_and_assign_role(): void
     {
@@ -130,4 +130,3 @@ class UserManagementTest extends TestCase
         $response->assertDontSee('Gamma Supervisor');
     }
 }
-

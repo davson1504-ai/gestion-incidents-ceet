@@ -99,7 +99,7 @@ class IncidentController extends Controller
         if ($format === 'excel') {
             return Excel::download(
                 new IncidentsExport($filters),
-                'incidents-' . now()->format('Y-m-d') . '.xlsx'
+                'incidents-'.now()->format('Y-m-d').'.xlsx'
             );
         }
 
@@ -110,7 +110,7 @@ class IncidentController extends Controller
 
         $callback = function () use ($rows): void {
             $output = fopen('php://output', 'w');
-            fprintf($output, chr(0xEF) . chr(0xBB) . chr(0xBF));
+            fprintf($output, chr(0xEF).chr(0xBB).chr(0xBF));
 
             fputcsv($output, [
                 'Code',
@@ -145,7 +145,7 @@ class IncidentController extends Controller
             fclose($output);
         };
 
-        return response()->streamDownload($callback, 'incidents-export-' . now()->format('Y-m-d') . '.csv', [
+        return response()->streamDownload($callback, 'incidents-export-'.now()->format('Y-m-d').'.csv', [
             'Content-Type' => 'text/csv; charset=UTF-8',
         ]);
     }
@@ -442,14 +442,14 @@ class IncidentController extends Controller
         $parts = [];
 
         if ($days > 0) {
-            $parts[] = $days . 'j';
+            $parts[] = $days.'j';
         }
 
         if ($hours > 0 || $days > 0) {
-            $parts[] = $hours . 'h';
+            $parts[] = $hours.'h';
         }
 
-        $parts[] = $remainingMinutes . 'min';
+        $parts[] = $remainingMinutes.'min';
 
         return implode(' ', $parts);
     }

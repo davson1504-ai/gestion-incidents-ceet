@@ -24,7 +24,7 @@ class DepartementController extends Controller
 
         $query = Departement::query()
             ->when($filters['q'] !== '', function ($q) use ($filters) {
-                $term = '%' . $filters['q'] . '%';
+                $term = '%'.$filters['q'].'%';
 
                 $q->where(function ($inner) use ($term) {
                     $inner->where('code', 'like', $term)
@@ -111,7 +111,7 @@ class DepartementController extends Controller
     public function update(Request $request, Departement $departement): RedirectResponse
     {
         $data = $request->validate([
-            'code' => ['required', 'string', 'max:50', 'unique:departements,code,' . $departement->id],
+            'code' => ['required', 'string', 'max:50', 'unique:departements,code,'.$departement->id],
             'nom' => ['required', 'string', 'max:150'],
             'zone' => ['nullable', 'string', 'max:150'],
             'direction_exploitation' => ['nullable', 'string', 'max:150'],

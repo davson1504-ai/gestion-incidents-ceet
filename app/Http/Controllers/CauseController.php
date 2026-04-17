@@ -56,7 +56,7 @@ class CauseController extends Controller
     public function update(Request $request, Cause $cause): RedirectResponse
     {
         $data = $request->validate([
-            'code' => ['required', 'string', 'max:30', 'unique:causes,code,' . $cause->id],
+            'code' => ['required', 'string', 'max:30', 'unique:causes,code,'.$cause->id],
             'libelle' => ['required', 'string', 'max:150'],
             'description' => ['nullable', 'string'],
             'type_incident_id' => ['required', 'exists:type_incidents,id'],
@@ -86,4 +86,3 @@ class CauseController extends Controller
         return response()->json($causes);
     }
 }
-

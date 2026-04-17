@@ -15,8 +15,8 @@ use Tests\TestCase;
 
 class IncidentWorkflowTest extends TestCase
 {
-    use RefreshDatabase;
     use BuildsIncidentContext;
+    use RefreshDatabase;
 
     public function test_operator_can_create_incident_and_duration_is_calculated_when_status_is_final(): void
     {

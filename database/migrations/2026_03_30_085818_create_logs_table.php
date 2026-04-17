@@ -10,11 +10,11 @@ return new class extends Migration
     {
         Schema::create('logs', function (Blueprint $table) {
             $table->id();
-            
+
             $table->foreignId('user_id')
-                  ->nullable()
-                  ->constrained('users')
-                  ->onDelete('set null');           // On garde le log même si l'utilisateur est supprimé
+                ->nullable()
+                ->constrained('users')
+                ->onDelete('set null');           // On garde le log même si l'utilisateur est supprimé
 
             $table->string('action', 150);           // ex: login, create_incident, update_incident, cloture_incident, export_report
             $table->string('module', 100);           // ex: auth, incidents, catalogues, reporting, users
@@ -23,15 +23,15 @@ return new class extends Migration
 
             $table->ipAddress('ip_address')->nullable();
             $table->text('user_agent')->nullable();
-            
+
             // Détails supplémentaires (utile pour le débogage et traçabilité fine)
             $table->json('details')->nullable();
 
             // Relation optionnelle directe avec un incident
             $table->foreignId('incident_id')
-                  ->nullable()
-                  ->constrained('incidents')
-                  ->onDelete('set null');
+                ->nullable()
+                ->constrained('incidents')
+                ->onDelete('set null');
 
             $table->timestamp('created_at')->useCurrent();
 

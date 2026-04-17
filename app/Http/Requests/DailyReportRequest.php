@@ -14,7 +14,7 @@ class DailyReportRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'date'   => ['nullable', 'date'],
+            'date' => ['nullable', 'date'],
             'format' => ['nullable', 'in:pdf,excel'],
         ];
     }

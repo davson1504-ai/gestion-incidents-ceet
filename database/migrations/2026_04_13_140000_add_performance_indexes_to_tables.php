@@ -2,7 +2,6 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -59,12 +58,6 @@ return new class extends Migration
 
     private function hasIndex(string $table, string $index): bool
     {
-        try {
-            $indexes = DB::select("SHOW INDEX FROM `{$table}` WHERE Key_name = ?", [$index]);
-
-            return count($indexes) > 0;
-        } catch (\Throwable) {
-            return false;
-        }
+        return Schema::hasIndex($table, $index);
     }
 };

@@ -10,14 +10,14 @@ return new class extends Migration
     {
         Schema::create('incident_actions', function (Blueprint $table) {
             $table->id();
-            
+
             $table->foreignId('incident_id')
-                  ->constrained('incidents')
-                  ->onDelete('cascade');
+                ->constrained('incidents')
+                ->onDelete('cascade');
 
             $table->foreignId('user_id')
-                  ->constrained('users')
-                  ->onDelete('cascade');           // L'utilisateur qui a effectué l'action
+                ->constrained('users')
+                ->onDelete('cascade');           // L'utilisateur qui a effectué l'action
 
             // Type d'action (pour filtrage et historique clair)
             $table->string('action_type', 100);     // ex: creation, update, assignation, resolution, cloture, commentaire

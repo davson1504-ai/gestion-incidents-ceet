@@ -10,18 +10,18 @@ return new class extends Migration
     {
         Schema::create('causes', function (Blueprint $table) {
             $table->id();
-            
+
             $table->string('code', 50)->nullable()->unique();           // ex: SURC, VAND, DEL, INTEMP
             $table->string('libelle', 150);                             // ex: Surcharge, Vandalisme, Délestage, Intempéries
             $table->text('description')->nullable();
             $table->boolean('is_active')->default(true);
-            
+
             // Relation avec le type d'incident
             $table->foreignId('type_incident_id')
-                  ->nullable()
-                  ->constrained('type_incidents')
-                  ->onDelete('set null');
-            
+                ->nullable()
+                ->constrained('type_incidents')
+                ->onDelete('set null');
+
             $table->timestamps();
 
             // Index pour optimiser les recherches

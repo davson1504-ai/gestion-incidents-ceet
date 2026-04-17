@@ -10,7 +10,7 @@ class IncidentReportService
     public function dailyData(Carbon $date, array $filters = []): array
     {
         $start = $date->copy()->startOfDay();
-        $end   = $date->copy()->endOfDay();
+        $end = $date->copy()->endOfDay();
 
         return $this->buildData($start, $end, 'day', $filters);
     }
@@ -18,7 +18,7 @@ class IncidentReportService
     public function monthlyData(Carbon $month, array $filters = []): array
     {
         $start = $month->copy()->startOfMonth();
-        $end   = $month->copy()->endOfMonth();
+        $end = $month->copy()->endOfMonth();
 
         return $this->buildData($start, $end, 'month', $filters);
     }
@@ -36,7 +36,7 @@ class IncidentReportService
 
         $incidents = $base->get();
 
-        $total       = $incidents->count();
+        $total = $incidents->count();
         $avgDuration = $incidents->whereNotNull('duree_minutes')->avg('duree_minutes');
 
         $byStatus = $incidents->groupBy('status_id')->map(fn ($g) => [

@@ -13,8 +13,8 @@ use Tests\TestCase;
 
 class CataloguesManagementTest extends TestCase
 {
-    use RefreshDatabase;
     use BuildsIncidentContext;
+    use RefreshDatabase;
 
     public function test_operator_can_view_catalogues_but_cannot_manage_them(): void
     {

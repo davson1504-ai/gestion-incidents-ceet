@@ -4,14 +4,18 @@ namespace App\Services;
 
 use App\Models\Incident;
 use App\Models\IncidentAction;
-use App\Models\Log;
+use App\Models\Log as IncidentLog;
 use Illuminate\Support\Str;
 
 class IncidentService
 {
     public function generateCode(): string
     {
-        return 'INC-' . now()->format('Ymd') . '-' . Str::upper(Str::random(5));
+        do {
+            $code = 'INC-'.now()->format('Ymd').'-'.Str::upper(Str::random(5));
+        } while (Incident::where('code_incident', $code)->exists());
+
+        return $code;
     }
 
     public function syncDurationOnClosure(Incident $incident): void
@@ -52,7 +56,7 @@ class IncidentService
 
     public function logAudit(Incident $incident, ?int $userId, string $action, array $details = []): void
     {
-        Log::create([
+        IncidentLog::create([
             'user_id' => $userId,
             'action' => $action,
             'module' => 'incidents',

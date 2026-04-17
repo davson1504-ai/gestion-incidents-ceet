@@ -24,7 +24,7 @@ class Statut extends Model
 
     protected $casts = [
         'is_active' => 'boolean',
-        'is_final'  => 'boolean',
+        'is_final' => 'boolean',
     ];
 
     public function incidents()

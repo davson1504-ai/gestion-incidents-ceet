@@ -10,8 +10,8 @@ use Tests\TestCase;
 
 class HistoriqueWorkflowTest extends TestCase
 {
-    use RefreshDatabase;
     use BuildsIncidentContext;
+    use RefreshDatabase;
 
     public function test_admin_can_filter_historique_by_action_type_and_query(): void
     {
@@ -143,4 +143,3 @@ class HistoriqueWorkflowTest extends TestCase
         );
     }
 }
-

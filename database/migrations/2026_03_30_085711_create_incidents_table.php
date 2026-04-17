@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('incidents', function (Blueprint $table) {
             $table->id();
-            
+
             // Identification
             $table->string('code_incident', 50)->unique();           // ex: INC-20260330-00145
             $table->string('titre')->nullable();                     // Optionnel, mais utile
@@ -18,26 +18,26 @@ return new class extends Migration
 
             // Relations principales (catalogues)
             $table->foreignId('departement_id')
-                  ->constrained('departements')
-                  ->onDelete('cascade');
+                ->constrained('departements')
+                ->onDelete('cascade');
 
             $table->foreignId('type_incident_id')
-                  ->constrained('type_incidents')
-                  ->onDelete('cascade');
+                ->constrained('type_incidents')
+                ->onDelete('cascade');
 
             $table->foreignId('cause_id')
-                  ->nullable()
-                  ->constrained('causes')
-                  ->onDelete('set null');
+                ->nullable()
+                ->constrained('causes')
+                ->onDelete('set null');
 
             // Statut & Priorité
             $table->foreignId('status_id')
-                  ->constrained('statuses')
-                  ->onDelete('cascade');
+                ->constrained('statuses')
+                ->onDelete('cascade');
 
             $table->foreignId('priorite_id')
-                  ->constrained('priorites')
-                  ->onDelete('cascade');
+                ->constrained('priorites')
+                ->onDelete('cascade');
 
             // Localisation et détails terrain
             $table->text('localisation')->nullable();                // Zone, ligne, poste, quartier...
@@ -49,18 +49,18 @@ return new class extends Migration
 
             // Responsables
             $table->foreignId('operateur_id')                        // Celui qui déclare l'incident
-                  ->constrained('users')
-                  ->onDelete('cascade');
+                ->constrained('users')
+                ->onDelete('cascade');
 
             $table->foreignId('responsable_id')                      // Opérateur terrain en charge
-                  ->nullable()
-                  ->constrained('users')
-                  ->onDelete('set null');
+                ->nullable()
+                ->constrained('users')
+                ->onDelete('set null');
 
             $table->foreignId('superviseur_id')
-                  ->nullable()
-                  ->constrained('users')
-                  ->onDelete('set null');
+                ->nullable()
+                ->constrained('users')
+                ->onDelete('set null');
 
             // Résolution
             $table->text('actions_menees')->nullable();

@@ -18,6 +18,7 @@ class TypeIncidentController extends Controller
     public function index(): View
     {
         $types = TypeIncident::orderBy('libelle')->paginate(25);
+
         return view('catalogues.types.index', compact('types'));
     }
 
@@ -29,10 +30,10 @@ class TypeIncidentController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $data = $request->validate([
-            'code'        => ['required', 'string', 'max:20', 'unique:type_incidents,code'],
-            'libelle'     => ['required', 'string', 'max:150'],
+            'code' => ['required', 'string', 'max:20', 'unique:type_incidents,code'],
+            'libelle' => ['required', 'string', 'max:150'],
             'description' => ['nullable', 'string'],
-            'is_active'   => ['nullable', 'boolean'],
+            'is_active' => ['nullable', 'boolean'],
         ]);
 
         TypeIncident::create($data);
@@ -48,10 +49,10 @@ class TypeIncidentController extends Controller
     public function update(Request $request, TypeIncident $type): RedirectResponse
     {
         $data = $request->validate([
-            'code'        => ['required', 'string', 'max:20', 'unique:type_incidents,code,'.$type->id],
-            'libelle'     => ['required', 'string', 'max:150'],
+            'code' => ['required', 'string', 'max:20', 'unique:type_incidents,code,'.$type->id],
+            'libelle' => ['required', 'string', 'max:150'],
             'description' => ['nullable', 'string'],
-            'is_active'   => ['nullable', 'boolean'],
+            'is_active' => ['nullable', 'boolean'],
         ]);
 
         $type->update($data);
@@ -62,6 +63,7 @@ class TypeIncidentController extends Controller
     public function destroy(TypeIncident $type): RedirectResponse
     {
         $type->delete();
+
         return redirect()->route('catalogues.types.index')->with('success', 'Type supprimé.');
     }
 }

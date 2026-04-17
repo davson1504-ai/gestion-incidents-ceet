@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('statuses', function (Blueprint $table) {
             $table->id();
-            
+
             $table->string('code', 50)->unique();                    // ex: EN_COURS, EN_TRAITEMENT, RESOLU, CLOTURE
             $table->string('libelle', 100);                          // ex: En cours, En traitement, Résolu, Clôturé
             $table->text('description')->nullable();
@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('couleur', 50)->default('#6c757d');       // Couleur pour affichage (ex: #28a745, #ffc107, #dc3545)
             $table->boolean('is_active')->default(true);
             $table->boolean('is_final')->default(false);             // Pour savoir si c'est un statut de fin (ex: Résolu, Clôturé)
-            
+
             $table->timestamps();
 
             // Index pour optimiser les recherches et tris

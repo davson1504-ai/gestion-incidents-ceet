@@ -716,8 +716,12 @@
                         <p class="text-muted mb-0">Le temps moyen de résolution évolue de <strong style="color: var(--ceet-red); font-size: 1.1em;">{{ $weekDeltaLabel }}</strong> sur la semaine. Les zones à surveiller en priorité restent <strong style="color: var(--ceet-blue-night);">{{ $focusText }}</strong>.</p>
                     </div>
                     <div class="d-flex gap-2 flex-wrap">
-                        <a href="{{ route('reports.monthly', ['month' => now()->format('Y-m'), 'format' => 'pdf']) }}" class="btn btn-outline-secondary">Rapport PDF</a>
-                        <a href="{{ route('incidents.en-cours') }}" class="btn btn-danger">Voir les incidents en cours</a>
+                        @can('reporting.view')
+                            <a href="{{ route('reports.monthly', ['month' => now()->format('Y-m'), 'format' => 'pdf']) }}" class="btn btn-outline-secondary">Rapport PDF</a>
+                        @endcan
+                        @can('incidents.view')
+                            <a href="{{ route('incidents.en-cours') }}" class="btn btn-danger">Voir les incidents en cours</a>
+                        @endcan
                     </div>
                 </div>
             </div>

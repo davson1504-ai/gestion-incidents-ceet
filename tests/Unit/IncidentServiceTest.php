@@ -15,7 +15,7 @@ class IncidentServiceTest extends TestCase
 
     public function test_generate_code_format(): void
     {
-        $service = new IncidentService();
+        $service = new IncidentService;
 
         $code = $service->generateCode();
 
@@ -26,7 +26,7 @@ class IncidentServiceTest extends TestCase
     {
         $this->seedRolesAndPermissions();
         $context = $this->createCatalogContext();
-        $service = new IncidentService();
+        $service = new IncidentService;
         $now = Carbon::parse('2026-04-10 10:00:00');
 
         Carbon::setTestNow($now);
@@ -54,7 +54,7 @@ class IncidentServiceTest extends TestCase
     {
         $this->seedRolesAndPermissions();
         $context = $this->createCatalogContext();
-        $service = new IncidentService();
+        $service = new IncidentService;
 
         $incident = $this->makeIncident($context, [
             'status_id' => $context['statusOpen']->id,

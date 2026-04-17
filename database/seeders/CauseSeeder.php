@@ -54,9 +54,9 @@ class CauseSeeder extends Seeder
             Cause::updateOrCreate(
                 ['code' => $cause['code']],
                 [
-                    'libelle'          => $cause['libelle'],
+                    'libelle' => $cause['libelle'],
                     'type_incident_id' => $typeId,
-                    'is_active'        => true,
+                    'is_active' => true,
                 ]
             );
             $created++;

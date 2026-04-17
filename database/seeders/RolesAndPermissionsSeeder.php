@@ -59,11 +59,13 @@ class RolesAndPermissionsSeeder extends Seeder
             'users.manage',
         ]);
 
-        // Opérateur : lecture + création incidents + lecture catalogues
+        // Opérateur : lecture + création incidents + rapports
         $operateur = Role::firstOrCreate(['name' => 'Opérateur', 'guard_name' => 'web']);
         $operateur->syncPermissions([
             'incidents.view',
             'incidents.create',
+            'catalogues.view',
+            'reporting.view',
         ]);
 
         $this->command->info('✅ Rôles et permissions créés avec succès.');

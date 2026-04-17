@@ -20,9 +20,9 @@ class IncidentAction extends Model
     ];
 
     protected $casts = [
-        'action_date'  => 'datetime',
-        'old_values'   => 'array',
-        'new_values'   => 'array',
+        'action_date' => 'datetime',
+        'old_values' => 'array',
+        'new_values' => 'array',
     ];
 
     // Relations

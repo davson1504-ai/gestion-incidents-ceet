@@ -69,7 +69,7 @@ class StatutController extends Controller
     {
         $uniqueRule = 'unique:statuses,code';
         if ($ignoreId !== null) {
-            $uniqueRule .= ',' . $ignoreId;
+            $uniqueRule .= ','.$ignoreId;
         }
 
         return $request->validate([
@@ -83,4 +83,3 @@ class StatutController extends Controller
         ]);
     }
 }
-

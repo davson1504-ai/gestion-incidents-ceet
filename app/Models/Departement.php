@@ -30,7 +30,7 @@ class Departement extends Model
 
     protected $casts = [
         'charge_maximale' => 'decimal:2',
-        'is_active'       => 'boolean',
+        'is_active' => 'boolean',
     ];
 
     // Relations

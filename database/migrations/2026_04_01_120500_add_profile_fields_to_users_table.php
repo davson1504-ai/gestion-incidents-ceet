@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::table('users', function (Blueprint $table) {
             $table->string('telephone', 20)->nullable()->unique()->after('email');
             $table->foreignId('departement_id')->nullable()->after('telephone')
-                  ->constrained('departements')->nullOnDelete();
+                ->constrained('departements')->nullOnDelete();
             $table->boolean('is_active')->default(true)->after('departement_id');
         });
     }

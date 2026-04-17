@@ -108,7 +108,7 @@ trait BuildsIncidentContext
     protected function makeIncident(array $context, array $overrides = []): Incident
     {
         $data = array_merge([
-            'code_incident' => 'INC-' . now()->format('YmdHis') . '-' . random_int(100, 999),
+            'code_incident' => 'INC-'.now()->format('YmdHis').'-'.random_int(100, 999),
             'titre' => 'Incident de test',
             'description' => 'Description incident de test',
             'departement_id' => $context['departement']->id,
@@ -131,4 +131,3 @@ trait BuildsIncidentContext
         return Incident::create($data);
     }
 }
-

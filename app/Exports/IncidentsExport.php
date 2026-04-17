@@ -18,9 +18,7 @@ class IncidentsExport implements FromQuery, ShouldAutoSize, WithHeadings, WithMa
 {
     use Exportable;
 
-    public function __construct(private readonly array $filters)
-    {
-    }
+    public function __construct(private readonly array $filters) {}
 
     public function query(): Builder
     {

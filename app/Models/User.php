@@ -9,7 +9,7 @@ use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable, HasRoles;
+    use HasFactory, HasRoles, Notifiable;
 
     /**
      * Spatie guard name to keep roles/permissions on the web guard.
@@ -37,7 +37,7 @@ class User extends Authenticatable
     ];
 
     // ====================== RELATIONS ======================
-    
+
     public function departement()
     {
         return $this->belongsTo(Departement::class);

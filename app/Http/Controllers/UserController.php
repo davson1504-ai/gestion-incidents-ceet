@@ -96,7 +96,7 @@ class UserController extends Controller
 
         $fullName = trim((string) (
             $validated['name']
-            ?? (($validated['prenom'] ?? '') . ' ' . ($validated['nom_famille'] ?? ''))
+            ?? (($validated['prenom'] ?? '').' '.($validated['nom_famille'] ?? ''))
         ));
 
         if ($fullName === '') {
@@ -173,6 +173,7 @@ class UserController extends Controller
 
         if ($hasHistory) {
             $user->update(['is_active' => false]);
+
             return redirect()->route('users.index')->with('success', 'Utilisateur desactive (historique conserve).');
         }
 

@@ -10,8 +10,8 @@ use Tests\TestCase;
 
 class ReportExportTest extends TestCase
 {
-    use RefreshDatabase;
     use BuildsIncidentContext;
+    use RefreshDatabase;
 
     public function test_operator_can_download_daily_report_as_pdf(): void
     {
@@ -100,4 +100,3 @@ class ReportExportTest extends TestCase
         $response->assertSessionHasErrors('month');
     }
 }
-

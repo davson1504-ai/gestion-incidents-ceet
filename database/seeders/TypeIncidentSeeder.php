@@ -19,7 +19,7 @@ class TypeIncidentSeeder extends Seeder
             ['code' => 'DEF_CELL',  'libelle' => 'Défaut Cellule HTA',           'description' => null],
             ['code' => 'DEF_EXT',   'libelle' => 'Défaut Extérieur',             'description' => 'Défaut extérieur réseau'],
             ['code' => 'DEF_INT',   'libelle' => 'Défaut Intérieur',             'description' => 'Défaut intérieur'],
-            ['code' => 'PLEIN_CABLE','libelle' => 'Défaut Plein Câble',          'description' => null],
+            ['code' => 'PLEIN_CABLE', 'libelle' => 'Défaut Plein Câble',          'description' => null],
             ['code' => 'ENER',      'libelle' => 'Défaut énergétique',           'description' => null],
             ['code' => 'ECHEC_MST', 'libelle' => 'Échec mise sous tension',      'description' => null],
             ['code' => 'FEUX',      'libelle' => 'Feux de brousse',              'description' => null],

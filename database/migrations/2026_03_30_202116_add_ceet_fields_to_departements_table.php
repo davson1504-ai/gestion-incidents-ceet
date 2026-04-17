@@ -13,7 +13,7 @@ return new class extends Migration
             $table->string('poste_repartition', 150)->nullable()->after('direction_exploitation');
             $table->string('transformateur', 150)->nullable()->after('poste_repartition');
             $table->string('arrivee', 100)->nullable()->after('transformateur');
-            
+
             // Charge maximale avec unité séparée (plus flexible)
             $table->decimal('charge_maximale', 10, 2)->nullable()->after('arrivee');
             $table->string('charge_unite', 20)->default('A')->after('charge_maximale');
