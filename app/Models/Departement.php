@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -11,19 +12,17 @@ class Departement extends Model
 
     protected $table = 'departements';
 
-    // ✅ CORRECTION #4: Fillable complet incluant les champs ajoutés
-    // via la migration 2026_03_30_202116_add_ceet_fields_to_departements_table
     protected $fillable = [
         'code',
         'nom',
         'zone',
-        'direction_exploitation',   // ← ajouté par migration CEET
-        'poste_repartition',        // ← ajouté par migration CEET
+        'direction_exploitation',
+        'poste_repartition',
         'poste_source',
-        'transformateur',           // ← ajouté par migration CEET
-        'arrivee',                  // ← ajouté par migration CEET
-        'charge_maximale',          // ← ajouté par migration CEET
-        'charge_unite',             // ← ajouté par migration CEET
+        'transformateur',
+        'arrivee',
+        'charge_maximale',
+        'charge_unite',
         'description',
         'is_active',
     ];
@@ -33,7 +32,6 @@ class Departement extends Model
         'is_active' => 'boolean',
     ];
 
-    // Relations
     public function users()
     {
         return $this->hasMany(User::class);
@@ -42,5 +40,10 @@ class Departement extends Model
     public function incidents()
     {
         return $this->hasMany(Incident::class);
+    }
+
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->where('is_active', true);
     }
 }

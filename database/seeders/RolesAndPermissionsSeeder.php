@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Collection;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
@@ -11,56 +12,51 @@ class RolesAndPermissionsSeeder extends Seeder
 {
     public function run(): void
     {
-        // Vide le cache des permissions
-        app()[PermissionRegistrar::class]->forgetCachedPermissions();
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
 
-        // ── Permissions incidents ──────────────────────────────────────────
-        $incidentPerms = [
+        $permissions = [
             'incidents.view',
             'incidents.create',
             'incidents.update',
             'incidents.delete',
-        ];
-
-        // ── Permissions catalogues ────────────────────────────────────────
-        $cataloguePerms = [
+            'incidents.assign',
+            'incidents.close',
+            'incidents.export',
             'catalogues.view',
             'catalogues.manage',
-        ];
-
-        $reportingPerms = [
             'reporting.view',
-        ];
-
-        $userPerms = [
+            'reporting.export',
             'users.view',
             'users.manage',
         ];
 
-        foreach ([...$incidentPerms, ...$cataloguePerms, ...$reportingPerms, ...$userPerms] as $perm) {
-            Permission::firstOrCreate(['name' => $perm, 'guard_name' => 'web']);
+        foreach ($permissions as $permission) {
+            Permission::firstOrCreate([
+                'name' => $permission,
+                'guard_name' => 'web',
+            ]);
         }
 
-        // ── Rôles ─────────────────────────────────────────────────────────
+        $admin = $this->resolveOrCreateRole(['Administrateur', 'admin']);
+        $superviseur = $this->resolveOrCreateRole(['Superviseur', 'superviseur']);
+        $operateur = $this->resolveOrCreateRole(['Opérateur', 'Operateur', 'operateur']);
 
-        // Administrateur : accès total
-        $admin = Role::firstOrCreate(['name' => 'Administrateur', 'guard_name' => 'web']);
-        $admin->syncPermissions([...$incidentPerms, ...$cataloguePerms, ...$reportingPerms, ...$userPerms]);
+        $admin->syncPermissions($permissions);
 
-        // Superviseur : lecture + création + modification + lecture catalogues
-        $superviseur = Role::firstOrCreate(['name' => 'Superviseur', 'guard_name' => 'web']);
         $superviseur->syncPermissions([
             'incidents.view',
             'incidents.create',
             'incidents.update',
+            'incidents.assign',
+            'incidents.close',
+            'incidents.export',
             'catalogues.view',
             'reporting.view',
+            'reporting.export',
             'users.view',
             'users.manage',
         ]);
 
-        // Opérateur : lecture + création incidents + rapports
-        $operateur = Role::firstOrCreate(['name' => 'Opérateur', 'guard_name' => 'web']);
         $operateur->syncPermissions([
             'incidents.view',
             'incidents.create',
@@ -68,6 +64,43 @@ class RolesAndPermissionsSeeder extends Seeder
             'reporting.view',
         ]);
 
-        $this->command->info('✅ Rôles et permissions créés avec succès.');
+        $this->syncAliases($admin, ['admin']);
+        $this->syncAliases($superviseur, ['superviseur']);
+        $this->syncAliases($operateur, ['Operateur', 'operateur']);
+
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
+
+        $this->command?->info('Roles et permissions synchronises.');
+    }
+
+    private function resolveOrCreateRole(array $names): Role
+    {
+        $role = Role::query()
+            ->whereIn('name', $names)
+            ->where('guard_name', 'web')
+            ->first();
+
+        if ($role) {
+            return $role;
+        }
+
+        return Role::create([
+            'name' => Collection::make($names)->first(),
+            'guard_name' => 'web',
+        ]);
+    }
+
+    private function syncAliases(Role $sourceRole, array $aliases): void
+    {
+        $permissions = $sourceRole->permissions->pluck('name')->all();
+
+        foreach ($aliases as $alias) {
+            $role = Role::firstOrCreate([
+                'name' => $alias,
+                'guard_name' => 'web',
+            ]);
+
+            $role->syncPermissions($permissions);
+        }
     }
 }

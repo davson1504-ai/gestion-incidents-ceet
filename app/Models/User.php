@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -11,9 +12,6 @@ class User extends Authenticatable
 {
     use HasFactory, HasRoles, Notifiable;
 
-    /**
-     * Spatie guard name to keep roles/permissions on the web guard.
-     */
     protected string $guard_name = 'web';
 
     protected $fillable = [
@@ -36,8 +34,6 @@ class User extends Authenticatable
         'is_active' => 'boolean',
     ];
 
-    // ====================== RELATIONS ======================
-
     public function departement()
     {
         return $this->belongsTo(Departement::class);
@@ -46,6 +42,11 @@ class User extends Authenticatable
     public function incidentsDeclares()
     {
         return $this->hasMany(Incident::class, 'operateur_id');
+    }
+
+    public function incidentsAssignes()
+    {
+        return $this->hasMany(Incident::class, 'responsable_id');
     }
 
     public function incidentsSupervises()
@@ -58,14 +59,40 @@ class User extends Authenticatable
         return $this->hasMany(IncidentAction::class);
     }
 
+    public function interventions()
+    {
+        return $this->hasMany(Intervention::class);
+    }
+
     public function logs()
     {
         return $this->hasMany(Log::class);
     }
 
-    // Scopes
-    public function scopeActive($query)
+    public function scopeActive(Builder $query): Builder
     {
         return $query->where('is_active', true);
+    }
+
+    public function scopeOperateurs(Builder $query): Builder
+    {
+        return $query->whereHas('roles', function (Builder $roleQuery) {
+            $roleQuery->whereIn('name', ['Operateur', 'Opérateur', 'operateur']);
+        });
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->hasAnyRole(['Administrateur', 'admin']);
+    }
+
+    public function isSuperviseur(): bool
+    {
+        return $this->hasAnyRole(['Superviseur', 'superviseur']);
+    }
+
+    public function isOperateur(): bool
+    {
+        return $this->hasAnyRole(['Operateur', 'Opérateur', 'operateur']);
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -9,7 +10,6 @@ class Cause extends Model
 {
     use HasFactory;
 
-    // Important : on force le nom de la table
     protected $table = 'causes';
 
     protected $fillable = [
@@ -24,7 +24,6 @@ class Cause extends Model
         'is_active' => 'boolean',
     ];
 
-    // Relations
     public function typeIncident()
     {
         return $this->belongsTo(TypeIncident::class);
@@ -33,5 +32,10 @@ class Cause extends Model
     public function incidents()
     {
         return $this->hasMany(Incident::class);
+    }
+
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->where('is_active', true);
     }
 }

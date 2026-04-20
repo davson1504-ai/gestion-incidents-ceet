@@ -11,6 +11,7 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\StatutController;
 use App\Http\Controllers\TypeIncidentController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\VueConsoleController;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/login');
@@ -33,6 +34,10 @@ Route::middleware(['auth', 'verified'])->group(function (): void {
     Route::get('incidents/en-cours', [IncidentController::class, 'enCours'])
         ->middleware('permission:incidents.view')
         ->name('incidents.en-cours');
+
+    Route::get('incidents/vue-console', VueConsoleController::class)
+        ->middleware('permission:incidents.view')
+        ->name('incidents.vue-console');
 
     Route::get('incidents-export', [IncidentController::class, 'export'])
         ->middleware('permission:incidents.view')

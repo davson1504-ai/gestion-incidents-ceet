@@ -14,7 +14,7 @@ class DatabaseSeeder extends Seeder
             CauseSeeder::class,
             StatutSeeder::class,
             PrioriteSeeder::class,
-            RolesAndPermissionsSeeder::class,
+            RolePermissionSeeder::class,
             AdminUserSeeder::class,
             OperatorUserSeeder::class,
             IncidentSeeder::class,
