@@ -19,7 +19,16 @@
             <div id="incident-history-app"></div>
         </div>
         <div class="col-12 col-xl-4">
-            <div id="catalogues-manager-app"></div>
+            @can('catalogues.manage')
+                <div id="catalogues-manager-app"></div>
+            @else
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <h5 class="card-title mb-2">Gestion des catalogues</h5>
+                        <p class="text-muted mb-0">Accès en lecture seule sur cette console pour votre profil.</p>
+                    </div>
+                </div>
+            @endcan
         </div>
     </div>
 </x-app-layout>

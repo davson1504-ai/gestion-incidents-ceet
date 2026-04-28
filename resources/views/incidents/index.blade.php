@@ -389,7 +389,10 @@
                 return;
             }
 
-            const allCauses = @json($causes->map(fn ($cause) => ['id' => $cause->id, 'libelle' => $cause->libelle])->values());
+            @php
+                $causesList = collect($causes)->map(fn ($cause) => ['id' => data_get($cause, 'id'), 'libelle' => data_get($cause, 'libelle')])->values();
+            @endphp
+            const allCauses = @json($causesList);
             const endpointTemplate = causeSelect.dataset.endpointTemplate;
             const initialCauseId = String(causeSelect.dataset.selectedCause || '');
 

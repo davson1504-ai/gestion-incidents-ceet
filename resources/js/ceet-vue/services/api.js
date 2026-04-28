@@ -1,4 +1,4 @@
-﻿import axios from 'axios';
+import axios from 'axios';
 
 const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
 

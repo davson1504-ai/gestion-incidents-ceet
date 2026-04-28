@@ -11,6 +11,7 @@ use App\Models\Statut;
 use App\Services\IncidentService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class IncidentController extends ApiController
 {
@@ -38,15 +39,8 @@ class IncidentController extends ApiController
                 'responsable.roles',
                 'superviseur.roles',
             ])
+            ->visibleToUser($request->user())
             ->filter($filters);
-
-        if ($request->user()->isOperateur() && ! $request->user()->isSuperviseur() && ! $request->user()->isAdmin()) {
-            $query->where(function (Builder $sub) use ($request) {
-                $sub->where('operateur_id', $request->user()->id)
-                    ->orWhere('responsable_id', $request->user()->id)
-                    ->orWhere('superviseur_id', $request->user()->id);
-            });
-        }
 
         $sortBy = $filters['sort_by'] ?? 'date_debut';
         $sortDir = $filters['sort_dir'] ?? 'desc';
@@ -93,13 +87,9 @@ class IncidentController extends ApiController
         return $this->success(IncidentResource::make($incident), 'Incident mis a jour avec succes.');
     }
 
-    public function destroy(Incident $incident): JsonResponse
+    public function destroy(Request $request, Incident $incident): JsonResponse
     {
-        $userId = (int) auth()->id();
-        $this->incidentService->logAction($incident, $userId, 'delete', "Suppression de l'incident");
-        $this->incidentService->logAudit($incident, $userId, 'delete', ['message' => 'Incident supprime']);
-
-        $incident->delete();
+        $this->incidentService->deleteIncident($incident, $request->user());
 
         return $this->success(null, 'Incident supprime avec succes.');
     }

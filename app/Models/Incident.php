@@ -144,6 +144,20 @@ class Incident extends Model
             });
     }
 
+    public function scopeVisibleToUser(Builder $query, User $user): Builder
+    {
+        if ($user->isAdmin() || $user->isSuperviseur()) {
+            return $query;
+        }
+
+        return $query->where(function (Builder $incidentQuery) use ($user) {
+            $incidentQuery
+                ->where('operateur_id', $user->id)
+                ->orWhere('responsable_id', $user->id)
+                ->orWhere('superviseur_id', $user->id);
+        });
+    }
+
     public function recalculateDuration(): void
     {
         if (! $this->date_debut || ! $this->date_fin) {

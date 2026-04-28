@@ -1,4 +1,4 @@
-﻿import { createApp } from 'vue';
+import { createApp } from 'vue';
 import IncidentQuickForm from './components/IncidentQuickForm.vue';
 import IncidentsDashboard from './components/IncidentsDashboard.vue';
 import IncidentHistory from './components/IncidentHistory.vue';

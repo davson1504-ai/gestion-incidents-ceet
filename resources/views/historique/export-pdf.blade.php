@@ -3,308 +3,306 @@
 <head>
     <meta charset="UTF-8">
     <style>
-        * { margin:0; padding:0; box-sizing:border-box; }
-        html, body { width:100%; height:100%; }
+        @page {
+            margin: 17mm 16mm 18mm 16mm;
+            size: A4 portrait;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            font-size: 10px;
-            color: #1f2937;
-            line-height: 1.5;
-            background: white;
-        }
-
-        /* En-tête professionnel */
-        .page-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            border-bottom: 2px solid #333333;
-            padding: 16px 20px;
-            margin-bottom: 18px;
-            background: white;
-        }
-
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .logo-container {
-            width: 48px;
-            height: 48px;
-            background: white;
-            border-radius: 6px;
-            padding: 3px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-        }
-
-        .logo-container img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-        }
-
-        .header-text h1 {
-            font-size: 16px;
-            font-weight: 700;
-            color: #1f2937;
             margin: 0;
-            line-height: 1.2;
+            color: #111827;
+            background: #ffffff;
+            font-family: DejaVu Sans, Arial, sans-serif;
+            font-size: 10.5px;
+            line-height: 1.35;
         }
 
-        .header-text p {
-            font-size: 8px;
-            color: #6b7280;
-            margin: 3px 0 0 0;
-        }
-
-        .header-right {
-            text-align: right;
-        }
-
-        .header-right .count {
-            font-size: 11px;
-            font-weight: 600;
-            color: #333333;
-            margin-bottom: 2px;
-        }
-
-        .header-right .date {
-            font-size: 8px;
-            color: #9ca3af;
-        }
-
-        /* Métadonnées */
-        .meta {
-            margin-bottom: 14px;
-            font-size: 8px;
-            color: #6b7280;
-            display: flex;
-            gap: 16px;
-            flex-wrap: wrap;
-            padding: 10px 0;
-            border-bottom: 1px solid #e5e7eb;
-        }
-
-        .meta span {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .meta-label {
-            font-weight: 600;
-            color: #1f2937;
-        }
-
-        /* Tables */
-        table {
+        .header-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 9px;
+            margin-bottom: 24px;
         }
 
-        thead tr {
-            background: #4a5568;
-            color: white;
+        .header-table td {
+            border: 0;
+            padding: 0;
+            vertical-align: top;
         }
 
-        thead th {
-            padding: 8px 10px;
-            text-align: left;
-            font-weight: 600;
-            font-size: 8px;
-            letter-spacing: 0.3px;
+        .logo-cell {
+            width: 96px;
+            text-align: center;
         }
 
-        tbody tr {
-            border-bottom: 1px solid #e5e7eb;
+        .logo {
+            width: 56px;
+            height: auto;
         }
 
-        tbody tr:nth-child(even) {
-            background: #f8f9fa;
-        }
-
-        tbody tr:hover {
-            background: #f3f4f6;
-        }
-
-        tbody td {
-            padding: 7px 10px;
-            vertical-align: middle;
-        }
-
-        /* Badges */
-        .badge {
-            display: inline-block;
-            padding: 2px 6px;
-            border-radius: 12px;
-            font-size: 7px;
+        .title {
+            margin: 9px 0 10px 0;
+            color: #006b3f;
+            font-size: 21px;
             font-weight: 700;
-            color: white;
-            text-transform: uppercase;
-            letter-spacing: 0.2px;
+            letter-spacing: .2px;
         }
 
-        .badge-create {
-            background: #717171;
-        }
-
-        .badge-update {
-            background: #717171;
-        }
-
-        .badge-delete {
-            background: #717171;
-        }
-
-        .badge-other {
-            background: #717171;
-        }
-
-        /* Code incident */
-        .incident-code {
-            font-weight: 600;
-            color: #333333;
-        }
-
-        .incident-title {
-            font-size: 8px;
+        .subtitle {
             color: #6b7280;
-            margin-top: 2px;
+            font-size: 11px;
         }
 
-        /* Footer */
-        .footer {
-            margin-top: 18px;
-            padding-top: 10px;
-            border-top: 1px solid #e5e7eb;
-            font-size: 8px;
-            color: #9ca3af;
-            text-align: center;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .gold-rule {
+            height: 4px;
+            margin: 26px 0 32px 0;
+            background: #f0c400;
         }
 
-        .footer-left {
+        .section {
+            margin-bottom: 30px;
+            page-break-inside: avoid;
+        }
+
+        .section-title {
+            margin: 0 0 8px 0;
+            color: #006b3f;
+            font-size: 15px;
+            font-weight: 700;
+        }
+
+        table.data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 10px;
+        }
+
+        .data-table th {
+            padding: 5px 8px;
+            color: #ffffff;
+            background: #006b3f;
+            border: 1px solid #d1d5db;
             text-align: left;
+            font-weight: 700;
         }
 
-        .footer-right {
+        .data-table td {
+            padding: 5px 8px;
+            border: 1px solid #d8dde3;
+            vertical-align: top;
+        }
+
+        .data-table tbody tr:nth-child(even) td {
+            background: #f1f1f1;
+        }
+
+        .data-table tbody tr:nth-child(odd) td {
+            background: #ffffff;
+        }
+
+        .number {
+            width: 120px;
             text-align: right;
+            white-space: nowrap;
         }
 
-        /* Empty state */
-        .empty-state {
-            text-align: center;
-            padding: 30px 20px;
-            color: #9ca3af;
+        .muted {
+            color: #6b7280;
+            font-size: 8.5px;
+        }
+
+        .footer {
+            position: fixed;
+            right: 0;
+            bottom: -8mm;
+            left: 0;
+            padding-top: 8px;
+            color: #7a7f87;
+            border-top: 1px solid #e4c64a;
+            font-size: 8px;
+        }
+
+        .empty {
+            padding: 16px;
+            color: #6b7280;
+            border: 1px solid #d8dde3;
+            background: #f8fafc;
             font-style: italic;
-        }
-
-        @page {
-            margin: 20mm;
-            size: A4 portrait;
         }
     </style>
 </head>
 <body>
+@php
+    $logoPath = public_path('images/logo-ceet.png');
+    $createCount = $actions->where('action_type', 'create')->count();
+    $updateCount = $actions->where('action_type', 'update')->count();
+    $deleteCount = $actions->where('action_type', 'delete')->count();
+    $byAction = $actions->groupBy('action_type')->map(fn ($items, $type) => [
+        'label' => ucfirst((string) $type),
+        'total' => $items->count(),
+    ])->sortByDesc('total')->values();
+    $hasFilters = ! empty($filters['date_from'])
+        || ! empty($filters['date_to'])
+        || ! empty($filters['action_type'])
+        || ! empty($filters['q']);
+@endphp
 
-{{-- En-tête professionnel avec logo --}}
-<div class="page-header">
-    <div class="header-left">
-        @php $logoPath = public_path('images/logo-ceet.png'); @endphp
-        @if(file_exists($logoPath))
-        <div class="logo-container">
-            <img src="file://{{ str_replace('\\', '/', $logoPath) }}" alt="CEET Logo">
-        </div>
-        @endif
-        <div class="header-text">
-            <h1>Historique des Actions</h1>
-            <p>CEET — Gestion des Incidents</p>
-        </div>
-    </div>
-    <div class="header-right">
-        <div class="count">{{ $actions->count() }} action(s)</div>
-        <div class="date">{{ now()->format('d/m/Y H:i') }}</div>
-    </div>
+<table class="header-table">
+    <tr>
+        <td class="logo-cell">
+            @if(file_exists($logoPath))
+                <img class="logo" src="file://{{ str_replace('\\', '/', $logoPath) }}" alt="CEET">
+            @endif
+        </td>
+        <td>
+            <h1 class="title">CEET &mdash; Historique des Actions</h1>
+            <div class="subtitle">
+                Compagnie &Eacute;nergie &Eacute;lectrique du Togo | Direction de la Transformation Digitale<br>
+                Rapport d'audit | G&eacute;n&eacute;r&eacute; le {{ now()->format('d/m/Y') }} &agrave; {{ now()->format('H:i') }}
+            </div>
+        </td>
+    </tr>
+</table>
+
+<div class="gold-rule"></div>
+
+<div class="section">
+    <h2 class="section-title">1. Indicateurs Cl&eacute;s</h2>
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Indicateur</th>
+                <th class="number">Valeur</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Nombre total d'actions</td>
+                <td class="number">{{ $actions->count() }}</td>
+            </tr>
+            <tr>
+                <td>Cr&eacute;ations</td>
+                <td class="number">{{ $createCount }}</td>
+            </tr>
+            <tr>
+                <td>Mises &agrave; jour</td>
+                <td class="number">{{ $updateCount }}</td>
+            </tr>
+            <tr>
+                <td>Suppressions</td>
+                <td class="number">{{ $deleteCount }}</td>
+            </tr>
+        </tbody>
+    </table>
 </div>
 
-{{-- Filtres appliqués --}}
-@if(!empty($filters['date_from']) || !empty($filters['date_to']) || !empty($filters['action_type']) || !empty($filters['q']))
-<div class="meta">
-    @if(!empty($filters['date_from']))
-        <span><strong class="meta-label">Début:</strong> {{ $filters['date_from'] }}</span>
-    @endif
-    @if(!empty($filters['date_to']))
-        <span><strong class="meta-label">Fin:</strong> {{ $filters['date_to'] }}</span>
-    @endif
-    @if(!empty($filters['action_type']))
-        <span><strong class="meta-label">Type:</strong> {{ ucfirst($filters['action_type']) }}</span>
-    @endif
-    @if(!empty($filters['q']))
-        <span><strong class="meta-label">Recherche:</strong> {{ $filters['q'] }}</span>
-    @endif
+@if($hasFilters)
+<div class="section">
+    <h2 class="section-title">2. Filtres appliqu&eacute;s</h2>
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Filtre</th>
+                <th>Valeur</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if(! empty($filters['date_from']))
+            <tr>
+                <td>Date de d&eacute;but</td>
+                <td>{{ $filters['date_from'] }}</td>
+            </tr>
+            @endif
+            @if(! empty($filters['date_to']))
+            <tr>
+                <td>Date de fin</td>
+                <td>{{ $filters['date_to'] }}</td>
+            </tr>
+            @endif
+            @if(! empty($filters['action_type']))
+            <tr>
+                <td>Type d'action</td>
+                <td>{{ ucfirst($filters['action_type']) }}</td>
+            </tr>
+            @endif
+            @if(! empty($filters['q']))
+            <tr>
+                <td>Recherche</td>
+                <td>{{ $filters['q'] }}</td>
+            </tr>
+            @endif
+        </tbody>
+    </table>
 </div>
 @endif
 
-{{-- Tableau des actions --}}
-<table>
-    <thead>
-        <tr>
-            <th style="width: 15%">Date / Heure</th>
-            <th style="width: 16%">Utilisateur</th>
-            <th style="width: 10%">Action</th>
-            <th style="width: 15%">Incident</th>
-            <th style="width: 44%">Description</th>
-        </tr>
-    </thead>
-    <tbody>
-        @forelse($actions as $action)
-        <tr>
-            <td>
-                <strong>{{ optional($action->action_date)?->format('d/m/Y') }}</strong><br>
-                <span style="color: #9ca3af; font-size: 8px;">{{ optional($action->action_date)?->format('H:i:s') }}</span>
-            </td>
-            <td>{{ optional($action->user)?->name ?? '—' }}</td>
-            <td style="text-align: center;">
-                @php
-                    $cls = match($action->action_type) {
-                        'create' => 'badge-create',
-                        'update' => 'badge-update',
-                        'delete' => 'badge-delete',
-                        default  => 'badge-other',
-                    };
-                @endphp
-                <span class="badge {{ $cls }}">{{ strtoupper($action->action_type) }}</span>
-            </td>
-            <td>
-                @if($action->incident)
-                <div class="incident-code">{{ optional($action->incident)?->code_incident ?? '—' }}</div>
-                <div class="incident-title">{{ \Illuminate\Support\Str::limit($action->incident->titre, 30) }}</div>
-                @else
-                <span style="color: #9ca3af;">—</span>
-                @endif
-            </td>
-            <td>{{ $action->description }}</td>
-        </tr>
-        @empty
-        <tr>
-            <td colspan="5" class="empty-state">
-                ✗ Aucune action trouvée sur cette période
-            </td>
-        </tr>
-        @endforelse
-    </tbody>
-</table>
+@if($byAction->count())
+<div class="section">
+    <h2 class="section-title">{{ $hasFilters ? '3' : '2' }}. R&eacute;partition des Actions par Type</h2>
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Type d'action</th>
+                <th class="number">Nombre</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach($byAction as $row)
+            <tr>
+                <td>{{ $row['label'] }}</td>
+                <td class="number">{{ $row['total'] }}</td>
+            </tr>
+            @endforeach
+        </tbody>
+    </table>
+</div>
+@endif
 
-{{-- Footer --}}
-<div class="footer">
-    <div class="footer-left">CEET — Gestion des Incidents</div>
-    <div class="footer-right">{{ now()->format('d/m/Y H:i') }}</div>
+<div class="section">
+    <h2 class="section-title">{{ $hasFilters ? '4' : '3' }}. Journal des actions</h2>
+    @if($actions->count())
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th style="width: 15%;">Date</th>
+                <th style="width: 16%;">Utilisateur</th>
+                <th style="width: 11%;">Action</th>
+                <th style="width: 17%;">Incident</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach($actions as $action)
+            <tr>
+                <td>
+                    {{ optional($action->action_date)?->format('d/m/Y') }}<br>
+                    <span class="muted">{{ optional($action->action_date)?->format('H:i:s') }}</span>
+                </td>
+                <td>{{ optional($action->user)->name ?? '-' }}</td>
+                <td>{{ strtoupper($action->action_type) }}</td>
+                <td>
+                    @if($action->incident)
+                        {{ optional($action->incident)->code_incident ?? '-' }}<br>
+                        <span class="muted">{{ \Illuminate\Support\Str::limit($action->incident->titre, 26) }}</span>
+                    @else
+                        -
+                    @endif
+                </td>
+                <td>{{ $action->description }}</td>
+            </tr>
+            @endforeach
+        </tbody>
+    </table>
+    @else
+    <div class="empty">Aucune action trouv&eacute;e sur cette p&eacute;riode.</div>
+    @endif
 </div>
 
+<div class="footer">
+    CEET &mdash; Direction de la Transformation Digitale (DTD) | Application de Gestion des Incidents
+</div>
 </body>
 </html>

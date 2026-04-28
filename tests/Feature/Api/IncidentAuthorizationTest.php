@@ -61,4 +61,41 @@ class IncidentAuthorizationTest extends TestCase
         $response->assertOk();
         $response->assertJsonPath('data.id', $incident->id);
     }
+
+    public function test_operator_cannot_update_incident_via_api_even_when_responsible(): void
+    {
+        $this->seedRolesAndPermissions();
+        $context = $this->createCatalogContext();
+
+        $operator = $this->makeUserWithRole('operator');
+        $incident = $this->makeIncident($context, [
+            'responsable_id' => $operator->id,
+            'operateur_id' => $operator->id,
+        ]);
+
+        $response = $this->actingAs($operator)->putJson("/api/v1/incidents/{$incident->id}", [
+            'titre' => 'Titre modifie',
+        ]);
+
+        $response->assertForbidden();
+    }
+
+    public function test_operator_cannot_close_incident_via_api_even_when_responsible(): void
+    {
+        $this->seedRolesAndPermissions();
+        $context = $this->createCatalogContext();
+
+        $operator = $this->makeUserWithRole('operator');
+        $incident = $this->makeIncident($context, [
+            'responsable_id' => $operator->id,
+            'operateur_id' => $operator->id,
+        ]);
+
+        $response = $this->actingAs($operator)->postJson("/api/v1/incidents/{$incident->id}/close", [
+            'status_id' => $context['statusFinal']->id,
+            'resolution_summary' => 'Tentative cloture operateur',
+        ]);
+
+        $response->assertForbidden();
+    }
 }

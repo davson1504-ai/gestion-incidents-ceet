@@ -57,7 +57,7 @@ class HistoriqueController extends Controller
         $filters = $request->only(['user_id', 'action_type', 'date_from', 'date_to', 'q']);
         $format = $request->input('format', 'pdf');
 
-        $actions = IncidentAction::with(['user', 'incident'])
+        $query = IncidentAction::with(['user', 'incident'])
             ->when($filters['user_id'] ?? null, fn ($q, $v) => $q->where('user_id', $v))
             ->when($filters['action_type'] ?? null, fn ($q, $v) => $q->where('action_type', $v))
             ->when($filters['date_from'] ?? null, fn ($q, $v) => $q->whereDate('action_date', '>=', $v))
@@ -70,26 +70,25 @@ class HistoriqueController extends Controller
                         );
                 });
             })
-            ->latest('action_date')
-            ->get();
+            ->orderByDesc('action_date')
+            ->orderByDesc('id');
 
         $fileName = 'historique-'.now()->format('Y-m-d');
 
         if ($format === 'excel') {
-            // Export CSV simple (pas besoin de maatwebsite pour l'historique)
-            $callback = function () use ($actions) {
+            $callback = function () use ($query) {
                 $out = fopen('php://output', 'w');
                 fprintf($out, chr(0xEF).chr(0xBB).chr(0xBF)); // BOM UTF-8
                 fputcsv($out, ['Date', 'Utilisateur', 'Action', 'Incident', 'Description'], ';');
-                foreach ($actions as $a) {
+                $query->lazy(200)->each(function (IncidentAction $action) use ($out): void {
                     fputcsv($out, [
-                        optional($a->action_date)?->format('d/m/Y H:i'),
-                        optional($a->user)?->name ?? '-',
-                        strtoupper($a->action_type),
-                        optional($a->incident)?->code_incident ?? '-',
-                        $a->description,
+                        optional($action->action_date)?->format('d/m/Y H:i'),
+                        optional($action->user)?->name ?? '-',
+                        strtoupper($action->action_type),
+                        optional($action->incident)?->code_incident ?? '-',
+                        $action->description,
                     ], ';');
-                }
+                });
                 fclose($out);
             };
 
@@ -98,7 +97,8 @@ class HistoriqueController extends Controller
             ]);
         }
 
-        // PDF
+        $actions = $query->get();
+
         $pdf = Pdf::loadView('historique.export-pdf', compact('actions', 'filters'))
             ->setPaper('a4', 'landscape');
 

@@ -13,7 +13,7 @@ class CataloguePolicy
 
     public function viewAny(User $user): bool
     {
-        return $user->isAdmin() || $user->isSuperviseur() || $user->isOperateur();
+        return $user->can('catalogues.view');
     }
 
     public function view(User $user): bool
@@ -23,16 +23,16 @@ class CataloguePolicy
 
     public function create(User $user): bool
     {
-        return $user->isSuperviseur();
+        return $user->can('catalogues.manage');
     }
 
     public function update(User $user): bool
     {
-        return $user->isSuperviseur();
+        return $user->can('catalogues.manage');
     }
 
     public function delete(User $user): bool
     {
-        return $user->isSuperviseur();
+        return $user->can('catalogues.manage');
     }
 }

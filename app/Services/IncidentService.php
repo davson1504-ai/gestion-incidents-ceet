@@ -201,6 +201,15 @@ class IncidentService
         });
     }
 
+    public function deleteIncident(Incident $incident, User $actor): void
+    {
+        DB::transaction(function () use ($incident, $actor) {
+            $this->logAction($incident, $actor->id, 'delete', "Suppression de l'incident");
+            $this->logAudit($incident, $actor->id, 'delete', ['message' => 'Incident supprime']);
+            $incident->delete();
+        });
+    }
+
     public function syncDurationOnClosure(Incident $incident): void
     {
         $incident->loadMissing('status');

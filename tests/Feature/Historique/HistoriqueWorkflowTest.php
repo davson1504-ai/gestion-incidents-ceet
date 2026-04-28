@@ -107,6 +107,50 @@ class HistoriqueWorkflowTest extends TestCase
         );
     }
 
+    public function test_historique_csv_preserves_action_date_desc_order(): void
+    {
+        $this->seedRolesAndPermissions();
+        $context = $this->createCatalogContext();
+
+        $supervisor = $this->makeUserWithRole('supervisor');
+        $incident = $this->makeIncident($context, [
+            'code_incident' => 'INC-HISTO-ORDER',
+            'operateur_id' => $supervisor->id,
+        ]);
+
+        IncidentAction::create([
+            'incident_id' => $incident->id,
+            'user_id' => $supervisor->id,
+            'action_type' => 'update',
+            'description' => 'Action la plus ancienne',
+            'action_date' => Carbon::parse('2026-04-07 09:00:00'),
+            'old_values' => ['status_id' => 1],
+            'new_values' => ['status_id' => 2],
+        ]);
+
+        IncidentAction::create([
+            'incident_id' => $incident->id,
+            'user_id' => $supervisor->id,
+            'action_type' => 'create',
+            'description' => 'Action la plus recente',
+            'action_date' => Carbon::parse('2026-04-07 12:00:00'),
+            'old_values' => null,
+            'new_values' => ['status_id' => 1],
+        ]);
+
+        $response = $this->actingAs($supervisor)->get(route('historique.export', [
+            'format' => 'excel',
+        ]));
+
+        $content = $response->streamedContent();
+
+        $response->assertOk();
+        $this->assertLessThan(
+            strpos($content, 'Action la plus ancienne'),
+            strpos($content, 'Action la plus recente')
+        );
+    }
+
     public function test_admin_can_export_historique_as_pdf(): void
     {
         $this->seedRolesAndPermissions();

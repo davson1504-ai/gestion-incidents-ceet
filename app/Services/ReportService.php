@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Incident;
 use App\Models\Statut;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 
@@ -114,11 +115,13 @@ class ReportService
 
     public function monthly(array $filters = []): array
     {
+        $monthExpression = $this->monthExpression();
+
         return $this->baseIncidentQuery($filters)
-            ->selectRaw("DATE_FORMAT(date_debut, '%Y-%m') as mois")
+            ->selectRaw("{$monthExpression} as mois")
             ->selectRaw('COUNT(*) as total')
             ->selectRaw('AVG(duree_minutes) as duree_moyenne_minutes')
-            ->groupBy(DB::raw("DATE_FORMAT(date_debut, '%Y-%m')"))
+            ->groupBy(DB::raw($monthExpression))
             ->orderBy('mois')
             ->get()
             ->map(fn ($row) => [
@@ -129,11 +132,47 @@ class ReportService
             ->all();
     }
 
-    public function exportRows(array $filters = [])
+    public function exportRows(array $filters = [], ?User $currentUser = null)
+    {
+        return $this->exportQuery($filters, $currentUser)->get();
+    }
+
+    public function exportQuery(array $filters = [], ?User $currentUser = null): Builder
     {
         return $this->baseIncidentQuery($filters)
-            ->with(['departement', 'typeIncident', 'cause', 'status', 'priorite', 'operateur', 'responsable', 'superviseur'])
+            ->when($currentUser, fn (Builder $query) => $query->visibleToUser($currentUser))
+            ->select([
+                'incidents.id',
+                'incidents.code_incident',
+                'incidents.titre',
+                'incidents.departement_id',
+                'incidents.type_incident_id',
+                'incidents.cause_id',
+                'incidents.status_id',
+                'incidents.priorite_id',
+                'incidents.operateur_id',
+                'incidents.responsable_id',
+                'incidents.date_debut',
+                'incidents.date_fin',
+                'incidents.duree_minutes',
+            ])
+            ->with([
+                'departement:id,nom',
+                'typeIncident:id,libelle',
+                'cause:id,libelle',
+                'status:id,libelle',
+                'priorite:id,libelle',
+                'operateur:id,name',
+                'responsable:id,name',
+            ])
             ->orderByDesc('date_debut')
-            ->get();
+            ->orderByDesc('id');
+    }
+
+    private function monthExpression(): string
+    {
+        return DB::connection()->getDriverName() === 'sqlite'
+            ? "strftime('%Y-%m', date_debut)"
+            : "DATE_FORMAT(date_debut, '%Y-%m')";
     }
 }

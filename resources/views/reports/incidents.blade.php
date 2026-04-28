@@ -3,393 +3,219 @@
 <head>
     <meta charset="UTF-8">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        html, body { width: 100%; height: 100%; }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            font-size: 11px;
-            color: #1f2937;
-            line-height: 1.5;
-            background: white;
-        }
-
-        /* En-tête professionnel */
-        .page-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            border-bottom: 2px solid #333333;
-            padding: 18px 24px;
-            margin-bottom: 24px;
-            background: white;
-        }
-
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-        }
-
-        .logo-container {
-            width: 52px;
-            height: 52px;
-            background: white;
-            border-radius: 8px;
-            padding: 4px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        }
-
-        .logo-container img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-        }
-
-        .header-text h1 {
-            font-size: 18px;
-            font-weight: 700;
-            color: #1f2937;
-            margin: 0;
-            line-height: 1.2;
-        }
-
-        .header-text p {
-            font-size: 9px;
-            color: #6b7280;
-            margin: 3px 0 0 0;
-        }
-
-        .header-right {
-            text-align: right;
-        }
-
-        .header-right .period {
-            font-size: 12px;
-            font-weight: 600;
-            color: #333333;
-            margin-bottom: 4px;
-        }
-
-        .header-right .date {
-            font-size: 9px;
-            color: #9ca3af;
-        }
-
-        /* KPIs */
-        .kpis-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 12px;
-            margin-bottom: 24px;
-        }
-
-        .kpi {
-            background: white;
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
-            padding: 12px 14px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-            transition: all 0.2s;
-        }
-
-        .kpi.critical { border-left: 4px solid #666666; }
-        .kpi.warning { border-left: 4px solid #666666; }
-        .kpi.success { border-left: 4px solid #666666; }
-        .kpi.info { border-left: 4px solid #666666; }
-
-        .kpi-value {
-            font-size: 20px;
-            font-weight: 700;
-            color: #1f2937;
-            line-height: 1;
-            margin-bottom: 6px;
-        }
-
-        .kpi-label {
-            font-size: 8.5px;
-            color: #6b7280;
-            font-weight: 500;
-            text-transform: uppercase;
-            letter-spacing: 0.4px;
-        }
-
-        /* Sections */
-        .section {
-            margin-bottom: 22px;
-            page-break-inside: avoid;
-        }
-
-        .section-header {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 12px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #333333;
-        }
-
-        .section-header::before {
-            content: '';
-            display: block;
-            width: 0px;
-            height: 0px;
-            background: transparent;
-            border-radius: 2px;
-        }
-
-        .section h2 {
-            font-size: 12px;
-            font-weight: 700;
-            color: #1f2937;
-            margin: 0;
-        }
-
-        /* Tables */
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 10px;
-        }
-
-        thead tr {
-            background: #4a5568;
-            color: white;
-        }
-
-        thead th {
-            padding: 8px 10px;
-            text-align: left;
-            font-weight: 600;
-            font-size: 9px;
-            letter-spacing: 0.3px;
-        }
-
-        tbody tr {
-            border-bottom: 1px solid #e5e7eb;
-        }
-
-        tbody tr:nth-child(even) {
-            background: #f8f9fa;
-        }
-
-        tbody tr:hover {
-            background: #f3f4f6;
-        }
-
-        tbody td {
-            padding: 8px 10px;
-            vertical-align: middle;
-        }
-
-        /* Badges */
-        .badge {
-            display: inline-block;
-            padding: 3px 8px;
-            border-radius: 12px;
-            font-size: 8px;
-            font-weight: 600;
-            color: white;
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
-        }
-
-        /* Barres de progression */
-        .stat-bar-wrap {
-            background: #e5e7eb;
-            border-radius: 6px;
-            height: 6px;
-            width: 100%;
-            overflow: hidden;
-        }
-
-        .stat-bar {
-            background: #4a5568;
-            height: 100%;
-            border-radius: 6px;
-            transition: width 0.3s;
-        }
-
-        /* Footer */
-        .footer {
-            margin-top: 30px;
-            padding-top: 12px;
-            border-top: 1px solid #e5e7eb;
-            font-size: 8px;
-            color: #9ca3af;
-            text-align: center;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .footer-left {
-            text-align: left;
-        }
-
-        .footer-right {
-            text-align: right;
-        }
-
-        /* Page break */
         @page {
-            margin: 20mm;
+            margin: 17mm 16mm 18mm 16mm;
             size: A4 portrait;
         }
 
-        /* Empty state */
-        .empty-state {
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            color: #111827;
+            background: #ffffff;
+            font-family: DejaVu Sans, Arial, sans-serif;
+            font-size: 11px;
+            line-height: 1.35;
+        }
+
+        .header-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 24px;
+        }
+
+        .header-table td {
+            border: 0;
+            padding: 0;
+            vertical-align: top;
+        }
+
+        .logo-cell {
+            width: 96px;
             text-align: center;
-            padding: 40px 20px;
-            color: #9ca3af;
+        }
+
+        .logo {
+            width: 56px;
+            height: auto;
+        }
+
+        .title {
+            margin: 9px 0 10px 0;
+            color: #006b3f;
+            font-size: 21px;
+            font-weight: 700;
+            letter-spacing: .2px;
+        }
+
+        .subtitle {
+            color: #6b7280;
+            font-size: 11px;
+        }
+
+        .gold-rule {
+            height: 4px;
+            margin: 26px 0 32px 0;
+            background: #f0c400;
+        }
+
+        .section {
+            margin-bottom: 30px;
+            page-break-inside: avoid;
+        }
+
+        .section-title {
+            margin: 0 0 8px 0;
+            color: #006b3f;
+            font-size: 15px;
+            font-weight: 700;
+        }
+
+        table.data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 10.5px;
+        }
+
+        .data-table th {
+            padding: 5px 8px;
+            color: #ffffff;
+            background: #006b3f;
+            border: 1px solid #d1d5db;
+            text-align: left;
+            font-weight: 700;
+        }
+
+        .data-table td {
+            padding: 5px 8px;
+            border: 1px solid #d8dde3;
+            vertical-align: top;
+        }
+
+        .data-table tbody tr:nth-child(even) td {
+            background: #f1f1f1;
+        }
+
+        .data-table tbody tr:nth-child(odd) td {
+            background: #ffffff;
+        }
+
+        .number {
+            width: 120px;
+            text-align: right;
+            white-space: nowrap;
+        }
+
+        .muted {
+            color: #6b7280;
+        }
+
+        .footer {
+            position: fixed;
+            right: 0;
+            bottom: -8mm;
+            left: 0;
+            padding-top: 8px;
+            color: #7a7f87;
+            border-top: 1px solid #e4c64a;
+            font-size: 8px;
+        }
+
+        .empty {
+            padding: 16px;
+            color: #6b7280;
+            border: 1px solid #d8dde3;
+            background: #f8fafc;
             font-style: italic;
         }
     </style>
 </head>
 <body>
 @php
-    $topCauses = $byCause->sortByDesc('total')->take(10);
     $logoPath = public_path('images/logo-ceet.png');
+    $periodLabel = $granularity === 'day'
+        ? $start->format('d/m/Y')
+        : $start->format('m/Y');
+    $reportType = $granularity === 'day' ? 'Rapport journalier' : 'Rapport mensuel';
+    $closedCount = $closedCount ?? $incidents->filter(fn ($incident) => (bool) optional($incident->status)->is_final)->count();
+    $openCount = $openCount ?? max(0, $total - $closedCount);
+    $resolutionRate = $total > 0 ? round(($closedCount / $total) * 100, 1) : 0;
+    $topTypes = $byType->sortByDesc('total')->take(10)->values();
+    $topCauses = $byCause->sortByDesc('total')->take(10)->values();
+    $priorityRows = $topDepart->take(8)->values();
 @endphp
 
-{{-- ── En-tête professionnel avec logo ──────────────────────────────── --}}
-<div class="page-header">
-    <div class="header-left">
-        @if(file_exists($logoPath))
-        <div class="logo-container">
-            <img src="file://{{ str_replace('\\', '/', $logoPath) }}" alt="CEET Logo">
-        </div>
-        @endif
-        <div class="header-text">
-            <h1>CEET — Gestion des Incidents</h1>
-            <p>Rapport d'analyse automatisé</p>
-        </div>
-    </div>
-    <div class="header-right">
-        <div class="period">
-            @if($granularity === 'day')
-                Rapport journalier
-            @else
-                Rapport mensuel
+<table class="header-table">
+    <tr>
+        <td class="logo-cell">
+            @if(file_exists($logoPath))
+                <img class="logo" src="file://{{ str_replace('\\', '/', $logoPath) }}" alt="CEET">
             @endif
-        </div>
-        <div class="date">
-            @if($granularity === 'day')
-                {{ $start->format('d') }} {{ $start->monthName }} {{ $start->format('Y') }}
-            @else
-                {{ $start->monthName }} {{ $start->format('Y') }}
-            @endif
-        </div>
-    </div>
-</div>
+        </td>
+        <td>
+            <h1 class="title">CEET &mdash; Rapport des Incidents</h1>
+            <div class="subtitle">
+                Compagnie &Eacute;nergie &Eacute;lectrique du Togo | Direction de la Transformation Digitale<br>
+                {{ $reportType }} | P&eacute;riode : {{ $periodLabel }} | G&eacute;n&eacute;r&eacute; le {{ now()->format('d/m/Y') }}
+            </div>
+        </td>
+    </tr>
+</table>
 
-{{-- ── KPIs en grille ──────────────────────────────────────────────── --}}
-<div class="kpis-grid">
-    <div class="kpi critical">
-        <div class="kpi-value">{{ $total }}</div>
-        <div class="kpi-label">Incidents totaux</div>
-    </div>
-    <div class="kpi warning">
-        <div class="kpi-value">{{ $byStatus->where('label', '!=', 'Clôturé')->sum('total') }}</div>
-        <div class="kpi-label">En cours</div>
-    </div>
-    <div class="kpi success">
-        <div class="kpi-value">{{ $byStatus->firstWhere('label', 'Clôturé')['total'] ?? 0 }}</div>
-        <div class="kpi-label">Clôturés</div>
-    </div>
-    <div class="kpi info">
-        <div class="kpi-value">{{ number_format($avgDuration ?? 0, 0, ',', ' ') }}</div>
-        <div class="kpi-label">Durée moy. (min)</div>
-    </div>
-</div>
+<div class="gold-rule"></div>
 
-{{-- ── Répartition par statut ──────────────────────────────────────── --}}
-@if($byStatus->count())
 <div class="section">
-    <div class="section-header">
-        <h2>Répartition par statut</h2>
-    </div>
-    <table>
+    <h2 class="section-title">1. Indicateurs Cl&eacute;s</h2>
+    <table class="data-table">
         <thead>
             <tr>
-                <th>Statut</th>
-                <th style="width:12%">Nombre</th>
-                <th style="width:60%">Proportion</th>
+                <th>Indicateur</th>
+                <th class="number">Valeur</th>
             </tr>
         </thead>
         <tbody>
-            @foreach($byStatus as $row)
             <tr>
-                <td>
-                    <span class="badge" style="background:{{ $row['color'] }}">{{ $row['label'] }}</span>
-                </td>
-                <td>{{ $row['total'] }}</td>
-                <td>
-                    @if($total > 0)
-                    <div class="stat-bar-wrap">
-                        <div class="stat-bar" style="width:{{ round($row['total']/$total*100) }}%; background:{{ $row['color'] }}"></div>
-                    </div>
-                    @endif
-                </td>
+                <td>Nombre total d'incidents</td>
+                <td class="number">{{ $total }}</td>
             </tr>
-            @endforeach
+            <tr>
+                <td>Incidents en cours</td>
+                <td class="number">{{ $openCount }}</td>
+            </tr>
+            <tr>
+                <td>Incidents cl&ocirc;tur&eacute;s</td>
+                <td class="number">{{ $closedCount }}</td>
+            </tr>
+            <tr>
+                <td>Taux de r&eacute;solution</td>
+                <td class="number">{{ number_format($resolutionRate, 1, ',', ' ') }}%</td>
+            </tr>
+            <tr>
+                <td>Dur&eacute;e moyenne de r&eacute;solution</td>
+                <td class="number">{{ number_format($avgDuration ?? 0, 0, ',', ' ') }} min</td>
+            </tr>
         </tbody>
     </table>
 </div>
-@endif
 
-{{-- ── Répartition par priorité ────────────────────────────────────── --}}
-@if($byPriorite->count())
+@if($topTypes->count())
 <div class="section">
-    <div class="section-header">
-        <h2>Répartition par priorité</h2>
-    </div>
-    <table>
+    <h2 class="section-title">2. R&eacute;partition des Incidents par Type</h2>
+    <table class="data-table">
         <thead>
             <tr>
-                <th>Priorité</th>
-                <th style="width:12%">Nombre</th>
-                <th style="width:60%">Proportion</th>
+                <th>Type d'incident</th>
+                <th class="number">Nombre</th>
             </tr>
         </thead>
         <tbody>
-            @foreach($byPriorite as $row)
-            <tr>
-                <td>
-                    <span class="badge" style="background:{{ $row['color'] }}">{{ $row['label'] }}</span>
-                </td>
-                <td>{{ $row['total'] }}</td>
-                <td>
-                    @if($total > 0)
-                    <div class="stat-bar-wrap">
-                        <div class="stat-bar" style="width:{{ round($row['total']/$total*100) }}%; background:{{ $row['color'] }}"></div>
-                    </div>
-                    @endif
-                </td>
-            </tr>
-            @endforeach
-        </tbody>
-    </table>
-</div>
-@endif
-
-{{-- ── Top départs ─────────────────────────────────────────────────── --}}
-@if($topDepart->count())
-<div class="section">
-    <div class="section-header">
-        <h2>Top départs touchés</h2>
-    </div>
-    <table>
-        <thead>
-            <tr>
-                <th>Départ</th>
-                <th style="width:20%">Nombre d'incidents</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach($topDepart as $row)
+            @foreach($topTypes as $row)
             <tr>
                 <td>{{ $row['label'] }}</td>
-                <td>{{ $row['total'] }}</td>
+                <td class="number">{{ $row['total'] }}</td>
             </tr>
             @endforeach
         </tbody>
@@ -397,24 +223,43 @@
 </div>
 @endif
 
-{{-- ── Causes les plus fréquentes ───────────────────────────────────── --}}
+@if($priorityRows->count())
+<div class="section">
+    <h2 class="section-title">3. D&eacute;partements n&eacute;cessitant une attention prioritaire</h2>
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>D&eacute;partement</th>
+                <th class="number">Nombre d'incidents</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach($priorityRows as $row)
+            <tr>
+                <td>{{ $row['label'] }}</td>
+                <td class="number">{{ $row['total'] }}</td>
+            </tr>
+            @endforeach
+        </tbody>
+    </table>
+</div>
+@endif
+
 @if($topCauses->count())
 <div class="section">
-    <div class="section-header">
-        <h2>Top 10 — Causes les plus fréquentes</h2>
-    </div>
-    <table>
+    <h2 class="section-title">4. Causes les plus fr&eacute;quentes</h2>
+    <table class="data-table">
         <thead>
             <tr>
                 <th>Cause</th>
-                <th style="width:20%">Nombre d'incidents</th>
+                <th class="number">Nombre</th>
             </tr>
         </thead>
         <tbody>
             @foreach($topCauses as $row)
             <tr>
                 <td>{{ $row['label'] }}</td>
-                <td>{{ $row['total'] }}</td>
+                <td class="number">{{ $row['total'] }}</td>
             </tr>
             @endforeach
         </tbody>
@@ -422,52 +267,40 @@
 </div>
 @endif
 
-{{-- ── Liste détaillée des incidents ───────────────────────────── --}}
 @if($incidents->count())
 <div class="section">
-    <div class="section-header">
-        <h2>Détail des incidents ({{ $incidents->count() }})</h2>
-    </div>
-    <table>
+    <h2 class="section-title">5. D&eacute;tail des incidents</h2>
+    <table class="data-table">
         <thead>
             <tr>
-                <th>Code</th>
-                <th>Titre</th>
-                <th>Département</th>
-                <th>Statut</th>
-                <th>Priorité</th>
-                <th style="width:12%">Début</th>
-                <th style="width:8%">Durée (min)</th>
+                <th style="width: 17%;">Code</th>
+                <th>Incident</th>
+                <th style="width: 20%;">D&eacute;partement</th>
+                <th style="width: 14%;">Statut</th>
+                <th style="width: 14%;">D&eacute;but</th>
+                <th class="number" style="width: 12%;">Dur&eacute;e</th>
             </tr>
         </thead>
         <tbody>
-            @foreach($incidents as $inc)
+            @foreach($incidents as $incident)
             <tr>
-                <td><strong>{{ $inc->code_incident }}</strong></td>
-                <td>{{ \Illuminate\Support\Str::limit($inc->titre, 35) }}</td>
-                <td>{{ optional($inc->departement)->nom ?? '—' }}</td>
-                <td>
-                    <span class="badge" style="background:{{ optional($inc->statut)->couleur ?? '#6c757d' }}">
-                        {{ optional($inc->statut)->libelle ?? '—' }}
-                    </span>
-                </td>
-                <td>
-                    <span class="badge" style="background:{{ optional($inc->priorite)->couleur ?? '#aaa' }}">
-                        {{ optional($inc->priorite)->libelle ?? '—' }}
-                    </span>
-                </td>
-                <td>{{ optional($inc->date_debut)?->format('d/m/Y H:i') }}</td>
-                <td style="text-align:right">{{ $inc->duree_minutes ?? '—' }}</td>
+                <td>{{ $incident->code_incident }}</td>
+                <td>{{ \Illuminate\Support\Str::limit($incident->titre, 42) }}</td>
+                <td>{{ optional($incident->departement)->nom ?? '-' }}</td>
+                <td>{{ optional($incident->status)->libelle ?? '-' }}</td>
+                <td>{{ optional($incident->date_debut)?->format('d/m/Y') }}</td>
+                <td class="number">{{ $incident->duree_minutes ? $incident->duree_minutes.' min' : '-' }}</td>
             </tr>
             @endforeach
         </tbody>
     </table>
 </div>
 @else
-<div class="empty-state">
-    ✗ Aucun incident sur cette période
-</div>
+<div class="empty">Aucun incident sur cette p&eacute;riode.</div>
 @endif
 
+<div class="footer">
+    CEET &mdash; Direction de la Transformation Digitale (DTD) | Application de Gestion des Incidents
+</div>
 </body>
 </html>
