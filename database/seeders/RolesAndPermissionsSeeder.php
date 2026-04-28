@@ -60,8 +60,10 @@ class RolesAndPermissionsSeeder extends Seeder
         $operateur->syncPermissions([
             'incidents.view',
             'incidents.create',
+            'incidents.export',
             'catalogues.view',
             'reporting.view',
+            'reporting.export',
         ]);
 
         $this->syncAliases($admin, ['admin']);

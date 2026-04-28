@@ -180,33 +180,31 @@ sequenceDiagram
 
 ## 4. Système d'authentification et rôles
 
-### 4.1 Matrice fonctionnelle cible
+### 4.1 Matrice réelle appliquée
+La matrice ci-dessous correspond au seeder `RolesAndPermissionsSeeder` et aux policies actuellement utilisées.
+
 | Permission | Administrateur | Superviseur | Opérateur Terrain |
 |--------------------|:--------------:|:-----------:|:-----------------:|
-| `incidents.view` | ✓ | ✓ | ✓ |
-| `incidents.create` | ✓ | ✓ | ✓ |
-| `incidents.update` | ✓ | ✓ | ✓ |
-| `incidents.delete` | ✓ | ✗ | ✗ |
-| Catalogues CRUD | ✓ | ✗ | ✗ |
-| Historique/Logs | ✓ | ✓ | ✗ |
-| Gestion Users | ✓ | ✗ | ✗ |
-| Rapports/Exports | ✓ | ✓ | ✓ |
+| `incidents.view` | oui | oui | oui |
+| `incidents.create` | oui | oui | oui |
+| `incidents.update` | oui | oui | non |
+| `incidents.delete` | oui | non | non |
+| `incidents.assign` | oui | oui | non |
+| `incidents.close` | oui | oui | non |
+| `incidents.export` | oui | oui | oui |
+| `catalogues.view` | oui | oui | oui |
+| `catalogues.manage` | oui | non | non |
+| `reporting.view` | oui | oui | oui |
+| `reporting.export` | oui | oui | oui |
+| `users.view` | oui | oui | non |
+| `users.manage` | oui | oui | non |
 
-### 4.2 Implémentation observée dans le dépôt
-Le seeder `RolesAndPermissionsSeeder` met actuellement en place :
-
-- `Administrateur` : accès complet incidents, catalogues et utilisateurs ;
-- `Superviseur` : `incidents.view`, `incidents.create`, `incidents.update`, `catalogues.view`, `users.view`, `users.manage` ;
-- `Opérateur` : `incidents.view`, `incidents.create`, `catalogues.view`.
-
-### 4.3 Remarque importante
-La matrice cible du cahier des charges et l'implémentation observée ne sont pas strictement identiques.  
-Deux écarts notables existent :
-
-- le rôle **Opérateur** ne possède pas actuellement `incidents.update` dans le seeder ;
-- le rôle **Superviseur** reçoit actuellement `users.manage`, ce qui dépasse la matrice cible.
-
-Pour un déploiement en production, une harmonisation entre le CDC et la configuration réelle est recommandée.
+### 4.2 Règles complémentaires
+- L'administrateur passe par le `before()` des policies et conserve un accès complet.
+- Le superviseur peut voir, créer, modifier, assigner, clôturer et exporter les incidents.
+- L'opérateur peut déclarer, consulter et exporter uniquement les incidents visibles selon `Incident::visibleToUser()`.
+- La gestion des utilisateurs est actuellement ouverte à l'administrateur et au superviseur.
+- L'inscription publique reste désactivée par défaut via `AUTH_ALLOW_PUBLIC_REGISTRATION=false`.
 
 ## 5. Stack technique détaillée
 
