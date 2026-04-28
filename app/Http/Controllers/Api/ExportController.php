@@ -13,11 +13,12 @@ class ExportController extends ApiController
 
     public function incidentsCsv(IncidentFilterRequest $request)
     {
-        Gate::authorize('exportReports');
+        Gate::authorize('incidents.export');
 
-        $rows = $this->reportService->exportRows($request->validated());
+        $filters = $request->validated();
+        $currentUser = $request->user();
 
-        $callback = function () use ($rows): void {
+        $callback = function () use ($filters, $currentUser): void {
             $output = fopen('php://output', 'w');
             fprintf($output, chr(0xEF).chr(0xBB).chr(0xBF));
 
@@ -36,22 +37,24 @@ class ExportController extends ApiController
                 'Duree minutes',
             ], ';');
 
-            foreach ($rows as $incident) {
-                fputcsv($output, [
-                    $incident->code_incident,
-                    $incident->titre,
-                    $incident->departement?->nom,
-                    $incident->typeIncident?->libelle,
-                    $incident->cause?->libelle,
-                    $incident->status?->libelle,
-                    $incident->priorite?->libelle,
-                    $incident->operateur?->name,
-                    $incident->responsable?->name,
-                    $incident->date_debut?->format('Y-m-d H:i:s'),
-                    $incident->date_fin?->format('Y-m-d H:i:s'),
-                    $incident->duree_minutes,
-                ], ';');
-            }
+            $this->reportService->exportQuery($filters, $currentUser)
+                ->lazy(200)
+                ->each(function ($incident) use ($output): void {
+                    fputcsv($output, [
+                        $incident->code_incident,
+                        $incident->titre,
+                        $incident->departement?->nom,
+                        $incident->typeIncident?->libelle,
+                        $incident->cause?->libelle,
+                        $incident->status?->libelle,
+                        $incident->priorite?->libelle,
+                        $incident->operateur?->name,
+                        $incident->responsable?->name,
+                        $incident->date_debut?->format('Y-m-d H:i:s'),
+                        $incident->date_fin?->format('Y-m-d H:i:s'),
+                        $incident->duree_minutes,
+                    ], ';');
+                });
 
             fclose($output);
         };
@@ -65,9 +68,9 @@ class ExportController extends ApiController
 
     public function incidentsPdf(IncidentFilterRequest $request)
     {
-        Gate::authorize('exportReports');
+        Gate::authorize('incidents.export');
 
-        $rows = $this->reportService->exportRows($request->validated());
+        $rows = $this->reportService->exportRows($request->validated(), $request->user());
 
         $pdf = Pdf::loadView('exports.incidents-pdf', [
             'incidents' => $rows,

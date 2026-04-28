@@ -36,11 +36,11 @@ Route::middleware(['auth', 'verified'])->group(function (): void {
         ->name('incidents.en-cours');
 
     Route::get('incidents/vue-console', VueConsoleController::class)
-        ->middleware('permission:incidents.view')
+        ->middleware(['permission:incidents.view', 'permission:reporting.view'])
         ->name('incidents.vue-console');
 
     Route::get('incidents-export', [IncidentController::class, 'export'])
-        ->middleware('permission:incidents.view')
+        ->middleware('permission:incidents.export')
         ->name('incidents.export');
 
     Route::resource('incidents', IncidentController::class);
@@ -49,10 +49,10 @@ Route::middleware(['auth', 'verified'])->group(function (): void {
         ->middleware('permission:reporting.view')
         ->name('reports.index');
     Route::get('reports/daily', [ReportController::class, 'exportDailyReport'])
-        ->middleware('permission:reporting.view')
+        ->middleware('permission:reporting.export')
         ->name('reports.daily');
     Route::get('reports/monthly', [ReportController::class, 'exportMonthlyReport'])
-        ->middleware('permission:reporting.view')
+        ->middleware('permission:reporting.export')
         ->name('reports.monthly');
 
     Route::middleware('role:Administrateur|Superviseur')->group(function (): void {

@@ -164,6 +164,50 @@ class IncidentWorkflowTest extends TestCase
         $response->assertJsonMissing(['id' => $otherTypeCause->id, 'libelle' => $otherTypeCause->libelle]);
     }
 
+    public function test_operator_cannot_view_unrelated_incident_on_web(): void
+    {
+        $this->seedRolesAndPermissions();
+        $context = $this->createCatalogContext();
+
+        $owner = $this->makeUserWithRole('operator');
+        $other = $this->makeUserWithRole('operator');
+        $incident = $this->makeIncident($context, ['operateur_id' => $owner->id]);
+
+        $response = $this->actingAs($other)->get(route('incidents.show', $incident));
+
+        $response->assertForbidden();
+    }
+
+    public function test_open_incidents_json_returns_only_open_incidents_summary_and_rows(): void
+    {
+        $this->seedRolesAndPermissions();
+        $context = $this->createCatalogContext();
+        $operator = $this->makeUserWithRole('operator');
+
+        $openIncident = $this->makeIncident($context, [
+            'code_incident' => 'INC-OPEN-JSON',
+            'operateur_id' => $operator->id,
+            'status_id' => $context['statusOpen']->id,
+        ]);
+
+        $closedIncident = $this->makeIncident($context, [
+            'code_incident' => 'INC-CLOSED-JSON',
+            'operateur_id' => $operator->id,
+            'status_id' => $context['statusFinal']->id,
+            'date_fin' => now(),
+            'duree_minutes' => 25,
+        ]);
+
+        $response = $this->actingAs($operator)->getJson(route('incidents.en-cours'));
+
+        $response->assertOk();
+        $response->assertJsonPath('totalEnCours', 1);
+        $response->assertJsonCount(1, 'incidents');
+        $response->assertJsonPath('incidents.0.code_incident', $openIncident->code_incident);
+        $response->assertSee($openIncident->code_incident);
+        $response->assertDontSee($closedIncident->code_incident);
+    }
+
     public function test_store_rejects_cause_that_does_not_belong_to_selected_type(): void
     {
         $this->seedRolesAndPermissions();

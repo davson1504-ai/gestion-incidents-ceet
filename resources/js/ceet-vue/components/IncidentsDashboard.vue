@@ -53,6 +53,7 @@
 </template>
 
 <script setup>
+import axios from 'axios';
 import { onMounted, ref } from 'vue';
 import api, { unwrapPayload } from '../services/api';
 
@@ -81,15 +82,19 @@ const fetchData = async () => {
     errorMessage.value = '';
 
     try {
-        const [overviewResp, incidentsResp] = await Promise.all([
+        const [overviewResp, openIncidentsResp] = await Promise.all([
             api.get('/reports/overview'),
-            api.get('/incidents', { params: { sort_by: 'date_debut', sort_dir: 'desc', per_page: 15 } }),
+            axios.get('/incidents/en-cours', {
+                headers: {
+                    Accept: 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                withCredentials: true,
+            }),
         ]);
 
         overview.value = unwrapPayload(overviewResp);
-
-        const list = unwrapPayload(incidentsResp).data ?? [];
-        openIncidents.value = list.filter((incident) => !(incident.statut?.is_final ?? false));
+        openIncidents.value = openIncidentsResp.data?.incidents ?? [];
     } catch (_error) {
         errorMessage.value = 'Impossible de recuperer le tableau de bord.';
     } finally {

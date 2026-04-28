@@ -6,15 +6,19 @@
     $avgRemainingMinutes = $avgMinutes % 60;
     $mttrLabel = $avgHours > 0 ? sprintf('%dh %02dmin', $avgHours, $avgRemainingMinutes) : sprintf('%dmin', $avgRemainingMinutes);
     $weekDeltaLabel = $weekDelta !== null ? number_format($weekDelta, 1, ',', ' ') . '%' : 'n/d';
-    $dashboardChartPayload = [
-        'timeseries' => [
-            'labels' => collect($timeseries)->map(fn ($item) => Carbon::parse($item->d)->format('d/m'))->values(),
-            'data' => collect($timeseries)->pluck('total')->map(fn ($total) => (int) $total)->values(),
-        ],
-        'topDepart' => collect($topDepart)->take(7)->values(),
-        'byStatus' => collect($byStatus)->values(),
-        'byPriorite' => collect($byPriorite)->values(),
-    ];
+$dashboardChartPayload = [
+    'timeseries' => [
+        'labels' => collect($timeseries)
+            ->map(fn ($item) => Carbon::parse(data_get($item, 'd'))->format('d/m'))
+            ->values(),
+        'data' => collect($timeseries)
+            ->map(fn ($item) => (int) data_get($item, 'total', 0))
+            ->values(),
+    ],
+    'topDepart' => collect($topDepart)->take(7)->values(),
+    'byStatus' => collect($byStatus)->values(),
+    'byPriorite' => collect($byPriorite)->values(),
+];
 @endphp
 
 <x-app-layout>

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\RoleAliases;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -77,22 +78,35 @@ class User extends Authenticatable
     public function scopeOperateurs(Builder $query): Builder
     {
         return $query->whereHas('roles', function (Builder $roleQuery) {
-            $roleQuery->whereIn('name', ['Operateur', 'Opérateur', 'operateur']);
+            $roleQuery->where(function (Builder $inner) {
+                $inner->whereIn('name', RoleAliases::operatorNames());
+
+                foreach (RoleAliases::operatorLikePatterns() as $pattern) {
+                    $inner->orWhere('name', 'like', $pattern);
+                }
+            });
         });
     }
 
     public function isAdmin(): bool
     {
-        return $this->hasAnyRole(['Administrateur', 'admin']);
+        return $this->hasAnyRole(RoleAliases::adminNames());
     }
 
     public function isSuperviseur(): bool
     {
-        return $this->hasAnyRole(['Superviseur', 'superviseur']);
+        return $this->hasAnyRole(RoleAliases::supervisorNames());
     }
 
     public function isOperateur(): bool
     {
-        return $this->hasAnyRole(['Operateur', 'Opérateur', 'operateur']);
+        return $this->hasAnyRole(RoleAliases::operatorNames());
+    }
+
+    protected static function boot(): void
+    {
+        parent::boot();
+        static::saved(fn() => \App\Services\IncidentCatalogueService::invalidateCache());
+        static::deleted(fn() => \App\Services\IncidentCatalogueService::invalidateCache());
     }
 }

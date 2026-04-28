@@ -46,4 +46,11 @@ class Departement extends Model
     {
         return $query->where('is_active', true);
     }
+
+    protected static function boot(): void
+    {
+        parent::boot();
+        static::saved(fn() => \App\Services\IncidentCatalogueService::invalidateCache());
+        static::deleted(fn() => \App\Services\IncidentCatalogueService::invalidateCache());
+    }
 }

@@ -12,7 +12,7 @@ use App\Http\Controllers\Api\IncidentInterventionController;
 use App\Http\Controllers\Api\ReportController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['auth', 'verified'])->prefix('v1')->name('api.v1.')->group(function (): void {
+Route::middleware(['auth', 'verified', 'throttle:60,1'])->prefix('v1')->name('api.v1.')->group(function (): void {
     Route::apiResource('incidents', IncidentController::class);
     Route::post('incidents/{incident}/assign', [IncidentAssignmentController::class, 'store'])
         ->name('incidents.assign');
@@ -40,7 +40,12 @@ Route::middleware(['auth', 'verified'])->prefix('v1')->name('api.v1.')->group(fu
     });
 
     Route::prefix('exports')->group(function (): void {
-        Route::get('incidents.csv', [ExportController::class, 'incidentsCsv'])->name('exports.incidents.csv');
-        Route::get('incidents.pdf', [ExportController::class, 'incidentsPdf'])->name('exports.incidents.pdf');
+        // Export endpoints: strictement throttled (10 exports par 5 min)
+        Route::get('incidents.csv', [ExportController::class, 'incidentsCsv'])
+            ->middleware('throttle:10,5')
+            ->name('exports.incidents.csv');
+        Route::get('incidents.pdf', [ExportController::class, 'incidentsPdf'])
+            ->middleware('throttle:10,5')
+            ->name('exports.incidents.pdf');
     });
 });

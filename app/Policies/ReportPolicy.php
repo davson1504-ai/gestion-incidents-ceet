@@ -13,7 +13,7 @@ class ReportPolicy
 
     public function viewAny(User $user): bool
     {
-        return $user->isSuperviseur();
+        return $user->can('reporting.view');
     }
 
     public function view(User $user): bool
@@ -23,6 +23,6 @@ class ReportPolicy
 
     public function export(User $user): bool
     {
-        return $this->viewAny($user);
+        return $user->can('reporting.export');
     }
 }

@@ -1,5 +1,7 @@
 @php
     $topCauses = $byCause->sortByDesc('total')->take(10);
+    $openCount = collect($byStatus)->where('is_final', false)->sum('total');
+    $closedCount = collect($byStatus)->where('is_final', true)->sum('total');
 @endphp
 
 <table>
@@ -31,8 +33,8 @@
         </tr>
         <tr>
             <td style="font-weight:bold; font-size:12px; background-color:#f0f9ff; padding:8px;">{{ $total }}</td>
-            <td style="font-weight:bold; font-size:12px; background-color:#fffbeb; padding:8px;">{{ $byStatus->where('label', '!=', 'Clôturé')->sum('total') }}</td>
-            <td style="font-weight:bold; font-size:12px; background-color:#f0fdf4; padding:8px;">{{ $byStatus->firstWhere('label', 'Clôturé')['total'] ?? 0 }}</td>
+            <td style="font-weight:bold; font-size:12px; background-color:#fffbeb; padding:8px;">{{ $openCount }}</td>
+            <td style="font-weight:bold; font-size:12px; background-color:#f0fdf4; padding:8px;">{{ $closedCount }}</td>
             <td style="font-weight:bold; font-size:12px; background-color:#faf5ff; padding:8px;">{{ number_format($avgDuration ?? 0, 0, ',', ' ') }}</td>
             <td colspan="3"></td>
         </tr>
@@ -74,7 +76,7 @@
             <td style="padding:6px 8px; font-weight:bold;">{{ $inc->code_incident }}</td>
             <td style="padding:6px 8px;">{{ $inc->titre }}</td>
             <td style="padding:6px 8px;">{{ optional($inc->departement)->nom ?? '—' }}</td>
-            <td style="padding:6px 8px; background-color:{{ optional($inc->statut)->couleur ?? '#6c757d' }}22; color:{{ optional($inc->statut)->couleur ?? '#6c757d' }}; font-weight:bold;">
+            <td style="padding:6px 8px; background-color:{{ optional($inc->statut)->couleur ?? '#6c757d' }}22; color:{{ optional($inc->status)->couleur ?? '#6c757d' }}; font-weight:bold;">
                 {{ optional($inc->statut)->libelle ?? '—' }}
             </td>
             <td style="padding:6px 8px; background-color:{{ optional($inc->priorite)->couleur ?? '#aaa' }}22; color:{{ optional($inc->priorite)->couleur ?? '#aaa' }}; font-weight:bold;">

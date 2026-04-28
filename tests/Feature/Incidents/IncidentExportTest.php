@@ -66,6 +66,59 @@ class IncidentExportTest extends TestCase
         $this->assertStringNotContainsString('INC-EXPORT-CLOSED', $content);
     }
 
+    public function test_operator_export_is_limited_to_visible_incidents(): void
+    {
+        $this->seedRolesAndPermissions();
+        $context = $this->createCatalogContext();
+        $operator = $this->makeUserWithRole('operator');
+        $otherOperator = $this->makeUserWithRole('operator');
+
+        $visibleIncident = $this->makeIncident($context, [
+            'code_incident' => 'INC-EXPORT-MINE',
+            'operateur_id' => $operator->id,
+        ]);
+
+        $hiddenIncident = $this->makeIncident($context, [
+            'code_incident' => 'INC-EXPORT-HIDDEN',
+            'operateur_id' => $otherOperator->id,
+        ]);
+
+        $response = $this->actingAs($operator)->get(route('incidents.export'));
+        $content = $response->streamedContent();
+
+        $response->assertOk();
+        $this->assertStringContainsString($visibleIncident->code_incident, $content);
+        $this->assertStringNotContainsString($hiddenIncident->code_incident, $content);
+    }
+
+    public function test_export_preserves_business_order_by_date_debut_desc(): void
+    {
+        $this->seedRolesAndPermissions();
+        $context = $this->createCatalogContext();
+        $operator = $this->makeUserWithRole('operator');
+
+        $older = $this->makeIncident($context, [
+            'code_incident' => 'INC-EXPORT-OLDER',
+            'operateur_id' => $operator->id,
+            'date_debut' => now()->subDays(2),
+        ]);
+
+        $newer = $this->makeIncident($context, [
+            'code_incident' => 'INC-EXPORT-NEWER',
+            'operateur_id' => $operator->id,
+            'date_debut' => now()->subDay(),
+        ]);
+
+        $response = $this->actingAs($operator)->get(route('incidents.export'));
+        $content = $response->streamedContent();
+
+        $response->assertOk();
+        $this->assertLessThan(
+            strpos($content, $older->code_incident),
+            strpos($content, $newer->code_incident)
+        );
+    }
+
     public function test_unauthorized_user_cannot_export(): void
     {
         $this->seedRolesAndPermissions();

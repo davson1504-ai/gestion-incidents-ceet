@@ -12,7 +12,7 @@ class StoreInterventionRequest extends FormRequest
     {
         $incident = $this->route('incident');
 
-        return $this->user() !== null && $incident instanceof Incident && $this->user()->can('update', $incident);
+        return $this->user() !== null && $incident instanceof Incident && $this->user()->can('intervene', $incident);
     }
 
     public function rules(): array

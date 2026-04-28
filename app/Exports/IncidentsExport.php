@@ -3,6 +3,7 @@
 namespace App\Exports;
 
 use App\Models\Incident;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Maatwebsite\Excel\Concerns\Exportable;
 use Maatwebsite\Excel\Concerns\FromQuery;
@@ -18,11 +19,15 @@ class IncidentsExport implements FromQuery, ShouldAutoSize, WithHeadings, WithMa
 {
     use Exportable;
 
-    public function __construct(private readonly array $filters) {}
+    public function __construct(
+        private readonly array $filters,
+        private readonly ?User $currentUser = null,
+    ) {}
 
     public function query(): Builder
     {
         return Incident::query()
+            ->when($this->currentUser, fn (Builder $query) => $query->visibleToUser($this->currentUser))
             ->with([
                 'departement',
                 'status',
@@ -48,7 +53,8 @@ class IncidentsExport implements FromQuery, ShouldAutoSize, WithHeadings, WithMa
                         ->orWhere('titre', 'like', "%{$value}%");
                 });
             })
-            ->orderByDesc('date_debut');
+            ->orderByDesc('date_debut')
+            ->orderByDesc('id');
     }
 
     public function headings(): array

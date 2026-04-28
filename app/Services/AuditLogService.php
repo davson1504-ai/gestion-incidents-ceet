@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class AuditLogService
 {
+    public function __construct(private readonly RequestContextService $requestContextService) {}
+
     public function record(
         string $action,
         string $module,
@@ -16,6 +18,8 @@ class AuditLogService
         ?int $incidentId = null,
         array $details = []
     ): Log {
+        $context = $this->requestContextService->current();
+
         return Log::create([
             'user_id' => $userId,
             'action' => $action,
@@ -23,8 +27,8 @@ class AuditLogService
             'target_type' => $target ? $target::class : null,
             'target_id' => $target?->getKey(),
             'incident_id' => $incidentId,
-            'ip_address' => request()?->ip(),
-            'user_agent' => request()?->userAgent(),
+            'ip_address' => $context['ip_address'],
+            'user_agent' => $context['user_agent'],
             'details' => $details,
         ]);
     }

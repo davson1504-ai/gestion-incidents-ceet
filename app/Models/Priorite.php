@@ -28,4 +28,11 @@ class Priorite extends Model
     {
         return $this->hasMany(Incident::class, 'priorite_id');
     }
+
+    protected static function boot(): void
+    {
+        parent::boot();
+        static::saved(fn() => \App\Services\IncidentCatalogueService::invalidateCache());
+        static::deleted(fn() => \App\Services\IncidentCatalogueService::invalidateCache());
+    }
 }

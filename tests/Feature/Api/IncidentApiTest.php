@@ -2,12 +2,10 @@
 
 namespace Tests\Feature\Api;
 
-use App\Models\Incident;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Tests\Concerns\BuildsIncidentContext;
 use Tests\TestCase;
-
 class IncidentApiTest extends TestCase
 {
     use BuildsIncidentContext;

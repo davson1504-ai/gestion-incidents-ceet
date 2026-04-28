@@ -2,11 +2,13 @@
     use Illuminate\Support\Carbon;
     use Illuminate\Support\Str;
 
+    $viewErrors = $errors ?? new \Illuminate\Support\ViewErrorBag();
+
     $from = $users->firstItem() ?? 0;
     $to = $users->lastItem() ?? 0;
     $advancedOpen = filled($filters['role']) || filled($filters['departement_id']) || ($filters['is_active'] !== null && $filters['is_active'] !== '');
     $createModalOpen = collect(['name', 'prenom', 'nom_famille', 'email', 'telephone', 'role', 'departement_id', 'password'])
-        ->contains(fn ($field) => $errors->has($field));
+        ->contains(fn ($field) => $viewErrors->has($field));
 @endphp
 
 <x-app-layout>
