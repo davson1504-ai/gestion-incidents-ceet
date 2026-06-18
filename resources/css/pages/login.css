@@ -1,0 +1,29 @@
+@import "../app.css";
+
+.ceet-login-page,
+.ceet-reset-page {
+    background: #f8f9fb;
+}
+
+.ceet-login-panel,
+.ceet-reset-panel {
+    box-shadow: 0 20px 60px rgba(15, 23, 42, .08);
+}
+
+.ceet-login-logo,
+.ceet-reset-logo {
+    border-radius: 6px;
+}
+
+.ceet-reset-main {
+    width: min(100%, 460px);
+    margin: auto;
+    padding: 24px;
+}
+
+.ceet-reset-panel {
+    padding: 36px;
+    border: 1px solid #d8dce2;
+    border-radius: 6px;
+    background: #ffffff;
+}
