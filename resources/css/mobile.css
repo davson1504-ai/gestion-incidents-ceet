@@ -1,77 +1,33 @@
-/* Mobile-first helper styles for incidents and dashboard pages */
-
-body {
-    font-size: 0.95rem;
-}
-
-.page-header {
-    gap: 0.75rem;
-}
-
 @media (max-width: 991.98px) {
-    .navbar .dropdown-menu {
-        border: 0;
-        padding-top: 0.25rem;
+    .ceet-content-container {
+        padding-inline: 14px;
+    }
+
+    .ceet-page-header,
+    .ceet-page-actions,
+    .ceet-form-actions {
+        align-items: stretch !important;
+        flex-direction: column;
+    }
+
+    .ceet-form-actions .btn,
+    .ceet-page-actions .btn {
+        width: 100%;
+    }
+
+    .ceet-card {
+        padding: 18px;
     }
 }
 
 @media (max-width: 767.98px) {
-    .table-mobile-cards thead {
-        display: none;
+    .table-responsive,
+    .ceet-table-wrap {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
     }
 
-    .table-mobile-cards tbody tr {
-        display: block;
-        margin-bottom: 0.75rem;
-        border: 1px solid #dee2e6;
-        border-radius: 0.5rem;
-        overflow: hidden;
-        background: #fff;
-    }
-
-    .table-mobile-cards tbody td {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        gap: 0.75rem;
-        padding: 0.65rem 0.85rem;
-        border-bottom: 1px solid #f1f5f9;
-    }
-
-    .table-mobile-cards tbody td:last-child {
-        border-bottom: 0;
-    }
-
-    .table-mobile-cards tbody td::before {
-        content: attr(data-label);
-        font-size: 0.75rem;
-        font-weight: 600;
-        letter-spacing: 0.03em;
-        color: #6b7280;
-        text-transform: uppercase;
-        white-space: nowrap;
-    }
-
-    .table-mobile-cards tbody td[colspan] {
-        display: block;
-        text-align: center;
-    }
-
-    .table-mobile-cards tbody td[colspan]::before {
-        display: none;
-    }
-}
-
-@media (max-width: 575.98px) {
-    .metric-value {
-        font-size: 1.35rem;
-    }
-
-    .card-body {
-        padding: 0.85rem;
-    }
-
-    .btn {
-        font-size: 0.875rem;
+    .ceet-page-title {
+        font-size: 28px;
     }
 }

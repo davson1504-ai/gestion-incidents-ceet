@@ -16,7 +16,7 @@ class IncidentExportTest extends TestCase
     {
         $this->seedRolesAndPermissions();
         $context = $this->createCatalogContext();
-        $operator = $this->makeUserWithRole('operator');
+        $operator = $this->makeUserWithRole('supervisor');
 
         $this->makeIncident($context, [
             'code_incident' => 'INC-EXPORT-001',
@@ -36,7 +36,7 @@ class IncidentExportTest extends TestCase
     {
         $this->seedRolesAndPermissions();
         $context = $this->createCatalogContext();
-        $operator = $this->makeUserWithRole('operator');
+        $operator = $this->makeUserWithRole('supervisor');
 
         $this->makeIncident($context, [
             'code_incident' => 'INC-EXPORT-OPEN',
@@ -66,36 +66,21 @@ class IncidentExportTest extends TestCase
         $this->assertStringNotContainsString('INC-EXPORT-CLOSED', $content);
     }
 
-    public function test_operator_export_is_limited_to_visible_incidents(): void
+    public function test_operator_cannot_export_incidents(): void
     {
         $this->seedRolesAndPermissions();
-        $context = $this->createCatalogContext();
         $operator = $this->makeUserWithRole('operator');
-        $otherOperator = $this->makeUserWithRole('operator');
-
-        $visibleIncident = $this->makeIncident($context, [
-            'code_incident' => 'INC-EXPORT-MINE',
-            'operateur_id' => $operator->id,
-        ]);
-
-        $hiddenIncident = $this->makeIncident($context, [
-            'code_incident' => 'INC-EXPORT-HIDDEN',
-            'operateur_id' => $otherOperator->id,
-        ]);
 
         $response = $this->actingAs($operator)->get(route('incidents.export'));
-        $content = $response->streamedContent();
 
-        $response->assertOk();
-        $this->assertStringContainsString($visibleIncident->code_incident, $content);
-        $this->assertStringNotContainsString($hiddenIncident->code_incident, $content);
+        $response->assertForbidden();
     }
 
     public function test_export_preserves_business_order_by_date_debut_desc(): void
     {
         $this->seedRolesAndPermissions();
         $context = $this->createCatalogContext();
-        $operator = $this->makeUserWithRole('operator');
+        $operator = $this->makeUserWithRole('supervisor');
 
         $older = $this->makeIncident($context, [
             'code_incident' => 'INC-EXPORT-OLDER',

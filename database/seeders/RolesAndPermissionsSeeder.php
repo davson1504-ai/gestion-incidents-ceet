@@ -16,14 +16,22 @@ class RolesAndPermissionsSeeder extends Seeder
 
         $permissions = [
             'incidents.view',
+            'incidents.view.assigned',
             'incidents.create',
             'incidents.update',
             'incidents.delete',
             'incidents.assign',
+            'incidents.take',
+            'incidents.resolve',
+            'incidents.report',
+            'incidents.validate',
             'incidents.close',
             'incidents.export',
             'catalogues.view',
             'catalogues.manage',
+            'logs.view',
+            'roles.manage',
+            'system.view',
             'reporting.view',
             'reporting.export',
             'users.view',
@@ -39,31 +47,40 @@ class RolesAndPermissionsSeeder extends Seeder
 
         $admin = $this->resolveOrCreateRole(['Administrateur', 'admin']);
         $superviseur = $this->resolveOrCreateRole(['Superviseur', 'superviseur']);
-        $operateur = $this->resolveOrCreateRole(['Opérateur', 'Operateur', 'operateur']);
+        $operateur = $this->resolveOrCreateRole(['Opérateur', 'OpÃ©rateur', 'Operateur', 'operateur']);
 
-        $admin->syncPermissions($permissions);
+        $admin->syncPermissions([
+            'users.view',
+            'users.manage',
+            'roles.manage',
+            'catalogues.view',
+            'catalogues.manage',
+            'logs.view',
+            'system.view',
+            'incidents.view',
+            'incidents.delete',
+            'reporting.view',
+            'reporting.export',
+        ]);
 
         $superviseur->syncPermissions([
             'incidents.view',
             'incidents.create',
             'incidents.update',
             'incidents.assign',
+            'incidents.validate',
             'incidents.close',
             'incidents.export',
-            'catalogues.view',
             'reporting.view',
             'reporting.export',
-            'users.view',
-            'users.manage',
         ]);
 
         $operateur->syncPermissions([
             'incidents.view',
-            'incidents.create',
-            'incidents.export',
-            'catalogues.view',
-            'reporting.view',
-            'reporting.export',
+            'incidents.view.assigned',
+            'incidents.take',
+            'incidents.resolve',
+            'incidents.report',
         ]);
 
         $this->syncAliases($admin, ['admin']);
@@ -72,7 +89,7 @@ class RolesAndPermissionsSeeder extends Seeder
 
         app(PermissionRegistrar::class)->forgetCachedPermissions();
 
-        $this->command?->info('Roles et permissions synchronises.');
+        $this->command?->info('Roles et permissions CEET synchronises.');
     }
 
     private function resolveOrCreateRole(array $names): Role

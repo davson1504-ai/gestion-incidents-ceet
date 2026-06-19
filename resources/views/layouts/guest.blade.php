@@ -4,33 +4,30 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
+        <meta name="theme-color" content="#fcf8fa">
 
         <title>{{ config('app.name', 'Gestion Incidents CEET') }}</title>
 
         <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700&display=swap" rel="stylesheet">
+        <link href="https://fonts.bunny.net/css?family=hanken-grotesk:400,500,600,700,800|jetbrains-mono:500,600,700&display=swap" rel="stylesheet">
 
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
-    <body class="bg-light">
-        <main class="min-vh-100 d-flex align-items-center py-4">
-            <div class="container">
-                <div class="row justify-content-center">
-                    <div class="col-12 col-md-8 col-lg-5">
-                        <div class="text-center mb-3">
-                            <a href="/">
-                                <x-application-logo class="img-fluid" style="max-height: 64px;" />
-                            </a>
-                        </div>
 
-                        <div class="card">
-                            <div class="card-body p-4">
-                                {{ $slot }}
-                            </div>
-                        </div>
+    <body class="ceet-auth-page">
+        <main class="ceet-auth-shell">
+            <section class="ceet-auth-card">
+                <div class="ceet-auth-card-body">
+                    <div class="ceet-auth-logo">
+                        <a href="/" aria-label="Accueil CEET">
+                            <img src="{{ asset('images/logo-ceet.png') }}" alt="CEET">
+                        </a>
                     </div>
+
+                    {{ $slot }}
                 </div>
-            </div>
+            </section>
         </main>
-    </body>
+        <x-ceet-toasts />
+</body>
 </html>

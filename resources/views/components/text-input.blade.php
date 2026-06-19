@@ -1,3 +1,10 @@
-@props(['disabled' => false])
+@props([
+    'disabled' => false,
+    'type' => 'text',
+])
 
-<input @disabled($disabled) {{ $attributes->merge(['class' => 'form-control']) }}>
+<input
+    type="{{ $type }}"
+    @disabled($disabled)
+    {{ $attributes->merge(['class' => 'form-control ceet-text-input']) }}
+>

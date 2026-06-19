@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Events\IncidentChanged;
 use App\Http\Requests\Api\StoreInterventionRequest;
 use App\Http\Resources\InterventionResource;
 use App\Models\Incident;
@@ -16,6 +17,8 @@ class IncidentInterventionController extends ApiController
     {
         $intervention = $this->incidentService->addIntervention($incident, $request->validated(), $request->user());
         $intervention->load('user.roles');
+
+        broadcast(new IncidentChanged('intervention', $incident->refresh()))->toOthers();
 
         return $this->success(InterventionResource::make($intervention), 'Intervention enregistree avec succes.', 201);
     }

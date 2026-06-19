@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Events\IncidentChanged;
 use App\Http\Requests\Api\CloseIncidentRequest;
 use App\Http\Resources\IncidentResource;
 use App\Models\Incident;
@@ -16,6 +17,8 @@ class IncidentCloseController extends ApiController
     {
         $closed = $this->incidentService->closeIncident($incident, $request->validated(), $request->user());
         $closed->load(['departement', 'typeIncident', 'cause', 'status', 'priorite', 'operateur', 'responsable', 'superviseur']);
+
+        broadcast(new IncidentChanged('closed', $closed))->toOthers();
 
         return $this->success(IncidentResource::make($closed), 'Incident cloture avec succes.');
     }

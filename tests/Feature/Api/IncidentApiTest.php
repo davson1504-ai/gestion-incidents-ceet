@@ -15,9 +15,9 @@ class IncidentApiTest extends TestCase
     {
         $this->seedRolesAndPermissions();
         $context = $this->createCatalogContext();
-        $operator = $this->makeUserWithRole('operator');
+        $supervisor = $this->makeUserWithRole('supervisor');
 
-        $response = $this->actingAs($operator)->postJson('/api/v1/incidents', [
+        $response = $this->actingAs($supervisor)->postJson('/api/v1/incidents', [
             'titre' => 'Coupure haute tension Agoe',
             'description' => 'Declenchement cellule HTA',
             'departement_id' => $context['departement']->id,
@@ -38,7 +38,7 @@ class IncidentApiTest extends TestCase
 
         $this->assertDatabaseHas('incidents', [
             'titre' => 'Coupure haute tension Agoe',
-            'operateur_id' => $operator->id,
+            'operateur_id' => $supervisor->id,
         ]);
     }
 
@@ -51,6 +51,7 @@ class IncidentApiTest extends TestCase
         $incidentTarget = $this->makeIncident($context, [
             'code_incident' => 'INC-FILTRE-TARGET',
             'operateur_id' => $operator->id,
+            'responsable_id' => $operator->id,
             'date_debut' => Carbon::parse('2026-04-10 08:00:00'),
         ]);
 
@@ -98,6 +99,15 @@ class IncidentApiTest extends TestCase
         $assignResponse->assertOk();
         $assignResponse->assertJsonPath('data.responsable_id', $operator->id);
 
+        \App\Models\IncidentReport::create([
+            'incident_id' => $incident->id,
+            'user_id' => $operator->id,
+            'actions_realisees' => 'Manoeuvre cellule + verification protections',
+            'resultat' => 'Defaut localise et alimentation retablie',
+            'submitted_at' => now(),
+        ]);
+        $incident->forceFill(['status_id' => $context['statusValidated']->id])->save();
+
         $closeResponse = $this->actingAs($supervisor)->postJson("/api/v1/incidents/{$incident->id}/close", [
             'status_id' => $context['statusFinal']->id,
             'resolution_summary' => 'Defaut localise et alimentation retablie',
@@ -132,6 +142,7 @@ class IncidentApiTest extends TestCase
         $incident = $this->makeIncident($context, [
             'responsable_id' => $operator->id,
             'superviseur_id' => $supervisor->id,
+            'status_id' => $context['statusAssigned']->id,
         ]);
 
         $response = $this->actingAs($operator)->postJson("/api/v1/incidents/{$incident->id}/interventions", [

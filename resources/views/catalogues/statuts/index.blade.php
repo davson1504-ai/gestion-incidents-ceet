@@ -1,204 +1,273 @@
-@php use Illuminate\Support\Str; @endphp
-<x-app-layout>
-    <style>
-        /* ========================================
-           VARIABLES & BASE
-           ======================================== */
-        :root {
-            --ceet-red: #ef2433;
-            --ceet-red-dark: #ce1220;
-            --ceet-gold: #f59e0b;
-            --ceet-blue-night: #0f172a;
-            --ceet-blue-deep: #1e293b;
-            --ceet-gray-light: #f8fafc;
-            --ceet-border-light: #e2e8f0;
-            --ceet-text-muted: #64748b;
-            --ceet-success: #22c55e;
-        }
+@php
+    use Illuminate\Support\Carbon;
+    use Illuminate\Support\Str;
 
-        /* ========================================
-           ANIMATIONS
-           ======================================== */
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
+    $currentUser = auth()->user();
+    $fullName = trim((string) ($currentUser?->name ?? 'Administrator'));
+    $nameParts = preg_split('/\s+/', $fullName, -1, PREG_SPLIT_NO_EMPTY) ?: [];
+    $initials = collect($nameParts)->take(2)->map(fn ($part) => Str::upper(Str::substr($part, 0, 1)))->implode('') ?: 'AD';
+    $roleName = $currentUser?->getRoleNames()?->first() ?? 'System Root';
+    $filters = array_merge(['q' => '', 'status' => ''], $filters ?? []);
+    $statusMetrics = array_merge(['total' => 0, 'active' => 0, 'final' => 0, 'last_updated_at' => null], $statusMetrics ?? []);
+    $from = $statuts->firstItem() ?? 0;
+    $to = $statuts->lastItem() ?? 0;
+    $total = $statuts->total();
+    $lastUpdated = $statusMetrics['last_updated_at']
+        ? Carbon::parse($statusMetrics['last_updated_at'])->diffForHumans()
+        : 'Aucune donnée';
 
-        @keyframes slideInDown {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
+    $navItems = [
+        ['label' => 'Dashboard', 'icon' => 'dashboard', 'route' => Route::has('dashboard') ? route('dashboard') : '#', 'active' => request()->routeIs('dashboard')],
+        ['label' => 'Incidents', 'icon' => 'bolt', 'route' => Route::has('incidents.index') ? route('incidents.index') : '#', 'active' => request()->routeIs('incidents.*')],
+        ['label' => 'Users', 'icon' => 'group', 'route' => Route::has('users.index') ? route('users.index') : '#', 'active' => request()->routeIs('users.*')],
+        ['label' => 'System Status', 'icon' => 'tune', 'route' => Route::has('system.status') ? route('system.status') : '#', 'active' => request()->routeIs('system.*')],
+        ['label' => 'Catalogs', 'icon' => 'menu_book', 'route' => Route::has('catalogues.index') ? route('catalogues.index') : '#', 'active' => request()->routeIs('catalogues.*')],
+        ['label' => 'Reports', 'icon' => 'insert_chart', 'route' => Route::has('reports.index') ? route('reports.index') : '#', 'active' => request()->routeIs('reports.*')],
+    ];
+@endphp
 
-        /* ========================================
-           CARDS - Modern Design
-           ======================================== */
-        .card {
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.88));
-            border: 1px solid rgba(226, 232, 240, 0.6);
-            border-radius: 16px;
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-            position: relative;
-            overflow: hidden;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 4px 6px rgba(15, 23, 42, 0.07);
-            animation: fadeInUp 0.6s ease both;
-        }
+<!DOCTYPE html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="theme-color" content="#f8f9fb">
 
-        .card:hover {
-            box-shadow: 0 12px 24px rgba(15, 23, 42, 0.12);
-        }
+    <title>Gestion des Statuts - CEET Incidents</title>
 
-        /* ========================================
-           TABLE ANIMATION
-           ======================================== */
-        table tbody tr {
-            animation: fadeInUp 0.6s ease backwards;
-        }
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
 
-        table tbody tr:nth-child(1) { animation-delay: 0.1s; }
-        table tbody tr:nth-child(2) { animation-delay: 0.15s; }
-        table tbody tr:nth-child(3) { animation-delay: 0.2s; }
-        table tbody tr:nth-child(4) { animation-delay: 0.25s; }
-        table tbody tr:nth-child(5) { animation-delay: 0.3s; }
-        table tbody tr:nth-child(n+6) { animation-delay: 0.35s; }
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+</head>
 
-        table tbody tr:hover {
-            background-color: rgba(239, 36, 51, 0.03);
-            transition: all 0.2s ease;
-        }
+<body class="ceet-statuses-page">
+    <aside class="ceet-statuses-sidebar">
+        <div class="ceet-statuses-brand">
+            <strong>CEET Incidents</strong>
+            <span>Electrical Management</span>
+        </div>
 
-        /* ========================================
-           BUTTONS
-           ======================================== */
-        .btn-primary {
-            background: linear-gradient(135deg, var(--ceet-red), var(--ceet-red-dark));
-            border: none;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(239, 36, 51, 0.3);
-        }
+        <nav class="ceet-statuses-nav" aria-label="Navigation principale">
+                @include('partials.ceet-role-nav', ['linkClass' => 'ceet-statuses-nav-link'])
+            </nav>
 
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(239, 36, 51, 0.4);
-        }
+        <a href="{{ Route::has('profile.edit') ? route('profile.edit') : '#' }}" class="ceet-statuses-user">
+            <span>{{ $initials }}</span>
+            <div>
+                <strong>{{ $fullName }}</strong>
+                <small>{{ $roleName }}</small>
+            </div>
+        </a>
+    </aside>
 
-        .btn-outline-primary, .btn-outline-danger {
-            border-radius: 10px;
-            transition: all 0.3s ease;
-        }
+    <header class="ceet-statuses-topbar">
+        <form method="GET" action="{{ route('catalogues.statuts.index') }}" class="ceet-statuses-search" role="search">
+            <span class="material-symbols-outlined" aria-hidden="true">search</span>
+            <input type="search" name="q" value="{{ $filters['q'] }}" placeholder="Rechercher un statut...">
+            @if($filters['status'] !== '')
+                <input type="hidden" name="status" value="{{ $filters['status'] }}">
+            @endif
+        </form>
 
-        .btn-outline-primary:hover, .btn-outline-danger:hover {
-            transform: translateY(-2px);
-        }
+        <div class="ceet-statuses-toolbar">
+            <button type="button" class="has-dot" aria-label="Notifications">
+                <span class="material-symbols-outlined" aria-hidden="true">notifications</span>
+            </button>
+            <button type="button" aria-label="Aide">
+                <span class="material-symbols-outlined" aria-hidden="true">help</span>
+            </button>
+            <span></span>
+            <strong>{{ $initials }}</strong>
+        </div>
+    </header>
 
-        /* ========================================
-           ALERT MESSAGES
-           ======================================== */
-        .alert {
-            border-radius: 10px;
-            animation: slideInDown 0.4s ease;
-        }
+    <main class="ceet-statuses-main">
+        <section class="ceet-statuses-head">
+            <div>
+                <nav aria-label="Fil d'Ariane">
+                    @unless((auth()->user()?->isSuperviseur() ?? false) && ! (auth()->user()?->isAdmin() ?? false))
+                    <a href="{{ Route::has('catalogues.index') ? route('catalogues.index') : '#' }}">Configuration</a>
+                    @endunless
+                    <span class="material-symbols-outlined" aria-hidden="true">chevron_right</span>
+                    @unless((auth()->user()?->isSuperviseur() ?? false) && ! (auth()->user()?->isAdmin() ?? false))
+                    <a href="{{ route('catalogues.index') }}">Workflows</a>
+                    @endunless
+                    <span class="material-symbols-outlined" aria-hidden="true">chevron_right</span>
+                    <strong>Statuts</strong>
+                </nav>
+                <h1>Gestion des Statuts</h1>
+            </div>
 
-        .alert-success {
-            border: 1px solid rgba(34, 197, 94, 0.2);
-            background: linear-gradient(135deg, rgba(34, 197, 94, 0.05), rgba(34, 197, 94, 0.02));
-            color: var(--ceet-success);
-        }
-
-        .alert-danger {
-            border: 1px solid rgba(239, 36, 51, 0.2);
-            background: linear-gradient(135deg, rgba(239, 36, 51, 0.05), rgba(239, 36, 51, 0.02));
-            color: var(--ceet-red);
-        }
-    </style>
-    <x-slot name="header">
-        <div class="d-flex justify-content-between align-items-center">
-            <h1 class="h4 mb-0">Catalogues - Statuts</h1>
             @can('catalogues.manage')
-                <a href="{{ route('catalogues.statuts.create') }}" class="btn btn-primary">Nouveau statut</a>
+                <a href="{{ route('catalogues.statuts.create') }}" class="ceet-statuses-primary-btn">
+                    <span class="material-symbols-outlined" aria-hidden="true">add</span>
+                    Nouveau Statut
+                </a>
             @endcan
-        </div>
-    </x-slot>
+        </section>
 
-    @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            {{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    @endif
+        @if(session('success'))
+            <div class="ceet-alert ceet-alert-success" role="status">{{ session('success') }}</div>
+        @endif
 
-    @if(session('error'))
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            {{ session('error') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    @endif
+        @if(session('error'))
+            <div class="ceet-alert ceet-alert-danger" role="alert">{{ session('error') }}</div>
+        @endif
 
-    <div class="card shadow-sm">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-                <thead class="table-light">
-                <tr>
-                    <th>Code</th>
-                    <th>Libelle</th>
-                    <th>Description</th>
-                    <th>Ordre</th>
-                    <th>Final</th>
-                    <th>Actif</th>
-                    <th class="text-end">Actions</th>
-                </tr>
-                </thead>
-                <tbody>
-                @foreach($statuts as $statut)
-                    <tr>
-                        <td class="fw-semibold">{{ $statut->code }}</td>
-                        <td>
-                            <span class="badge" style="background-color: {{ $statut->couleur ?? '#6c757d' }};">
-                                {{ $statut->libelle }}
-                            </span>
-                        </td>
-                        <td>{{ Str::limit($statut->description, 80) }}</td>
-                        <td>{{ $statut->ordre }}</td>
-                        <td>
-                            <span class="badge {{ $statut->is_final ? 'text-bg-success' : 'text-bg-secondary' }}">
-                                {{ $statut->is_final ? 'Oui' : 'Non' }}
-                            </span>
-                        </td>
-                        <td>
-                            <span class="badge {{ $statut->is_active ? 'text-bg-success' : 'text-bg-danger' }}">
-                                {{ $statut->is_active ? 'Actif' : 'Inactif' }}
-                            </span>
-                        </td>
-                        <td class="text-end">
-                            @can('catalogues.manage')
-                                <a href="{{ route('catalogues.statuts.edit', $statut) }}" class="btn btn-sm btn-outline-primary">Editer</a>
-                                <form method="POST" action="{{ route('catalogues.statuts.destroy', $statut) }}" class="d-inline" onsubmit="return confirm('Supprimer ?');">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button class="btn btn-sm btn-outline-danger">Supprimer</button>
-                                </form>
-                            @endcan
-                        </td>
-                    </tr>
-                @endforeach
-                </tbody>
-            </table>
-        </div>
-        <div class="card-footer bg-white">
-            {{ $statuts->links('pagination::bootstrap-5') }}
-        </div>
-    </div>
-</x-app-layout>
+        <section class="ceet-statuses-metrics" aria-label="Indicateurs statuts">
+            <article>
+                <span>Total Statuts</span>
+                <strong>{{ $statusMetrics['total'] }}</strong>
+                <i class="material-symbols-outlined" aria-hidden="true">list_alt</i>
+            </article>
+            <article>
+                <span>Actifs</span>
+                <strong>{{ $statusMetrics['active'] }}</strong>
+                <i aria-hidden="true"></i>
+            </article>
+            <article>
+                <span>&Eacute;tapes finales</span>
+                <strong>{{ $statusMetrics['final'] }}</strong>
+                <i class="material-symbols-outlined" aria-hidden="true">check_circle</i>
+            </article>
+            <article>
+                <span>Derni&egrave;re modif</span>
+                <b>{{ $lastUpdated }}</b>
+                <i class="material-symbols-outlined" aria-hidden="true">history</i>
+            </article>
+        </section>
 
+        <section class="ceet-statuses-table-card">
+            <header>
+                <h2>Workflow Incidents &Eacute;lectriques</h2>
+                <form method="GET" action="{{ route('catalogues.statuts.index') }}" class="ceet-statuses-filter">
+                    @if($filters['q'] !== '')
+                        <input type="hidden" name="q" value="{{ $filters['q'] }}">
+                    @endif
+                    <select name="status" onchange="this.form.submit()" aria-label="Filtrer les statuts">
+                        <option value="" @selected($filters['status'] === '')>Tous</option>
+                        <option value="active" @selected($filters['status'] === 'active')>Actifs</option>
+                        <option value="inactive" @selected($filters['status'] === 'inactive')>Inactifs</option>
+                        <option value="final" @selected($filters['status'] === 'final')>Finaux</option>
+                    </select>
+                    <a href="{{ route('catalogues.statuts.index') }}" aria-label="Réinitialiser les filtres">
+                        <span class="material-symbols-outlined" aria-hidden="true">filter_list_off</span>
+                    </a>
+                </form>
+            </header>
+
+            <div class="ceet-statuses-table-wrap">
+                <table class="ceet-statuses-table">
+                    <thead>
+                        <tr>
+                            <th>Ordre</th>
+                            <th>Libell&eacute;</th>
+                            <th>&Eacute;tape finale</th>
+                            <th>Description</th>
+                            <th>Statut actif</th>
+                            <th class="is-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($statuts as $statut)
+                            <tr class="{{ $statut->is_active ? '' : 'is-muted' }}">
+                                <td><strong>{{ $statut->ordre }}</strong></td>
+                                <td>
+                                    <span class="ceet-statuses-label">
+                                        <i style="background-color: {{ $statut->couleur ?: '#76777d' }}" aria-hidden="true"></i>
+                                        {{ $statut->libelle }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="ceet-statuses-final {{ $statut->is_final ? 'is-final' : '' }}">
+                                        {{ $statut->is_final ? 'Oui' : 'Non' }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <em>{{ $statut->description ?: 'Aucune description renseignée.' }}</em>
+                                </td>
+                                <td>
+                                    <span class="ceet-statuses-switch {{ $statut->is_active ? 'is-on' : '' }}" aria-label="{{ $statut->is_active ? 'Actif' : 'Inactif' }}"></span>
+                                </td>
+                                <td class="is-right">
+                                    <div class="ceet-statuses-actions">
+                                        @can('catalogues.manage')
+                                            <a href="{{ route('catalogues.statuts.edit', $statut) }}" aria-label="Modifier {{ $statut->code }}">
+                                                <span class="material-symbols-outlined" aria-hidden="true">edit</span>
+                                            </a>
+                                            <form method="POST" action="{{ route('catalogues.statuts.destroy', $statut) }}" onsubmit="return confirm('Supprimer ce statut ?')">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" aria-label="Supprimer {{ $statut->code }}">
+                                                    <span class="material-symbols-outlined" aria-hidden="true">delete</span>
+                                                </button>
+                                            </form>
+                                        @else
+                                            <span class="ceet-statuses-readonly">Lecture</span>
+                                        @endcan
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="6" class="ceet-statuses-empty">Aucun statut trouv&eacute;.</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+
+            <footer class="ceet-statuses-pagination">
+                <span>Affichage de {{ $from }} &agrave; {{ $to }} sur {{ $total }} statuts</span>
+
+                @if($statuts->lastPage() > 1)
+                    <nav aria-label="Pagination statuts">
+                        @if($statuts->onFirstPage())
+                            <button type="button" disabled>Pr&eacute;c&eacute;dent</button>
+                        @else
+                            <a href="{{ $statuts->previousPageUrl() }}">Pr&eacute;c&eacute;dent</a>
+                        @endif
+
+                        @foreach(range(1, $statuts->lastPage()) as $page)
+                            @if($page === $statuts->currentPage())
+                                <span class="is-current">{{ $page }}</span>
+                            @else
+                                <a href="{{ $statuts->url($page) }}">{{ $page }}</a>
+                            @endif
+                        @endforeach
+
+                        @if($statuts->hasMorePages())
+                            <a href="{{ $statuts->nextPageUrl() }}">Suivant</a>
+                        @else
+                            <button type="button" disabled>Suivant</button>
+                        @endif
+                    </nav>
+                @endif
+            </footer>
+        </section>
+
+        <section class="ceet-statuses-insights">
+            <figure>
+                <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuDoFhVWmqyUSEeQhytsQ10Kz1De8ervDRMr1VI0kVaxlI4M-VN76gv-y8AIiTsVhgQnsaYaK45ID772LNLcu4v8Hs0sWO8KuvpF4Hrx01UXugqpE9ZT5GMHGBlkyoizCZNtWS4xarJ0nUiZYtElMMP2hpn2GDLzxb4N98QbVUGvAmb8YaxEaGEIyOyva7bYwmWGyQezkLeM6lThVQwF6SOg512q7jY9Jb5xOQJLPktKhizTd5j9_2yu8kDWRGkhx9dRdXpfYlQ5k8W4" alt="Architecture réseau">
+                <figcaption>
+                    <small>Architecture R&eacute;seau</small>
+                    <strong>Optimisation des flux de donn&eacute;es</strong>
+                </figcaption>
+            </figure>
+
+            <article>
+                <span class="material-symbols-outlined" aria-hidden="true">rule_settings</span>
+                <div>
+                    <h2>Configuration Automatique</h2>
+                    <p>Les nouveaux statuts sont propag&eacute;s dans les formulaires d'incidents apr&egrave;s synchronisation du cache.</p>
+                </div>
+                <i aria-hidden="true"></i>
+            </article>
+        </section>
+    </main>
+</body>
+</html>

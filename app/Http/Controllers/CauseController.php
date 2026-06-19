@@ -17,11 +17,32 @@ class CauseController extends Controller
         $this->middleware('permission:catalogues.manage')->except(['index', 'byType']);
     }
 
-    public function index(): View
+    public function index(Request $request): View
     {
-        $causes = Cause::with('typeIncident')->orderBy('libelle')->paginate(25);
+        $filters = [
+            'q' => trim((string) $request->input('q', '')),
+            'status' => $request->input('status', ''),
+        ];
 
-        return view('catalogues.causes.index', compact('causes'));
+        $query = Cause::with('typeIncident')
+            ->when($filters['q'] !== '', function ($q) use ($filters) {
+                $term = '%'.$filters['q'].'%';
+
+                $q->where(function ($inner) use ($term) {
+                    $inner->where('code', 'like', $term)
+                        ->orWhere('libelle', 'like', $term)
+                        ->orWhereHas('typeIncident', function ($typeQuery) use ($term) {
+                            $typeQuery->where('libelle', 'like', $term)
+                                ->orWhere('code', 'like', $term);
+                        });
+                });
+            })
+            ->when($filters['status'] === 'active', fn ($q) => $q->where('is_active', true))
+            ->when($filters['status'] === 'inactive', fn ($q) => $q->where('is_active', false));
+
+        $causes = $query->orderBy('libelle')->paginate(5)->withQueryString();
+
+        return view('catalogues.causes.index', compact('causes', 'filters'));
     }
 
     public function create(): View

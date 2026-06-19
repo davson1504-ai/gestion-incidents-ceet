@@ -14,12 +14,12 @@ class IncidentPolicy
 
     public function viewAny(User $user): bool
     {
-        return $user->can('incidents.view');
+        return $user->can('incidents.view') || $user->can('incidents.view.assigned');
     }
 
     public function view(User $user, Incident $incident): bool
     {
-        if (! $user->can('incidents.view')) {
+        if (! $user->can('incidents.view') && ! $user->can('incidents.view.assigned')) {
             return false;
         }
 
@@ -27,9 +27,7 @@ class IncidentPolicy
             return true;
         }
 
-        return $incident->operateur_id === $user->id
-            || $incident->responsable_id === $user->id
-            || $incident->superviseur_id === $user->id;
+        return $incident->responsable_id === $user->id;
     }
 
     public function create(User $user): bool
@@ -63,10 +61,11 @@ class IncidentPolicy
 
     public function close(User $user, Incident $incident): bool
     {
-        if (! $user->can('incidents.close')) {
-            return false;
-        }
+        return $user->can('incidents.close') && $user->isSuperviseur();
+    }
 
+    public function intervene(User $user, Incident $incident): bool
+    {
         if ($user->isSuperviseur()) {
             return true;
         }
@@ -74,17 +73,30 @@ class IncidentPolicy
         return $user->isOperateur() && $incident->responsable_id === $user->id;
     }
 
-    public function intervene(User $user, Incident $incident): bool
+    public function take(User $user, Incident $incident): bool
     {
-        if (! $user->can('incidents.view')) {
-            return false;
-        }
+        return $user->can('incidents.take')
+            && $user->isOperateur()
+            && $incident->responsable_id === $user->id;
+    }
 
-        if ($user->isSuperviseur()) {
-            return true;
-        }
+    public function resolve(User $user, Incident $incident): bool
+    {
+        return $user->can('incidents.resolve')
+            && $user->isOperateur()
+            && $incident->responsable_id === $user->id;
+    }
 
-        return $user->isOperateur() && $incident->responsable_id === $user->id;
+    public function report(User $user, Incident $incident): bool
+    {
+        return $user->can('incidents.report')
+            && $user->isOperateur()
+            && $incident->responsable_id === $user->id;
+    }
+
+    public function validateResolution(User $user, Incident $incident): bool
+    {
+        return $user->can('incidents.validate') && $user->isSuperviseur();
     }
 
     public function export(User $user): bool

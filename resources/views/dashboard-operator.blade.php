@@ -1,443 +1,358 @@
 @php
-    use Illuminate\Support\Carbon;
+    use Illuminate\Support\Facades\Route;
 
-    $user = auth()->user();
+    $currentUser = auth()->user();
 
-    $formatDuration = static function (?int $minutes): string {
-        if ($minutes === null) return '-';
-        $days = intdiv($minutes, 1440);
-        $hours = intdiv($minutes % 1440, 60);
-        $remainingMinutes = $minutes % 60;
-        $parts = [];
-        if ($days > 0) $parts[] = $days . 'j';
-        if ($hours > 0 || $days > 0) $parts[] = $hours . 'h';
-        $parts[] = $remainingMinutes . 'min';
-        return implode(' ', $parts);
+    $userName = $currentUser?->name ?? 'Opérateur Terrain';
+    $userEmail = $currentUser?->email ?? 'operateur@ceet.com';
+
+    $initials = collect(preg_split('/\s+/', trim($userName)))
+        ->filter()
+        ->map(fn ($part) => substr($part, 0, 1))
+        ->take(2)
+        ->implode('');
+
+    $initials = strtoupper($initials ?: 'OT');
+
+    $safeRoute = function (string $name, $params = [], ?string $fallback = '#') {
+        return Route::has($name) ? route($name, $params) : $fallback;
     };
+
+    $myOpenIncidents = collect($myOpenIncidents ?? []);
+    $recentIncidents = $myOpenIncidents->isNotEmpty()
+        ? $myOpenIncidents
+        : collect($recentIncidents ?? []);
+
+    $assignedCount = (int) ($myTotalMonth ?? $recentIncidents->count());
+    $openCount = (int) ($myTotalOpen ?? data_get($kpis ?? [], 'openCount', 0));
+    $resolvedToday = (int) ($myResolvedToday ?? 0);
+
+    $urgentCount = $recentIncidents
+        ->filter(function ($incident) {
+            $priorite = strtolower(optional($incident->priorite)->libelle ?? '');
+            $niveau = optional($incident->priorite)->niveau;
+
+            return str_contains($priorite, 'haute')
+                || str_contains($priorite, 'critique')
+                || (string) $niveau === '1';
+        })
+        ->count();
+
+    $roleName = 'OPÉRATEUR N2';
+
+    if ($currentUser && method_exists($currentUser, 'getRoleNames')) {
+        $roleName = strtoupper($currentUser->getRoleNames()->first() ?? 'OPÉRATEUR N2');
+    }
+
+    $progressValue = min(100, max(8, $openCount * 12));
+    $canCreateIncident = $currentUser?->can('incidents.create') ?? false;
+    $canViewReports = $currentUser?->can('reporting.view') ?? false;
+    $canViewHistory = ($currentUser?->isAdmin() ?? false) || ($currentUser?->isSuperviseur() ?? false);
+    $operatorUnreadNotificationsCount = (int) ($currentUser?->unreadNotifications()->count() ?? 0);
 @endphp
 
-<x-app-layout>
-    <style>
-        :root {
-            --ceet-red: #ef2433;
-            --ceet-red-dark: #ce1220;
-            --ceet-gold: #f59e0b;
-            --ceet-blue-night: #0f172a;
-            --ceet-blue-deep: #1e293b;
-            --ceet-gray-light: #f8fafc;
-            --ceet-border-light: #e2e8f0;
-            --ceet-text-muted: #64748b;
-            --ceet-success: #22c55e;
-        }
+<!DOCTYPE html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>Tableau de bord - CEET Incidents</title>
 
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
 
-        @keyframes slideInDown {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+    @vite([
+        'resources/css/app.css',
+        'resources/css/pages/operator-dashboard.css',
+        'resources/js/app.js',
+        'resources/js/pages/operator-dashboard.js'
+    ])
+</head>
 
-        @keyframes pulse-light {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.85; }
-        }
+<body class="ceet-operator-dashboard-page">
+    <div class="ceet-operator-shell" data-operator-dashboard>
+        <div class="ceet-operator-overlay" data-operator-overlay></div>
 
-        .card {
-            border-radius: 16px;
-            border: 1px solid var(--ceet-border-light);
-            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
-            transition: all 0.3s;
-            animation: fadeInUp 0.6s ease both;
-        }
+        <aside class="ceet-operator-sidebar" data-operator-sidebar>
+            <div class="ceet-operator-brand">
+                <div class="ceet-operator-brand-logo">
+                    <img src="{{ asset('images/logo-ceet.png') }}" alt="Logo CEET">
+                </div>
 
-        .card:hover {
-            box-shadow: 0 12px 24px rgba(15, 23, 42, 0.12);
-            border-color: var(--ceet-border-light);
-        }
+                <div>
+                    <h1>CEET Incidents</h1>
+                    <p>Electrical Management</p>
+                </div>
+            </div>
 
-        .row.g-3.mb-4:first-of-type .card {
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.88));
-            backdrop-filter: blur(10px);
-            animation-delay: var(--animation-delay);
-        }
+            <nav class="ceet-operator-nav" aria-label="Navigation opérateur">
+                @include('partials.ceet-role-nav', ['linkClass' => 'ceet-operator-nav-link'])
+            </nav>
 
-        .row.g-3.mb-4:first-of-type .col-6:nth-child(1) .card { --animation-delay: 0.1s; border-left: 4px solid var(--ceet-red); }
-        .row.g-3.mb-4:first-of-type .col-6:nth-child(2) .card { --animation-delay: 0.2s; border-left: 4px solid var(--ceet-success); }
-        .row.g-3.mb-4:first-of-type .col-6:nth-child(3) .card { --animation-delay: 0.3s; border-left: 4px solid var(--ceet-gold); }
-        .row.g-3.mb-4:first-of-type .col-6:nth-child(4) .card { --animation-delay: 0.4s; border-left: 4px solid var(--ceet-blue-deep); }
+            <div class="ceet-operator-sidebar-user">
+                <div class="ceet-operator-sidebar-user-main">
+                    <div class="ceet-operator-avatar">{{ $initials }}</div>
 
-        .row.g-3.mb-4:first-of-type .card:hover {
-            transform: translateY(-6px);
-            box-shadow: 0 16px 32px rgba(15, 23, 42, 0.15);
-        }
+                    <div>
+                        <strong>{{ $userName }}</strong>
+                        <span>{{ $roleName }}</span>
+                    </div>
+                </div>
 
-        .kpi-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 16px;
-        }
+                <form action="{{ $safeRoute('logout', [], '#') }}" method="POST" class="ceet-operator-logout-form">
+                    @csrf
 
-        .kpi-icon {
-            width: 48px;
-            height: 48px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            animation: pulse-light 3s ease-in-out infinite;
-        }
+                    <button type="submit" class="ceet-operator-logout-button">
+                        <span class="material-symbols-outlined" aria-hidden="true">logout</span>
+                        Se déconnecter
+                    </button>
+                </form>
+            </div>
+        </aside>
 
-        .kpi-icon svg {
-            width: 24px;
-            height: 24px;
-            stroke-width: 2;
-            fill: none;
-        }
+        <header class="ceet-operator-topbar">
+            <button type="button" class="ceet-operator-menu-btn" data-operator-sidebar-toggle aria-label="Ouvrir le menu">
+                <span class="material-symbols-outlined" aria-hidden="true">menu</span>
+            </button>
 
-        .row.g-3.mb-4:first-of-type .col-6:nth-child(1) .kpi-icon {
-            background: linear-gradient(135deg, rgba(239, 36, 51, 0.1), rgba(239, 36, 51, 0.15));
-        }
-        .row.g-3.mb-4:first-of-type .col-6:nth-child(1) .kpi-icon svg { stroke: var(--ceet-red); }
+            <form action="{{ $safeRoute('incidents.mine', [], '/mes-incidents') }}" method="GET" class="ceet-operator-search">
+                <span class="material-symbols-outlined" aria-hidden="true">search</span>
+                <input
+                    type="search"
+                    name="q"
+                    placeholder="Rechercher un incident, un ID ou un technicien..."
+                    autocomplete="off"
+                >
+            </form>
 
-        .row.g-3.mb-4:first-of-type .col-6:nth-child(2) .kpi-icon {
-            background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(34, 197, 94, 0.15));
-        }
-        .row.g-3.mb-4:first-of-type .col-6:nth-child(2) .kpi-icon svg { stroke: var(--ceet-success); }
+            <div class="ceet-operator-top-actions">
+                <div class="ceet-operator-notification-wrap"
+                    data-operator-notifications
+                    data-notifications-url="{{ $safeRoute('notifications.index', [], '/notifications') }}"
+                    data-read-all-url="{{ $safeRoute('notifications.read-all', [], '/notifications/read-all') }}"
+                    data-read-url-template="{{ url('/notifications/__ID__/read') }}">
+                    <button type="button"
+                        class="ceet-operator-icon-btn ceet-operator-notification-trigger"
+                        aria-label="Notifications"
+                        aria-expanded="false"
+                        data-notifications-toggle>
+                        <span class="material-symbols-outlined" aria-hidden="true">notifications</span>
+                        <span class="ceet-operator-notification-badge" data-notification-badge @if($operatorUnreadNotificationsCount < 1) hidden @endif>{{ $operatorUnreadNotificationsCount > 99 ? '99+' : $operatorUnreadNotificationsCount }}</span>
+                    </button>
 
-        .row.g-3.mb-4:first-of-type .col-6:nth-child(3) .kpi-icon {
-            background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(245, 158, 11, 0.15));
-        }
-        .row.g-3.mb-4:first-of-type .col-6:nth-child(3) .kpi-icon svg { stroke: var(--ceet-gold); }
+                    <div class="ceet-operator-notification-panel" data-notification-panel hidden>
+                        <div class="ceet-operator-notification-header">
+                            <div>
+                                <strong>Notifications</strong>
+                                <span data-notification-summary>{{ $operatorUnreadNotificationsCount }} non lue(s)</span>
+                            </div>
 
-        .row.g-3.mb-4:first-of-type .col-6:nth-child(4) .kpi-icon {
-            background: linear-gradient(135deg, rgba(30, 41, 59, 0.1), rgba(30, 41, 59, 0.15));
-        }
-        .row.g-3.mb-4:first-of-type .col-6:nth-child(4) .kpi-icon svg { stroke: var(--ceet-blue-deep); }
+                            <button type="button" data-notifications-read-all>Tout lire</button>
+                        </div>
 
-        .metric-value {
-            font-size: 2rem;
-            font-weight: 900;
-            line-height: 1;
-            margin-bottom: 12px;
-        }
+                        <div class="ceet-operator-notification-list" data-notification-list>
+                            <div class="ceet-operator-notification-empty">Chargement des notifications...</div>
+                        </div>
+                    </div>
+                </div>
 
-        .row.g-3.mb-4:first-of-type .col-6:nth-child(1) .metric-value { color: var(--ceet-red); }
-        .row.g-3.mb-4:first-of-type .col-6:nth-child(2) .metric-value { color: var(--ceet-success); }
-        .row.g-3.mb-4:first-of-type .col-6:nth-child(3) .metric-value { color: var(--ceet-gold); }
-        .row.g-3.mb-4:first-of-type .col-6:nth-child(4) .metric-value { color: var(--ceet-blue-deep); }
+                <a href="{{ $safeRoute('profile.edit', [], '/profile') }}" class="ceet-operator-icon-btn" aria-label="Profil">
+                    <span class="material-symbols-outlined" aria-hidden="true">help_outline</span>
+                </a>
 
-        .kpi-label {
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            font-weight: 700;
-            color: var(--ceet-text-muted);
-            margin-bottom: 8px;
-        }
+                <div class="ceet-operator-top-divider"></div>
 
-        .badge {
-            border-radius: 8px;
-            font-weight: 600;
-            padding: 6px 12px;
-            font-size: 0.8rem;
-            transition: all 0.2s;
-        }
+                <div class="ceet-operator-top-user">
+                    <span>{{ $userName }}</span>
+                    <div class="ceet-operator-avatar is-small">{{ $initials }}</div>
+                </div>
+            </div>
+        </header>
 
-        .badge.text-bg-light {
-            background: rgba(239, 36, 51, 0.08) !important;
-            color: var(--ceet-red) !important;
-            border: 1px solid rgba(239, 36, 51, 0.15);
-        }
+        <main class="ceet-operator-main">
+            <section class="ceet-operator-page-header">
+                <div>
+                    <h2>Tableau de bord</h2>
+                    <p>Gestion temps réel des incidents réseau électrique.</p>
+                </div>
 
-        .list-group-item {
-            border-radius: 10px;
-            border: 1px solid transparent;
-            transition: all 0.2s;
-            margin-bottom: 8px;
-        }
+                <div class="ceet-operator-system-state">
+                    <span></span>
+                    Système opérationnel
+                </div>
+            </section>
 
-        .list-group-item:not(.list-group-item-action) {
-            background: rgba(248, 250, 252, 0.5);
-            border-color: var(--ceet-border-light);
-        }
+            <section class="ceet-operator-kpi-grid" aria-label="Indicateurs opérateur">
+                <article class="ceet-operator-kpi-card">
+                    <div class="ceet-operator-kpi-head">
+                        <span>Incidents affectés</span>
+                        <span class="material-symbols-outlined" aria-hidden="true">assignment_ind</span>
+                    </div>
 
-        .list-group-item:hover {
-            background: linear-gradient(90deg, rgba(239, 36, 51, 0.04), transparent);
-            border-left: 3px solid var(--ceet-red);
-            padding-left: 12px;
-        }
+                    <strong>{{ str_pad((string) $assignedCount, 2, '0', STR_PAD_LEFT) }}</strong>
+                    <p>{{ $resolvedToday }} résolu(s) aujourd’hui</p>
+                </article>
 
-        .list-group-item-action {
-            border-radius: 10px;
-            transition: all 0.2s;
-            border: 1px solid transparent;
-        }
+                <article class="ceet-operator-kpi-card">
+                    <div class="ceet-operator-kpi-head">
+                        <span>En cours</span>
+                        <span class="material-symbols-outlined" aria-hidden="true">work_history</span>
+                    </div>
 
-        .list-group-item-action:hover {
-            background: rgba(239, 36, 51, 0.05);
-            border-color: rgba(239, 36, 51, 0.2);
-            transform: translateX(4px);
-        }
+                    <strong>{{ str_pad((string) $openCount, 2, '0', STR_PAD_LEFT) }}</strong>
 
-        .btn-outline-secondary {
-            border-radius: 10px;
-            transition: all 0.2s;
-        }
+                    <div class="ceet-operator-progress" aria-label="Progression incidents en cours">
+                        <span style="width: {{ $progressValue }}%"></span>
+                    </div>
+                </article>
 
-        .btn-outline-secondary:hover {
-            background-color: var(--ceet-gray-light);
-            border-color: var(--ceet-border-light);
-        }
+                <article class="ceet-operator-kpi-card is-urgent">
+                    <div class="ceet-operator-kpi-head">
+                        <span>À résoudre urgent</span>
+                        <span class="material-symbols-outlined" aria-hidden="true">priority_high</span>
+                    </div>
 
-        .btn-danger {
-            background: linear-gradient(135deg, var(--ceet-red), var(--ceet-red-dark));
-            border: none;
-            border-radius: 10px;
-            transition: all 0.2s;
-        }
+                    <strong>{{ str_pad((string) $urgentCount, 2, '0', STR_PAD_LEFT) }}</strong>
+                    <p>Interventions critiques requises</p>
+                </article>
+            </section>
 
-        .btn-danger:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 16px rgba(239, 36, 51, 0.25);
-            color: white;
-        }
+            <section class="ceet-operator-content-grid">
+                <article class="ceet-operator-panel ceet-operator-table-panel">
+                    <header class="ceet-operator-panel-header">
+                        <h3>Mes derniers incidents</h3>
+                        <a href="{{ $safeRoute('incidents.mine', [], '/mes-incidents') }}">Voir tout</a>
+                    </header>
 
-        .card-header {
-            border-bottom: 1px solid var(--ceet-border-light);
-            border-radius: 0;
-        }
+                    <div class="ceet-operator-table-wrap">
+                        <table class="ceet-operator-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Incident</th>
+                                    <th>Localisation</th>
+                                    <th>Statut</th>
+                                    <th class="is-right">Actions</th>
+                                </tr>
+                            </thead>
 
-        .card-footer {
-            border-top: 1px solid var(--ceet-border-light);
-            border-radius: 0;
-        }
+                            <tbody>
+                                @forelse ($recentIncidents->take(5) as $incident)
+                                    @php
+                                        $incidentCode = $incident->code_incident ?: 'INC-' . $incident->id;
+                                        $incidentTitle = $incident->titre
+                                            ?: optional($incident->typeIncident)->libelle
+                                            ?: 'Incident sans titre';
 
-        .card-body {
-            padding: 24px;
-        }
+                                        $location = $incident->localisation
+                                            ?: optional($incident->departement)->nom
+                                            ?: 'N/A';
 
-        .d-grid.gap-2 {
-            animation: fadeInUp 0.6s ease 0.5s both;
-        }
+                                        $statusLabel = optional($incident->status)->libelle ?? 'N/A';
+                                        $priorityLabel = strtolower(optional($incident->priorite)->libelle ?? '');
 
-        .table {
-            font-size: 0.9rem;
-        }
+                                        $statusClass = str_contains(strtolower($statusLabel), 'cours')
+                                            ? 'is-progress'
+                                            : (str_contains(strtolower($statusLabel), 'résolu') || str_contains(strtolower($statusLabel), 'resolu')
+                                                ? 'is-done'
+                                                : 'is-critical');
 
-        @media (max-width: 768px) {
-            .metric-value {
-                font-size: 1.5rem;
-            }
-            .kpi-icon {
-                width: 40px;
-                height: 40px;
-            }
-        }
-    </style>
+                                        $incidentUrl = Route::has('incidents.show')
+                                            ? route('incidents.show', $incident)
+                                            : '#';
+                                    @endphp
 
-    <x-slot name="header">
-        <div style="animation: slideInDown 0.6s ease both;">
-            <h1 class="h3 mb-1">Bonjour, <strong>{{ explode(' ', $user->name)[0] }}</strong> 👷</h1>
-            <p class="text-muted mb-0">Voici vos incidents en cours et votre activité du jour.</p>
-        </div>
-        @can('incidents.create')
-            <a href="{{ route('incidents.create') }}" class="btn btn-danger">
-                + Déclarer un incident
+                                    <tr>
+                                        <td>
+                                            <strong>{{ str_starts_with($incidentCode, '#') ? $incidentCode : '#' . $incidentCode }}</strong>
+                                        </td>
+
+                                        <td>{{ $incidentTitle }}</td>
+
+                                        <td>{{ $location }}</td>
+
+                                        <td>
+                                            <span class="ceet-operator-status {{ $statusClass }}">
+                                                {{ $statusLabel }}
+                                            </span>
+                                        </td>
+
+                                        <td class="is-right">
+                                            <a href="{{ $incidentUrl }}" class="ceet-operator-row-action" aria-label="Voir l'incident">
+                                                <span class="material-symbols-outlined" aria-hidden="true">visibility</span>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="5" class="ceet-operator-empty-row">
+                                            Aucun incident affecté pour le moment.
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </article>
+
+                <aside class="ceet-operator-panel ceet-operator-actions-panel">
+                    <header class="ceet-operator-panel-header is-stacked">
+                        <h3>Actions rapides</h3>
+                    </header>
+
+                    <div class="ceet-operator-quick-actions">
+                        <a href="{{ $safeRoute('incidents.mine', [], '/mes-incidents') }}" class="ceet-operator-action-btn is-primary">
+                            <span class="material-symbols-outlined" aria-hidden="true">assignment_ind</span>
+                            <strong>Mes incidents</strong>
+                        </a>
+
+                        <a href="{{ $safeRoute('incidents.en-cours', [], '/incidents/en-cours') }}" class="ceet-operator-action-btn">
+                            <span class="material-symbols-outlined" aria-hidden="true">work_history</span>
+                            <strong>Incidents en cours</strong>
+                        </a>
+
+                        @if($canCreateIncident)
+                            <a href="{{ $safeRoute('incidents.create', [], '/incidents/create') }}" class="ceet-operator-action-btn">
+                                <span class="material-symbols-outlined" aria-hidden="true">add_alert</span>
+                                <strong>Déclarer un incident</strong>
+                            </a>
+                        @endif
+
+                        @if($canViewReports)
+                            <a href="{{ $safeRoute('reports.index', [], '/reports') }}" class="ceet-operator-action-btn">
+                                <span class="material-symbols-outlined" aria-hidden="true">note_add</span>
+                                <strong>Rapports</strong>
+                            </a>
+                        @endif
+
+                        @if($canViewHistory)
+                            <a href="{{ $safeRoute('historique.index', [], '/historique') }}" class="ceet-operator-action-btn">
+                                <span class="material-symbols-outlined" aria-hidden="true">history</span>
+                                <strong>Historique complet</strong>
+                            </a>
+                        @endif
+                    </div>
+
+                    <div class="ceet-operator-nearby">
+                        <span>Infrastructure à proximité</span>
+
+                        <div>
+                            <p>Dernière synchronisation</p>
+                            <strong>{{ $lastCheckAt ?? now()->format('H:i:s') }}</strong>
+                        </div>
+                    </div>
+                </aside>
+            </section>
+        </main>
+
+        @if($canCreateIncident)
+            <a href="{{ $safeRoute('incidents.create', [], '/incidents/create') }}" class="ceet-operator-fab" aria-label="Déclarer un incident">
+                <span class="material-symbols-outlined" aria-hidden="true">support_agent</span>
             </a>
-        @endcan
-    </x-slot>
-
-    {{-- KPIs personnels --}}
-    <div class="row g-3 mb-4">
-        <div class="col-6 col-xl-3">
-            <div class="card h-100">
-                <div class="card-body">
-                    <div class="kpi-header">
-                        <div>
-                            <span class="kpi-label">Mes incidents ouverts</span>
-                            <div class="metric-value">{{ number_format($myTotalOpen) }}</div>
-                        </div>
-                        <div class="kpi-icon">
-                            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" /><path d="M12 6v6m0 0l3-3m-3 3l-3-3" /></svg>
-                        </div>
-                    </div>
-                    <small class="text-muted">Assignés ou déclarés par vous</small>
-                </div>
-            </div>
-        </div>
-        <div class="col-6 col-xl-3">
-            <div class="card h-100">
-                <div class="card-body">
-                    <div class="kpi-header">
-                        <div>
-                            <span class="kpi-label">Résolus aujourd'hui</span>
-                            <div class="metric-value">{{ number_format($myResolvedToday) }}</div>
-                        </div>
-                        <div class="kpi-icon">
-                            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" /><path d="M8 12l2 2 4-4" /></svg>
-                        </div>
-                    </div>
-                    <small class="text-muted">Incidents clôturés ce jour</small>
-                </div>
-            </div>
-        </div>
-        <div class="col-6 col-xl-3">
-            <div class="card h-100">
-                <div class="card-body">
-                    <div class="kpi-header">
-                        <div>
-                            <span class="kpi-label">Ce mois</span>
-                            <div class="metric-value">{{ number_format($myTotalMonth) }}</div>
-                        </div>
-                        <div class="kpi-icon">
-                            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" /><path d="M12 8v4m0 4h.01" /></svg>
-                        </div>
-                    </div>
-                    <small class="text-muted">Incidents déclarés en {{ now()->translatedFormat('F') }}</small>
-                </div>
-            </div>
-        </div>
-        <div class="col-6 col-xl-3">
-            <div class="card h-100">
-                <div class="card-body">
-                    <div class="kpi-header">
-                        <div>
-                            <span class="kpi-label">Réseau global</span>
-                            <div class="metric-value">{{ number_format($availabilityRate, 1, ',', ' ') }}%</div>
-                        </div>
-                        <div class="kpi-icon">
-                            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" /><path d="M8 12l2 2 4-4" /></svg>
-                        </div>
-                    </div>
-                    <small class="text-muted">Disponibilité réseau</small>
-                </div>
-            </div>
-        </div>
+        @endif
     </div>
-
-    <div class="row g-4">
-        {{-- File de travail personnelle --}}
-        <div class="col-12 col-xl-8">
-            <div class="card h-100">
-                <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                    <h2 class="h5 mb-0">Ma file d'incidents à traiter</h2>
-                    <a href="{{ route('incidents.mine') }}" class="btn btn-outline-secondary btn-sm">Voir tout</a>
-                </div>
-                <div class="table-responsive">
-                    <table class="table align-middle mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Code</th>
-                                <th>Départ</th>
-                                <th>Priorité</th>
-                                <th>En attente</th>
-                                <th class="text-end">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse($myOpenIncidents as $incident)
-                                @php
-                                    $waitingMinutes = $incident->duree_en_attente;
-                                    $waitingClass = $waitingMinutes > 120
-                                        ? 'text-danger fw-bold'
-                                        : ($waitingMinutes > 60 ? 'text-warning fw-semibold' : 'text-success');
-                                @endphp
-                                <tr>
-                                    <td class="fw-semibold">{{ $incident->code_incident }}</td>
-                                    <td>{{ $incident->departement?->nom ?? '-' }}</td>
-                                    <td>
-                                        <span class="badge text-bg-light">
-                                            {{ $incident->priorite?->libelle ?? '-' }}
-                                        </span>
-                                    </td>
-                                    <td class="{{ $waitingClass }}">
-                                        {{ $formatDuration($waitingMinutes) }}
-                                    </td>
-                                    <td class="text-end">
-                                        <a href="{{ route('incidents.edit', $incident) }}" class="btn btn-danger btn-sm">
-                                            Traiter
-                                        </a>
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="5" class="text-center text-muted py-5">
-                                        <div class="mb-2">✅</div>
-                                        Aucun incident ouvert à votre charge. Bonne journée !
-                                    </td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-                @if($myOpenIncidents->isNotEmpty())
-                    <div class="card-footer bg-white">
-                        <a href="{{ route('incidents.en-cours') }}" class="btn btn-outline-danger btn-sm">
-                            Voir tous les incidents en cours →
-                        </a>
-                    </div>
-                @endif
-            </div>
-        </div>
-
-        {{-- Panneau latéral --}}
-        <div class="col-12 col-xl-4">
-
-            {{-- Actions rapides --}}
-            <div class="card mb-4">
-                <div class="card-header bg-white fw-semibold">Actions rapides</div>
-                <div class="card-body d-grid gap-2">
-                    @can('incidents.create')
-                        <a href="{{ route('incidents.create') }}" class="btn btn-danger">
-                            + Déclarer un nouvel incident
-                        </a>
-                    @endcan
-                    <a href="{{ route('incidents.mine') }}" class="btn btn-outline-secondary">
-                        Mes incidents
-                    </a>
-                    <a href="{{ route('incidents.en-cours') }}" class="btn btn-outline-secondary">
-                        Incidents en cours réseau
-                    </a>
-                </div>
-            </div>
-
-            {{-- Dernières actions --}}
-            <div class="card">
-                <div class="card-header bg-white fw-semibold">Mes dernières actions</div>
-                <div class="card-body p-0">
-                    <div class="list-group list-group-flush">
-                        @forelse($myRecentActions as $action)
-                            <div class="list-group-item px-3 py-2">
-                                <div class="d-flex justify-content-between align-items-start gap-2">
-                                    <div>
-                                        <span class="badge text-bg-light text-uppercase small">
-                                            {{ $action->action_type }}
-                                        </span>
-                                        <div class="small mt-1">{{ $action->description }}</div>
-                                        @if($action->incident)
-                                            <small class="text-muted">{{ $action->incident->code_incident }}</small>
-                                        @endif
-                                    </div>
-                                    <small class="text-muted text-nowrap">
-                                        {{ $action->action_date?->diffForHumans() }}
-                                    </small>
-                                </div>
-                            </div>
-                        @empty
-                            <div class="list-group-item text-muted text-center py-4">
-                                Aucune action récente.
-                            </div>
-                        @endforelse
-                    </div>
-                </div>
-            </div>
-
-        </div>
-    </div>
-
-</x-app-layout>
+</body>
+</html>

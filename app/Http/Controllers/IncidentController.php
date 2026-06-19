@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Events\IncidentChanged;
 use App\Exports\IncidentsExport;
+use App\Http\Requests\Api\AssignIncidentRequest;
+use App\Http\Requests\Api\CloseIncidentRequest;
+use App\Http\Requests\Api\StoreInterventionRequest;
 use App\Http\Requests\StoreIncidentRequest;
 use App\Http\Requests\UpdateIncidentRequest;
 use App\Models\Incident;
@@ -13,8 +16,10 @@ use App\Services\IncidentService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 use Maatwebsite\Excel\Facades\Excel;
+use Throwable;
 
 class IncidentController extends Controller
 {
@@ -23,20 +28,21 @@ class IncidentController extends Controller
         private readonly IncidentCatalogueService $incidentCatalogueService,
         private readonly IncidentQueryService $incidentQueryService,
     ) {
-        $this->middleware('permission:incidents.view')->only(['index', 'mine', 'show', 'export', 'enCours']);
+        $this->middleware('permission:incidents.view|incidents.view.assigned')->only(['index', 'mine', 'show', 'enCours']);
+        $this->middleware('permission:incidents.export')->only(['export']);
         $this->middleware('permission:incidents.create')->only(['create', 'store']);
         $this->middleware('permission:incidents.update')->only(['edit', 'update']);
         $this->middleware('permission:incidents.delete')->only(['destroy']);
     }
 
-    public function index(Request $request): View
+    public function index(Request $request): View|RedirectResponse
     {
         return $this->renderIncidentList($request);
     }
 
     public function mine(Request $request): View
     {
-        return $this->renderIncidentList($request, true);
+        return $this->renderIncidentList($request, true, 'incidents.mine');
     }
 
     public function enCours(Request $request): View|JsonResponse
@@ -196,7 +202,7 @@ class IncidentController extends Controller
     {
         $incident = $this->incidentService->createIncident($request->validated(), $request->user());
 
-        broadcast(new IncidentChanged('created', $incident))->toOthers();
+        $this->broadcastIncidentChanged('created', $incident);
 
         return redirect()
             ->route('incidents.show', $incident)
@@ -217,9 +223,14 @@ class IncidentController extends Controller
             'responsable',
             'superviseur',
             'actions.user',
+            'interventions.user',
+            'report.user',
         ]);
 
-        return view('incidents.show', compact('incident'));
+        return view('incidents.show', array_merge(
+            ['incident' => $incident],
+            $this->incidentCatalogueService->activeFormCatalogues()
+        ));
     }
 
     public function edit(Incident $incident): View
@@ -238,18 +249,108 @@ class IncidentController extends Controller
 
         $incident = $this->incidentService->updateIncident($incident, $request->validated(), $request->user());
 
-        broadcast(new IncidentChanged('updated', $incident))->toOthers();
+        $this->broadcastIncidentChanged('updated', $incident);
 
         return redirect()
             ->route('incidents.show', $incident)
             ->with('success', 'Incident mis a jour avec succes.');
     }
 
+    public function assign(AssignIncidentRequest $request, Incident $incident): RedirectResponse
+    {
+        $updated = $this->incidentService->assignIncident($incident, $request->validated(), $request->user());
+
+        $this->broadcastIncidentChanged('assigned', $updated);
+
+        return redirect()
+            ->route('incidents.show', $updated)
+            ->with('success', 'Incident assigne avec succes.');
+    }
+
+    public function storeIntervention(StoreInterventionRequest $request, Incident $incident): RedirectResponse
+    {
+        $this->authorize('take', $incident);
+
+        $intervention = $this->incidentService->addIntervention($incident, $request->validated(), $request->user());
+
+        $this->broadcastIncidentChanged('intervention', $intervention->incident);
+
+        return redirect()
+            ->route('incidents.show', $incident)
+            ->with('success', 'Intervention enregistree avec succes.');
+    }
+
+    public function take(StoreInterventionRequest $request, Incident $incident): RedirectResponse
+    {
+        return $this->storeIntervention($request, $incident);
+    }
+
+    public function resolve(Request $request, Incident $incident): RedirectResponse
+    {
+        $this->authorize('resolve', $incident);
+
+        $payload = $request->validate([
+            'actions_menees' => ['nullable', 'string'],
+            'resultat' => ['required', 'string'],
+            'resolution_summary' => ['nullable', 'string'],
+            'ended_at' => ['nullable', 'date'],
+        ]);
+
+        $updated = $this->incidentService->resolveIncident($incident, $payload, $request->user());
+        $this->broadcastIncidentChanged('resolved', $updated);
+
+        return redirect()
+            ->route('incidents.show', $updated)
+            ->with('success', 'Incident marque comme resolu.');
+    }
+
+    public function report(Request $request, Incident $incident): RedirectResponse
+    {
+        $this->authorize('report', $incident);
+
+        $payload = $request->validate([
+            'actions_realisees' => ['required', 'string'],
+            'resultat' => ['required', 'string'],
+            'observations' => ['nullable', 'string'],
+            'submitted_at' => ['nullable', 'date'],
+        ]);
+
+        $report = $this->incidentService->submitReport($incident, $payload, $request->user());
+        $this->broadcastIncidentChanged('reported', $report->incident);
+
+        return redirect()
+            ->route('incidents.show', $incident)
+            ->with('success', 'Rapport d intervention enregistre.');
+    }
+
+    public function validateResolution(Request $request, Incident $incident): RedirectResponse
+    {
+        $this->authorize('validateResolution', $incident);
+
+        $updated = $this->incidentService->validateResolution($incident, $request->user());
+        $this->broadcastIncidentChanged('validated', $updated);
+
+        return redirect()
+            ->route('incidents.show', $updated)
+            ->with('success', 'Resolution validee.');
+    }
+
+    public function close(CloseIncidentRequest $request, Incident $incident): RedirectResponse
+    {
+        $closed = $this->incidentService->closeIncident($incident, $request->validated(), $request->user());
+
+        $this->broadcastIncidentChanged('closed', $closed);
+
+        return redirect()
+            ->route('incidents.show', $closed)
+            ->with('success', 'Incident cloture avec succes.');
+    }
+
     public function destroy(Request $request, Incident $incident): RedirectResponse
     {
         $this->authorize('delete', $incident);
 
-        broadcast(new IncidentChanged('deleted', $incident))->toOthers();
+        $this->broadcastIncidentChanged('deleted', $incident);
 
         $this->incidentService->deleteIncident($incident, $request->user());
 
@@ -258,7 +359,7 @@ class IncidentController extends Controller
             ->with('success', 'Incident supprime.');
     }
 
-    private function renderIncidentList(Request $request, bool $onlyMine = false): View
+    private function renderIncidentList(Request $request, bool $onlyMine = false, string $view = 'incidents.index'): View
     {
         $filters = $this->incidentQueryService->defaultIncidentFilters($request->only([
             'departement_id',
@@ -272,24 +373,37 @@ class IncidentController extends Controller
             'q',
         ]));
 
-        $listPayload = $this->incidentQueryService->listIncidents(
-            $filters,
-            $request->user(),
-            15
-        );
+        $listPayload = $onlyMine
+            ? $this->incidentQueryService->listHandledIncidents($filters, $request->user(), 15)
+            : $this->incidentQueryService->listIncidents($filters, $request->user(), 15);
 
-        return view('incidents.index', array_merge([
+        return view($view, array_merge([
             'incidents' => $listPayload['incidents'],
             'filters' => $filters,
             'listContext' => [
-                'title' => $onlyMine ? 'Mes incidents' : 'Liste des incidents',
+                'title' => $onlyMine ? 'Mes traitements' : 'Liste des incidents',
                 'subtitle' => $onlyMine
-                    ? 'Consultez les incidents qui vous sont attribues, supervises ou declares.'
+                    ? 'Consultez les incidents sur lesquels vous avez enregistre une intervention ou finalise une prise en charge.'
                     : "Consultez et gerez l'ensemble des anomalies detectees sur le reseau national.",
                 'indexRoute' => $onlyMine ? 'incidents.mine' : 'incidents.index',
                 'isMine' => $onlyMine,
             ],
             'stats' => $listPayload['stats'],
         ], $this->incidentCatalogueService->listingCatalogues()));
+    }
+
+    private function broadcastIncidentChanged(string $action, Incident $incident): void
+    {
+        try {
+            $pendingBroadcast = broadcast(new IncidentChanged($action, $incident))->toOthers();
+            unset($pendingBroadcast);
+        } catch (Throwable $exception) {
+            Log::warning('Incident broadcast skipped.', [
+                'action' => $action,
+                'incident_id' => $incident->id,
+                'broadcast_connection' => config('broadcasting.default'),
+                'message' => $exception->getMessage(),
+            ]);
+        }
     }
 }

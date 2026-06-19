@@ -3,9 +3,11 @@
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Request;
 use Spatie\Permission\Middleware\PermissionMiddleware;
 use Spatie\Permission\Middleware\RoleMiddleware;
 use Spatie\Permission\Middleware\RoleOrPermissionMiddleware;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -23,5 +25,27 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        //
+        $exceptions->render(function (HttpExceptionInterface $exception, Request $request) {
+            if ($exception->getStatusCode() !== 419) {
+                return null;
+            }
+
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => 'Votre session a expiré. Veuillez réessayer.',
+                ], 419);
+            }
+
+            if ($request->is('login')) {
+                return redirect()
+                    ->route('login')
+                    ->withInput($request->except('password'))
+                    ->with('status', 'Votre session a expiré. Veuillez réessayer avec le formulaire actualisé.');
+            }
+
+            return redirect()
+                ->back()
+                ->withInput($request->except('password'))
+                ->with('status', 'Votre session a expiré. Veuillez réessayer.');
+        });
     })->create();

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Events\IncidentChanged;
 use App\Http\Requests\Api\IncidentFilterRequest;
 use App\Http\Requests\Api\StoreIncidentRequest;
 use App\Http\Requests\Api\UpdateIncidentRequest;
@@ -59,6 +60,8 @@ class IncidentController extends ApiController
         $incident = $this->incidentService->createIncident($request->validated(), $request->user());
         $incident->load(['departement', 'typeIncident', 'cause', 'status', 'priorite', 'operateur', 'responsable', 'superviseur']);
 
+        broadcast(new IncidentChanged('created', $incident))->toOthers();
+
         return $this->success(IncidentResource::make($incident), 'Incident cree avec succes.', 201);
     }
 
@@ -84,11 +87,15 @@ class IncidentController extends ApiController
         $incident = $this->incidentService->updateIncident($incident, $request->validated(), $request->user());
         $incident->load(['departement', 'typeIncident', 'cause', 'status', 'priorite', 'operateur', 'responsable', 'superviseur']);
 
+        broadcast(new IncidentChanged('updated', $incident))->toOthers();
+
         return $this->success(IncidentResource::make($incident), 'Incident mis a jour avec succes.');
     }
 
     public function destroy(Request $request, Incident $incident): JsonResponse
     {
+        broadcast(new IncidentChanged('deleted', $incident))->toOthers();
+
         $this->incidentService->deleteIncident($incident, $request->user());
 
         return $this->success(null, 'Incident supprime avec succes.');

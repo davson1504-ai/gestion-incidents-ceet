@@ -43,10 +43,26 @@ class IncidentQueryService
 
     public function listIncidents(array $filters, ?User $currentUser = null, int $perPage = 15): array
     {
-        $baseQuery = $this->baseIncidentQuery($filters, $currentUser);
+        $baseQuery = $this->globalIncidentQuery($filters, $currentUser);
 
         $incidents = (clone $baseQuery)
-            ->with(['departement', 'typeIncident', 'cause', 'status', 'priorite', 'operateur', 'superviseur'])
+            ->with(['departement', 'typeIncident', 'cause', 'status', 'priorite', 'operateur', 'responsable', 'superviseur'])
+            ->latest('date_debut')
+            ->paginate($perPage)
+            ->withQueryString();
+
+        return [
+            'incidents' => $incidents,
+            'stats' => $this->buildStats($baseQuery),
+        ];
+    }
+
+    public function listHandledIncidents(array $filters, ?User $currentUser = null, int $perPage = 15): array
+    {
+        $baseQuery = $this->handledIncidentQuery($filters, $currentUser);
+
+        $incidents = (clone $baseQuery)
+            ->with(['departement', 'typeIncident', 'cause', 'status', 'priorite', 'operateur', 'responsable', 'superviseur'])
             ->latest('date_debut')
             ->paginate($perPage)
             ->withQueryString();
@@ -62,7 +78,7 @@ class IncidentQueryService
         $baseQuery = $this->openIncidentQuery($filters, $currentUser);
 
         $paginatedIncidents = (clone $baseQuery)
-            ->with(['departement', 'typeIncident', 'priorite', 'status'])
+            ->with(['departement', 'typeIncident', 'priorite', 'status', 'responsable', 'operateur'])
             ->paginate($perPage)
             ->withQueryString();
 
@@ -73,7 +89,7 @@ class IncidentQueryService
         $totalEnCours = $paginatedIncidents->total();
 
         $plusAncien = (clone $baseQuery)
-            ->with(['departement', 'priorite', 'status'])
+            ->with(['departement', 'priorite', 'status', 'responsable', 'operateur'])
             ->first();
 
         if ($plusAncien) {
@@ -116,7 +132,19 @@ class IncidentQueryService
     {
         return Incident::query()
             ->select('incidents.*')
-            ->when($currentUser, fn (Builder $query) => $query->visibleToUser($currentUser))
+            ->when($currentUser, function (Builder $query, User $user) {
+                if ($user->isAdmin() || $user->isSuperviseur()) {
+                    return;
+                }
+
+                if ($user->isOperateur()) {
+                    $query->where('incidents.responsable_id', $user->id);
+
+                    return;
+                }
+
+                $query->visibleToUser($user);
+            })
             ->join('statuses', 'statuses.id', '=', 'incidents.status_id')
             ->leftJoin('priorites', 'priorites.id', '=', 'incidents.priorite_id')
             ->where('statuses.is_final', false)
@@ -133,6 +161,24 @@ class IncidentQueryService
             })
             ->orderByRaw('CASE WHEN priorites.niveau IS NULL THEN 999 ELSE priorites.niveau END ASC')
             ->orderBy('incidents.date_debut');
+    }
+
+    private function handledIncidentQuery(array $filters, ?User $currentUser = null): Builder
+    {
+        return Incident::query()
+            ->filter($filters)
+            ->when($currentUser, function (Builder $query, User $user) {
+                $query
+                    ->where('incidents.responsable_id', $user->id)
+                    ->whereHas('interventions', fn (Builder $interventionQuery) => $interventionQuery->where('user_id', $user->id));
+            });
+    }
+
+    private function globalIncidentQuery(array $filters, ?User $currentUser = null): Builder
+    {
+        return Incident::query()
+            ->when($currentUser, fn (Builder $query) => $query->visibleToUser($currentUser))
+            ->filter($filters);
     }
 
     private function buildStats(Builder $baseQuery): array

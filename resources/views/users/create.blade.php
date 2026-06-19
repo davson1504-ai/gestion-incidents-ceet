@@ -1,15 +1,22 @@
 <x-app-layout>
-    <x-slot name="header">
-        <h1 class="h4 mb-0">Nouvel utilisateur</h1>
-    </x-slot>
+    <div class="ceet-page ceet-page-shell ceet-user-form-page">
+        <header class="ceet-page-header">
+            <div>
+                <span class="ceet-page-kicker">Utilisateurs</span>
+                <h1 class="ceet-page-title">Nouvel utilisateur</h1>
+                <p class="ceet-page-subtitle">Créer un compte et lui attribuer un rôle applicatif.</p>
+            </div>
 
-    <div class="card shadow-sm">
-        <div class="card-body">
+            <div class="ceet-page-actions">
+                <a href="{{ route('users.index') }}" class="btn btn-outline-secondary">Retour</a>
+            </div>
+        </header>
+
+        <section class="ceet-card">
             <form method="POST" action="{{ route('users.store') }}">
                 @csrf
                 @include('users._form')
             </form>
-        </div>
+        </section>
     </div>
 </x-app-layout>
-

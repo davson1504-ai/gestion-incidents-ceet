@@ -1,0 +1,634 @@
+/* ==========================================================================
+   CEET Catalogues UI - pages catalogues
+   Compatible avec la fondation CEET + Bootstrap.
+   ========================================================================== */
+
+.ceet-catalogue-page {
+    display: grid;
+    gap: 24px;
+}
+
+.ceet-catalogue-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.ceet-catalogue-breadcrumb {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    color: var(--ceet-muted-soft);
+    font-family: var(--ceet-font-mono, ui-monospace, monospace);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.ceet-catalogue-breadcrumb a {
+    color: var(--ceet-muted);
+    text-decoration: none;
+}
+
+.ceet-catalogue-breadcrumb a:hover,
+.ceet-catalogue-breadcrumb strong {
+    color: var(--ceet-text-strong);
+}
+
+.ceet-catalogue-metrics {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.ceet-catalogue-metric-card {
+    min-height: 118px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 18px;
+    padding: 18px;
+    border: 1px solid var(--ceet-border-soft) !important;
+    border-radius: var(--ceet-radius-sm) !important;
+    background: var(--ceet-surface) !important;
+    box-shadow: none !important;
+}
+
+.ceet-catalogue-metric-card p {
+    margin: 0;
+    color: var(--ceet-muted-soft);
+    font-family: var(--ceet-font-mono, ui-monospace, monospace);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.ceet-catalogue-metric-card div {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.ceet-catalogue-metric-card strong {
+    color: var(--ceet-text-strong);
+    font-size: 1.9rem;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.025em;
+}
+
+.ceet-catalogue-metric-card strong.is-small {
+    font-size: 0.95rem;
+    letter-spacing: 0;
+}
+
+.ceet-catalogue-metric-card span:not(.ceet-catalogue-dot) {
+    color: var(--ceet-muted);
+    font-size: 1.35rem;
+    font-weight: 800;
+}
+
+.ceet-catalogue-table-card {
+    overflow: hidden;
+    border: 1px solid var(--ceet-border-soft) !important;
+    border-radius: var(--ceet-radius-sm) !important;
+    background: var(--ceet-surface) !important;
+    box-shadow: none !important;
+}
+
+.ceet-catalogue-table-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 18px 22px;
+    border-bottom: 1px solid var(--ceet-border-soft) !important;
+    background: var(--ceet-surface-low) !important;
+}
+
+.ceet-catalogue-table-header h2 {
+    margin: 0;
+    color: var(--ceet-text-strong);
+    font-size: 1.05rem;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+}
+
+.ceet-catalogue-table-header p {
+    margin: 4px 0 0;
+    color: var(--ceet-muted);
+    font-size: 0.84rem;
+}
+
+.ceet-catalogue-table-actions,
+.ceet-row-actions {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.ceet-catalogue-table {
+    min-width: 920px;
+}
+
+.ceet-catalogue-table thead th {
+    padding: 14px 22px !important;
+}
+
+.ceet-catalogue-table tbody td {
+    padding: 14px 22px !important;
+}
+
+.ceet-catalogue-table tbody tr.is-inactive {
+    opacity: 0.58;
+}
+
+.ceet-catalogue-table tbody tr:hover > * {
+    background: var(--ceet-surface-low) !important;
+}
+
+.ceet-col-order {
+    width: 76px;
+}
+
+.ceet-catalogue-order {
+    color: var(--ceet-text-strong) !important;
+    font-family: var(--ceet-font-mono, ui-monospace, monospace);
+    font-weight: 800;
+}
+
+.ceet-status-name {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+}
+
+.ceet-status-name strong {
+    display: block;
+    color: var(--ceet-text-strong);
+    font-weight: 800;
+}
+
+.ceet-status-name small {
+    display: block;
+    margin-top: 2px;
+    color: var(--ceet-muted-soft);
+    font-family: var(--ceet-font-mono, ui-monospace, monospace);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.ceet-catalogue-dot {
+    width: 9px;
+    height: 9px;
+    display: inline-block;
+    flex: 0 0 auto;
+    border-radius: 999px;
+    background: var(--ceet-border-strong);
+}
+
+.ceet-catalogue-dot.is-active,
+.ceet-catalogue-dot.is-final {
+    background: var(--ceet-primary);
+}
+
+.ceet-catalogue-dot.is-muted {
+    background: var(--ceet-muted-soft);
+}
+
+.ceet-catalogue-dot.is-default {
+    background: var(--ceet-border-strong);
+}
+
+.ceet-muted-italic {
+    color: var(--ceet-muted);
+    font-size: 0.86rem;
+    font-style: italic;
+}
+
+.ceet-flag-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 46px;
+    padding: 6px 10px;
+    border: 1px solid var(--ceet-border-soft);
+    border-radius: var(--ceet-radius-sm);
+    background: var(--ceet-surface-high);
+    color: var(--ceet-muted);
+    font-family: var(--ceet-font-mono, ui-monospace, monospace);
+    font-size: 0.66rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.ceet-flag-badge.is-primary {
+    background: var(--ceet-primary);
+    border-color: var(--ceet-primary);
+    color: #ffffff;
+}
+
+.ceet-switch-indicator {
+    position: relative;
+    width: 38px;
+    height: 22px;
+    display: inline-flex;
+    align-items: center;
+    padding: 2px;
+    border-radius: 999px;
+    background: var(--ceet-border-soft);
+    vertical-align: middle;
+}
+
+.ceet-switch-indicator span {
+    width: 18px;
+    height: 18px;
+    display: block;
+    border-radius: 999px;
+    background: #ffffff;
+    border: 1px solid rgba(20, 27, 43, 0.12);
+    transform: translateX(0);
+}
+
+.ceet-switch-indicator.is-on {
+    background: var(--ceet-primary);
+}
+
+.ceet-switch-indicator.is-on span {
+    transform: translateX(16px);
+}
+
+.ceet-catalogue-table-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 14px 22px;
+    border-top: 1px solid var(--ceet-border-soft);
+    color: var(--ceet-muted);
+    font-size: 0.84rem;
+}
+
+.ceet-catalogue-pagination .pagination {
+    margin: 0;
+}
+
+.ceet-catalogue-pagination .page-link {
+    border-color: var(--ceet-border-soft);
+    color: var(--ceet-text-strong);
+    box-shadow: none !important;
+}
+
+.ceet-catalogue-pagination .active > .page-link,
+.ceet-catalogue-pagination .page-link.active {
+    background: var(--ceet-primary);
+    border-color: var(--ceet-primary);
+    color: #ffffff;
+}
+
+.ceet-catalogue-info-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.ceet-catalogue-info-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 20px;
+    border: 1px solid var(--ceet-border-soft);
+    border-radius: var(--ceet-radius-sm);
+    background: var(--ceet-surface-low);
+}
+
+.ceet-info-icon {
+    width: 44px;
+    height: 44px;
+    display: inline-grid;
+    place-items: center;
+    flex: 0 0 auto;
+    border-radius: var(--ceet-radius-sm);
+    background: var(--ceet-primary);
+    color: #ffffff;
+    font-weight: 900;
+}
+
+.ceet-catalogue-info-card h3 {
+    margin: 0 0 4px;
+    color: var(--ceet-text-strong);
+    font-size: 1rem;
+    font-weight: 800;
+}
+
+.ceet-catalogue-info-card p {
+    margin: 0;
+    color: var(--ceet-muted);
+    font-size: 0.88rem;
+}
+
+@media (max-width: 1199.98px) {
+    .ceet-catalogue-metrics {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 767.98px) {
+    .ceet-catalogue-header,
+    .ceet-catalogue-table-header,
+    .ceet-catalogue-table-footer {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .ceet-catalogue-metrics,
+    .ceet-catalogue-info-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .ceet-catalogue-table-actions,
+    .ceet-row-actions {
+        justify-content: flex-start;
+        flex-wrap: wrap;
+    }
+}
+
+/* ==========================================================================
+   Page 37 - Créer statut
+   ========================================================================== */
+
+.ceet-catalogue-form-page {
+    max-width: 1120px;
+    margin-inline: auto;
+}
+
+.ceet-catalogue-form-shell {
+    display: block;
+}
+
+.ceet-status-form-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 8fr) minmax(280px, 4fr);
+    gap: 16px;
+    align-items: start;
+}
+
+.ceet-status-form-main,
+.ceet-status-form-side {
+    display: grid;
+    gap: 16px;
+}
+
+.ceet-catalogue-form-panel {
+    overflow: hidden;
+    border: 1px solid var(--ceet-border-soft) !important;
+    border-radius: var(--ceet-radius-sm) !important;
+    background: var(--ceet-surface) !important;
+    box-shadow: none !important;
+}
+
+.ceet-catalogue-form-panel-header {
+    padding: 18px 22px;
+    border-bottom: 1px solid var(--ceet-border-soft) !important;
+    background: var(--ceet-surface) !important;
+}
+
+.ceet-catalogue-form-panel-header h2 {
+    margin: 0;
+    color: var(--ceet-text-strong);
+    font-size: 1.05rem;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+}
+
+.ceet-catalogue-form-panel-body {
+    padding: 22px;
+}
+
+.ceet-field-group {
+    display: grid;
+    gap: 8px;
+}
+
+.ceet-field-group + .ceet-field-group {
+    margin-top: 22px;
+}
+
+.ceet-field-help {
+    margin: 0;
+    color: var(--ceet-muted-soft);
+    font-size: 0.78rem;
+}
+
+.ceet-code-field {
+    font-family: var(--ceet-font-mono, ui-monospace, monospace) !important;
+    font-size: 0.88rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.ceet-color-input {
+    width: 100%;
+    max-width: 100%;
+    height: 42px;
+    padding: 6px !important;
+}
+
+.ceet-form-switch-card {
+    min-height: 74px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 14px;
+    border: 1px solid var(--ceet-border-soft);
+    border-radius: var(--ceet-radius-sm);
+    background: var(--ceet-surface-low);
+    cursor: pointer;
+}
+
+.ceet-form-switch-card.is-compact {
+    min-height: 68px;
+}
+
+.ceet-form-switch-card strong {
+    display: block;
+    color: var(--ceet-text-strong);
+    font-weight: 800;
+}
+
+.ceet-form-switch-card small {
+    display: block;
+    margin-top: 2px;
+    color: var(--ceet-muted);
+    font-size: 0.78rem;
+}
+
+.ceet-form-switch {
+    position: relative;
+    width: 44px;
+    height: 24px;
+    flex: 0 0 auto;
+}
+
+.ceet-form-switch input {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.ceet-form-switch > span {
+    position: absolute;
+    inset: 0;
+    display: block;
+    border-radius: 999px;
+    background: var(--ceet-border);
+    transition: background-color 0.15s ease;
+}
+
+.ceet-form-switch > span::after {
+    content: "";
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 18px;
+    height: 18px;
+    border-radius: 999px;
+    background: #ffffff;
+    border: 1px solid rgba(20, 27, 43, 0.12);
+    transition: transform 0.15s ease;
+}
+
+.ceet-form-switch input:checked + span {
+    background: var(--ceet-primary);
+}
+
+.ceet-form-switch input:checked + span::after {
+    transform: translateX(20px);
+}
+
+.ceet-catalogue-note {
+    padding: 14px;
+    border: 1px solid var(--ceet-border-soft);
+    border-radius: var(--ceet-radius-sm);
+    background: var(--ceet-surface-low);
+}
+
+.ceet-catalogue-note strong {
+    display: block;
+    margin-bottom: 4px;
+    color: var(--ceet-text-strong);
+    font-size: 0.84rem;
+    font-weight: 800;
+}
+
+.ceet-catalogue-note p {
+    margin: 0;
+    color: var(--ceet-muted);
+    font-size: 0.82rem;
+}
+
+.ceet-status-preview-card {
+    position: relative;
+    overflow: hidden;
+    padding: 22px;
+    border: 1px solid var(--ceet-border-soft);
+    border-radius: var(--ceet-radius-sm);
+    background: var(--ceet-surface-high);
+}
+
+.ceet-status-preview-card h2 {
+    margin: 0 0 18px;
+    color: var(--ceet-muted);
+    font-family: var(--ceet-font-mono, ui-monospace, monospace);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+}
+
+.ceet-status-preview-decoration {
+    position: absolute;
+    top: -24px;
+    right: -14px;
+    color: var(--ceet-text-strong);
+    font-size: 6rem;
+    line-height: 1;
+    opacity: 0.045;
+    pointer-events: none;
+}
+
+.ceet-status-preview-box {
+    display: grid;
+    place-items: center;
+    min-height: 106px;
+    padding: 16px;
+}
+
+.ceet-status-preview-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 32px;
+    padding: 7px 16px;
+    border: 1px solid var(--ceet-primary);
+    border-radius: var(--ceet-radius-sm);
+    background: #ffffff;
+    color: var(--ceet-primary);
+    font-family: var(--ceet-font-mono, ui-monospace, monospace);
+    font-size: 0.74rem;
+    font-weight: 800;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+}
+
+.ceet-status-preview-card p {
+    margin: 0;
+    color: var(--ceet-muted);
+    font-size: 0.78rem;
+    text-align: center;
+}
+
+.ceet-catalogue-form-actions-mobile {
+    display: none;
+    gap: 8px;
+}
+
+@media (max-width: 1199.98px) {
+    .ceet-status-form-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .ceet-catalogue-form-panel-header,
+    .ceet-catalogue-form-panel-body,
+    .ceet-status-preview-card {
+        padding: 18px;
+    }
+
+    .ceet-catalogue-form-page > .ceet-catalogue-header .ceet-catalogue-table-actions {
+        display: none;
+    }
+
+    .ceet-catalogue-form-actions-mobile {
+        display: grid;
+    }
+
+    .ceet-form-switch-card {
+        align-items: flex-start;
+    }
+}

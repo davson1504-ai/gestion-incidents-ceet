@@ -1,0 +1,42 @@
+.ceet-incident-form {
+    display: grid;
+    gap: 24px;
+}
+
+.ceet-incident-form .form-label {
+    color: #4b5563;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: .03em;
+    text-transform: uppercase;
+}
+
+.ceet-incident-form .form-control,
+.ceet-incident-form .form-select {
+    min-height: 46px;
+    border-color: #cfd5dd;
+    border-radius: 4px;
+}
+
+.ceet-readonly-status {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 16px;
+    border: 1px solid #d8dce2;
+    border-radius: 4px;
+    background: #f5f6f8;
+}
+
+.ceet-readonly-status span {
+    color: #5f6673;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+}
+
+.ceet-readonly-status strong {
+    color: #111827;
+}

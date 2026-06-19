@@ -77,10 +77,55 @@ trait BuildsIncidentContext
         ]);
 
         $statusOpen = Statut::create([
-            'code' => 'EN_COURS',
-            'libelle' => 'En cours',
+            'code' => 'OUVERT',
+            'libelle' => 'Ouvert',
             'ordre' => 1,
             'couleur' => '#ffc107',
+            'is_active' => true,
+            'is_final' => false,
+        ]);
+
+        $statusAssigned = Statut::create([
+            'code' => 'AFFECTE',
+            'libelle' => 'Affecte',
+            'ordre' => 2,
+            'couleur' => '#f59e0b',
+            'is_active' => true,
+            'is_final' => false,
+        ]);
+
+        $statusInProgress = Statut::create([
+            'code' => 'EN_COURS',
+            'libelle' => 'En cours',
+            'ordre' => 3,
+            'couleur' => '#0ea5e9',
+            'is_active' => true,
+            'is_final' => false,
+        ]);
+
+        $statusResolved = Statut::create([
+            'code' => 'RESOLU',
+            'libelle' => 'Resolu',
+            'ordre' => 4,
+            'couleur' => '#22c55e',
+            'is_active' => true,
+            'is_final' => false,
+        ]);
+
+        $statusReported = Statut::create([
+            'code' => 'RAPPORTE',
+            'libelle' => 'Rapporte',
+            'ordre' => 5,
+            'couleur' => '#14b8a6',
+            'is_active' => true,
+            'is_final' => false,
+        ]);
+
+        $statusValidated = Statut::create([
+            'code' => 'VALIDE',
+            'libelle' => 'Valide',
+            'ordre' => 6,
+            'couleur' => '#6366f1',
             'is_active' => true,
             'is_final' => false,
         ]);
@@ -88,7 +133,7 @@ trait BuildsIncidentContext
         $statusFinal = Statut::create([
             'code' => 'CLOTURE',
             'libelle' => 'Cloture',
-            'ordre' => 2,
+            'ordre' => 7,
             'couleur' => '#6c757d',
             'is_active' => true,
             'is_final' => true,
@@ -102,7 +147,7 @@ trait BuildsIncidentContext
             'is_active' => true,
         ]);
 
-        return compact('departement', 'type', 'cause', 'causeAlt', 'statusOpen', 'statusFinal', 'priorite');
+        return compact('departement', 'type', 'cause', 'causeAlt', 'statusOpen', 'statusAssigned', 'statusInProgress', 'statusResolved', 'statusReported', 'statusValidated', 'statusFinal', 'priorite');
     }
 
     protected function makeIncident(array $context, array $overrides = []): Incident

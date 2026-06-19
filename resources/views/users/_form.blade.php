@@ -2,6 +2,7 @@
     $isEdit = isset($userToEdit);
 @endphp
 
+<div class="p-4">
 <div class="row g-3">
     <div class="col-md-6">
         <label class="form-label">Nom *</label>
@@ -25,7 +26,7 @@
     </div>
 
     <div class="col-md-4">
-        <label class="form-label">Departement</label>
+        <label class="form-label">Département</label>
         <select name="departement_id" class="form-select @error('departement_id') is-invalid @enderror">
             <option value="">-- Aucun --</option>
             @foreach($departements as $dep)
@@ -69,8 +70,8 @@
     </div>
 
     <div class="col-12">
-        <button class="btn btn-primary" type="submit">{{ $isEdit ? 'Mettre a jour' : 'Creer' }}</button>
+        <button class="btn btn-ceet-primary" type="submit">{{ $isEdit ? 'Mettre a jour' : 'Creer' }}</button>
         <a href="{{ route('users.index') }}" class="btn btn-outline-secondary">Annuler</a>
     </div>
 </div>
-
+</div>

@@ -1,376 +1,254 @@
 @php
-    $selected = $selectedDepartement;
+    use Illuminate\Support\Str;
 
-    $chargeBadgeClass = static function ($charge) {
-        if ($charge === null) {
-            return 'text-bg-light';
-        }
+    $currentUser = auth()->user();
+    $fullName = trim((string) ($currentUser?->name ?? 'Administrator'));
+    $nameParts = preg_split('/\s+/', $fullName, -1, PREG_SPLIT_NO_EMPTY) ?: [];
+    $initials = collect($nameParts)->take(2)->map(fn ($part) => Str::upper(Str::substr($part, 0, 1)))->implode('') ?: 'AD';
+    $roleName = $currentUser?->getRoleNames()?->first() ?? 'Administrator';
+    $filters = array_merge(['q' => '', 'zone' => ''], $filters ?? []);
+    $zones = $zones ?? collect();
+    $stats = array_merge([
+        'totalCount' => $departements->total(),
+        'activeCount' => $departements->where('is_active', true)->count(),
+        'zoneCount' => 0,
+        'totalPowerMw' => 0,
+    ], $stats ?? []);
+    $from = $departements->firstItem() ?? 0;
+    $to = $departements->lastItem() ?? 0;
+    $total = $departements->total();
+    $lastUpdated = optional($departements->getCollection()->max('updated_at'))?->format("Aujourd'hui, H:i") ?? now()->format("Aujourd'hui, H:i");
+    $htShare = $stats['totalCount'] > 0 ? (int) round(($stats['activeCount'] / max(1, $stats['totalCount'])) * 100) : 0;
 
-        if ($charge > 400) {
-            return 'text-bg-danger';
-        }
-
-        if ($charge > 200) {
-            return 'text-bg-warning';
-        }
-
-        return 'text-bg-success';
-    };
+    $navItems = [
+        ['label' => 'Dashboard', 'icon' => 'dashboard', 'route' => route('dashboard'), 'active' => request()->routeIs('dashboard')],
+        ['label' => 'Incidents', 'icon' => 'bolt', 'route' => route('incidents.index'), 'active' => request()->routeIs('incidents.*', 'incidents.mine')],
+        ['label' => 'Users', 'icon' => 'group', 'route' => Route::has('users.index') ? route('users.index') : '#', 'active' => request()->routeIs('users.*')],
+        ['label' => 'System Status', 'icon' => 'tune', 'route' => Route::has('system.status') ? route('system.status') : '#', 'active' => request()->routeIs('system.*')],
+        ['label' => 'Catalogs', 'icon' => 'menu_book', 'route' => Route::has('catalogues.index') ? route('catalogues.index') : '#', 'active' => request()->routeIs('catalogues.*')],
+        ['label' => 'Reports', 'icon' => 'insert_chart', 'route' => Route::has('reports.index') ? route('reports.index') : '#', 'active' => request()->routeIs('reports.*')],
+    ];
 @endphp
 
-<x-app-layout>
-    <style>
-        /* ========================================
-           VARIABLES & BASE
-           ======================================== */
-        :root {
-            --ceet-red: #ef2433;
-            --ceet-red-dark: #ce1220;
-            --ceet-gold: #f59e0b;
-            --ceet-blue-night: #0f172a;
-            --ceet-blue-deep: #1e293b;
-            --ceet-gray-light: #f8fafc;
-            --ceet-border-light: #e2e8f0;
-            --ceet-text-muted: #64748b;
-            --ceet-success: #22c55e;
-        }
+<!DOCTYPE html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="theme-color" content="#f8f9fb">
 
-        /* ========================================
-           ANIMATIONS
-           ======================================== */
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
+    <title>Départs Électriques - CEET Incidents</title>
 
-        @keyframes slideInDown {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
 
-        @keyframes pulse-light {
-            0%, 100% {
-                opacity: 1;
-            }
-            50% {
-                opacity: 0.85;
-            }
-        }
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+</head>
 
-        /* ========================================
-           CARDS KPI - Modern Design
-           ======================================== */
-        .row.g-3.mb-4:first-of-type .card {
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.88));
-            border: 1px solid rgba(226, 232, 240, 0.6);
-            border-radius: 16px;
-            padding: 24px;
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-            position: relative;
-            overflow: hidden;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 4px 6px rgba(15, 23, 42, 0.07);
-            animation: fadeInUp 0.6s ease both;
-        }
-
-        .row.g-3.mb-4:first-of-type .col-12:nth-child(1) .card {
-            animation-delay: 0.1s;
-            border-left: 4px solid var(--ceet-red);
-        }
-
-        .row.g-3.mb-4:first-of-type .col-12:nth-child(2) .card {
-            animation-delay: 0.2s;
-            border-left: 4px solid var(--ceet-gold);
-        }
-
-        .row.g-3.mb-4:first-of-type .col-12:nth-child(3) .card {
-            animation-delay: 0.3s;
-            border-left: 4px solid var(--ceet-success);
-        }
-
-        .row.g-3.mb-4:first-of-type .col-12:nth-child(4) .card {
-            animation-delay: 0.4s;
-            border-left: 4px solid var(--ceet-blue-deep);
-        }
-
-        .row.g-3.mb-4:first-of-type .card:hover {
-            transform: translateY(-6px);
-            box-shadow: 0 16px 32px rgba(15, 23, 42, 0.15);
-            border-color: rgba(226, 232, 240, 0.8);
-        }
-
-        /* ========================================
-           GENERAL CARDS
-           ======================================== */
-        .card {
-            border-radius: 16px;
-            border: 1px solid var(--ceet-border-light);
-            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-            animation: fadeInUp 0.6s ease both;
-        }
-
-        .card:hover {
-            box-shadow: 0 12px 24px rgba(15, 23, 42, 0.12);
-        }
-
-        /* ========================================
-           FORMS & INPUTS
-           ======================================== */
-        .form-control, .form-select {
-            border-radius: 10px;
-            border: 1px solid var(--ceet-border-light);
-            transition: all 0.2s ease;
-            background: linear-gradient(to right, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.95));
-        }
-
-        .form-control:focus, .form-select:focus {
-            border-color: var(--ceet-red);
-            box-shadow: 0 0 0 3px rgba(239, 36, 51, 0.1);
-        }
-
-        /* ========================================
-           TABLE ANIMATION
-           ======================================== */
-        table tbody tr {
-            animation: fadeInUp 0.6s ease backwards;
-        }
-
-        table tbody tr:nth-child(1) { animation-delay: 0.1s; }
-        table tbody tr:nth-child(2) { animation-delay: 0.15s; }
-        table tbody tr:nth-child(3) { animation-delay: 0.2s; }
-        table tbody tr:nth-child(4) { animation-delay: 0.25s; }
-        table tbody tr:nth-child(5) { animation-delay: 0.3s; }
-        table tbody tr:nth-child(n+6) { animation-delay: 0.35s; }
-
-        table tbody tr:hover {
-            background-color: rgba(239, 36, 51, 0.03);
-            transition: all 0.2s ease;
-        }
-
-        /* ========================================
-           BUTTONS
-           ======================================== */
-        .btn-danger {
-            background: linear-gradient(135deg, var(--ceet-red), var(--ceet-red-dark));
-            border: none;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(239, 36, 51, 0.3);
-        }
-
-        .btn-danger:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(239, 36, 51, 0.4);
-        }
-
-        .btn-outline-secondary {
-            border-radius: 10px;
-            transition: all 0.3s ease;
-        }
-
-        .btn-outline-secondary:hover {
-            transform: translateY(-2px);
-        }
-
-        .btn-outline-danger {
-            border-radius: 10px;
-            transition: all 0.3s ease;
-        }
-
-        .btn-outline-danger:hover {
-            transform: translateY(-2px);
-        }
-
-        /* ========================================
-           METRIC VALUE ANIMATION
-           ======================================== */
-        .metric-value {
-            animation: pulse-light 3s ease-in-out infinite;
-        }
-    </style>
-    <x-slot name="header">
-        <div>
-            <h1 class="h3 mb-1">Catalogue des départs</h1>
-            <p class="text-muted mb-0">Référentiel CEET enrichi avec postes, transformateurs et charges maximales d’exploitation.</p>
+<body class="ceet-catalog-page">
+    <aside class="ceet-catalog-sidebar">
+        <div class="ceet-catalog-brand">
+            <h1>CEET Incidents</h1>
+            <p>Electrical Management</p>
         </div>
-    </x-slot>
 
-    <div class="row g-3 mb-4">
-        <div class="col-12 col-xl-3">
-            <div class="card h-100">
-                <div class="card-body">
-                    <span class="text-uppercase small text-muted fw-semibold">Total départs</span>
-                    <div class="metric-value mt-2">{{ number_format($stats['totalCount']) }}</div>
-                </div>
+        <nav class="ceet-catalog-nav" aria-label="Navigation principale">
+                @include('partials.ceet-role-nav', ['linkClass' => 'ceet-catalog-nav-link'])
+            </nav>
+
+        <a class="ceet-catalog-sidebar-user" href="{{ route('profile.edit') }}">
+            <div class="ceet-catalog-avatar">{{ $initials }}</div>
+            <div>
+                <strong>{{ $roleName }}</strong>
+                <span>View Profile</span>
             </div>
-        </div>
-        <div class="col-12 col-xl-3">
-            <div class="card h-100">
-                <div class="card-body">
-                    <span class="text-uppercase small text-muted fw-semibold">Départs actifs</span>
-                    <div class="metric-value mt-2">{{ number_format($stats['activeCount']) }}</div>
-                </div>
-            </div>
-        </div>
-        <div class="col-12 col-xl-3">
-            <div class="card h-100">
-                <div class="card-body">
-                    <span class="text-uppercase small text-muted fw-semibold">Zones couvertes</span>
-                    <div class="metric-value mt-2">{{ number_format($stats['zoneCount']) }}</div>
-                </div>
-            </div>
-        </div>
-        <div class="col-12 col-xl-3">
-            <div class="card h-100">
-                <div class="card-body">
-                    <span class="text-uppercase small text-muted fw-semibold">Charge cumulée</span>
-                    <div class="metric-value mt-2">{{ number_format((float) $stats['totalPowerMw'], 0, ',', ' ') }} A</div>
-                </div>
-            </div>
-        </div>
-    </div>
+        </a>
+    </aside>
 
-    <div class="card mb-4">
-        <div class="card-body">
-            <form method="GET" action="{{ route('catalogues.departements.index') }}" class="row g-3 align-items-end">
-                <div class="col-12 col-md-8">
-                    <label class="form-label fw-semibold">Recherche</label>
-                    <input type="text" name="q" value="{{ $filters['q'] }}" class="form-control" placeholder="Code, nom, zone, poste de répartition">
-                </div>
-                <div class="col-12 col-md-4 d-flex gap-2 flex-wrap">
-                    <button class="btn btn-danger" type="submit">Rechercher</button>
-                    <a href="{{ route('catalogues.departements.index') }}" class="btn btn-outline-secondary">Réinitialiser</a>
-                    @can('catalogues.manage')
-                        <a href="{{ route('catalogues.departements.create') }}" class="btn btn-outline-danger">Nouveau départ</a>
-                    @endcan
-                </div>
+    <header class="ceet-catalog-topbar">
+        <div class="ceet-catalog-breadcrumb">
+            <span>Catalogs</span>
+            <span aria-hidden="true">›</span>
+            <strong>Départs Électriques</strong>
+        </div>
+
+        <div class="ceet-catalog-top-actions">
+            <button type="button" class="ceet-catalog-icon-btn" aria-label="Notifications">
+                <span class="material-symbols-outlined" aria-hidden="true">notifications</span>
+            </button>
+            <button type="button" class="ceet-catalog-icon-btn" aria-label="Aide">
+                <span class="material-symbols-outlined" aria-hidden="true">help</span>
+            </button>
+        </div>
+    </header>
+
+    <main class="ceet-catalog-main">
+        <section class="ceet-catalog-page-head">
+            <div>
+                <h2>Départs Électriques</h2>
+                <p>Gestion du catalogue des départs du réseau national.</p>
+            </div>
+
+            @can('catalogues.manage')
+                <a href="{{ route('catalogues.departements.create') }}" class="ceet-catalog-primary-btn">
+                    <span class="material-symbols-outlined" aria-hidden="true">add</span>
+                    Nouveau Départ
+                </a>
+            @endcan
+        </section>
+
+        @if(session('success'))
+            <div class="ceet-alert ceet-alert-success" role="status">{{ session('success') }}</div>
+        @endif
+
+        <section class="ceet-catalog-filter-card" aria-label="Filtres départs">
+            <form method="GET" action="{{ route('catalogues.departements.index') }}" class="ceet-catalog-filters">
+                <label class="ceet-catalog-search-field">
+                    <span>Recherche</span>
+                    <span class="ceet-catalog-search-box">
+                        <span class="material-symbols-outlined" aria-hidden="true">search</span>
+                        <input type="search" name="q" value="{{ $filters['q'] }}" placeholder="Rechercher par code ou nom...">
+                    </span>
+                </label>
+
+                <label>
+                    <span>Zone géographique</span>
+                    <select name="zone">
+                        <option value="">Toutes les zones</option>
+                        @foreach($zones as $zone)
+                            <option value="{{ $zone }}" @selected($filters['zone'] === $zone)>{{ $zone }}</option>
+                        @endforeach
+                    </select>
+                </label>
+
+                <button type="submit" class="ceet-catalog-filter-btn">
+                    <span class="material-symbols-outlined" aria-hidden="true">filter_list</span>
+                    Filtres Avancés
+                </button>
             </form>
-        </div>
-    </div>
+        </section>
 
-    <div class="row g-3">
-        <div class="col-12 col-xl-8">
-            <div class="card h-100">
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table align-middle mb-0">
-                            <thead>
-                                <tr>
-                                    <th>Code</th>
-                                    <th>Nom</th>
-                                    <th>Zone</th>
-                                    <th>Poste répartition</th>
-                                    <th>Charge max (A)</th>
-                                    <th>Transformateur</th>
-                                    <th class="text-end">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse($departements as $departement)
-                                    <tr>
-                                        <td class="fw-semibold">{{ $departement->code }}</td>
-                                        <td>{{ $departement->nom }}</td>
-                                        <td>{{ $departement->zone ?: '-' }}</td>
-                                        <td>{{ $departement->poste_repartition ?: '-' }}</td>
-                                        <td>
-                                            <span class="badge {{ $chargeBadgeClass($departement->charge_maximale) }}">
-                                                {{ $departement->charge_maximale !== null ? number_format((float) $departement->charge_maximale, 0, ',', ' ') . ' A' : 'N/A' }}
-                                            </span>
-                                        </td>
-                                        <td>{{ $departement->transformateur ?: '-' }}</td>
-                                        <td class="text-end">
-                                            <div class="d-inline-flex gap-2">
-                                                <a href="{{ route('catalogues.departements.index', ['selected' => $departement->id] + request()->except('page', 'selected')) }}" class="btn btn-outline-secondary btn-sm">Voir</a>
-                                                @can('catalogues.manage')
-                                                    <a href="{{ route('catalogues.departements.edit', $departement) }}" class="btn btn-outline-danger btn-sm">Éditer</a>
-                                                @endcan
-                                            </div>
-                                        </td>
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="7" class="text-center text-muted py-5">Aucun départ trouvé.</td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                <div class="card-footer">
-                    {{ $departements->links('pagination::bootstrap-5') }}
-                </div>
+        <section class="ceet-catalog-table-card">
+            <div class="ceet-catalog-table-wrap">
+                <table class="ceet-catalog-table">
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Nom du départ</th>
+                            <th>Zone</th>
+                            <th>Tension</th>
+                            <th>Statut</th>
+                            <th class="is-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($departements as $departement)
+                            @php
+                                $tension = $departement->charge_unite ?: 'HT (20kV)';
+                                $isBt = Str::contains(Str::lower($tension), ['bt', '400']);
+                            @endphp
+                            <tr>
+                                <td><strong>{{ $departement->code }}</strong></td>
+                                <td>{{ $departement->nom }}</td>
+                                <td>{{ $departement->zone ?: 'Non renseignée' }}</td>
+                                <td>
+                                    <span class="ceet-catalog-voltage {{ $isBt ? 'is-bt' : '' }}">{{ $tension }}</span>
+                                </td>
+                                <td>
+                                    <span class="ceet-catalog-status {{ $departement->is_active ? 'is-active' : 'is-inactive' }}">
+                                        <i aria-hidden="true"></i>
+                                        {{ $departement->is_active ? 'Actif' : 'Inactif' }}
+                                    </span>
+                                </td>
+                                <td class="is-right">
+                                    <div class="ceet-catalog-row-actions">
+                                        @can('catalogues.manage')
+                                            <a href="{{ route('catalogues.departements.edit', $departement) }}" aria-label="Modifier {{ $departement->code }}">
+                                                <span class="material-symbols-outlined" aria-hidden="true">edit</span>
+                                            </a>
+                                            <form method="POST" action="{{ route('catalogues.departements.destroy', $departement) }}" onsubmit="return confirm('Supprimer ce départ ?')">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" aria-label="Supprimer {{ $departement->code }}">
+                                                    <span class="material-symbols-outlined" aria-hidden="true">delete</span>
+                                                </button>
+                                            </form>
+                                        @else
+                                            <span class="ceet-catalog-muted-action">Lecture</span>
+                                        @endcan
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="6" class="ceet-catalog-empty">Aucun départ trouvé.</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
             </div>
-        </div>
-        <div class="col-12 col-xl-4">
-            <div class="card h-100">
-                <div class="card-body">
-                    @if($selected)
-                        <h2 class="h4 mb-1">{{ $selected->nom }}</h2>
-                        <p class="text-muted mb-3">{{ $selected->code }}</p>
 
-                        <div class="list-group list-group-flush">
-                            <div class="list-group-item px-0 d-flex justify-content-between align-items-center">
-                                <span>Poste de répartition</span>
-                                <span>{{ $selected->poste_repartition ?: '-' }}</span>
-                            </div>
-                            <div class="list-group-item px-0 d-flex justify-content-between align-items-center">
-                                <span>Charge maximale</span>
-                                <span class="badge {{ $chargeBadgeClass($selected->charge_maximale) }}">
-                                    {{ $selected->charge_maximale !== null ? number_format((float) $selected->charge_maximale, 0, ',', ' ') . ' ' . ($selected->charge_unite ?: 'A') : 'N/A' }}
-                                </span>
-                            </div>
-                            <div class="list-group-item px-0 d-flex justify-content-between align-items-center">
-                                <span>Transformateur</span>
-                                <span>{{ $selected->transformateur ?: '-' }}</span>
-                            </div>
-                            <div class="list-group-item px-0 d-flex justify-content-between align-items-center">
-                                <span>Arrivée</span>
-                                <span>{{ $selected->arrivee ?: '-' }}</span>
-                            </div>
-                            <div class="list-group-item px-0 d-flex justify-content-between align-items-center">
-                                <span>Direction exploitation</span>
-                                <span>{{ $selected->direction_exploitation ?: '-' }}</span>
-                            </div>
-                            <div class="list-group-item px-0 d-flex justify-content-between align-items-center">
-                                <span>Statut</span>
-                                <span class="badge {{ $selected->is_active ? 'text-bg-success' : 'text-bg-secondary' }}">{{ $selected->is_active ? 'Actif' : 'Inactif' }}</span>
-                            </div>
-                        </div>
+            <footer class="ceet-catalog-pagination">
+                <span>Affichage de {{ $from }} à {{ $to }} sur {{ $total }} départs</span>
 
-                        @if($selected->description)
-                            <div class="mt-3">
-                                <h3 class="h6">Description technique</h3>
-                                <p class="text-muted mb-0">{{ $selected->description }}</p>
-                            </div>
+                @if($departements->lastPage() > 1)
+                    <nav aria-label="Pagination départs">
+                        @if($departements->onFirstPage())
+                            <button type="button" disabled><span class="material-symbols-outlined" aria-hidden="true">chevron_left</span></button>
+                        @else
+                            <a href="{{ $departements->previousPageUrl() }}"><span class="material-symbols-outlined" aria-hidden="true">chevron_left</span></a>
                         @endif
 
-                        @can('catalogues.manage')
-                            <div class="mt-3 d-flex gap-2 flex-wrap">
-                                <a href="{{ route('catalogues.departements.edit', $selected) }}" class="btn btn-danger btn-sm">Modifier</a>
-                                <form method="POST" action="{{ route('catalogues.departements.destroy', $selected) }}" onsubmit="return confirm('Supprimer ce départ ?');">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-outline-secondary btn-sm">Supprimer</button>
-                                </form>
-                            </div>
-                        @endcan
-                    @else
-                        <div class="text-muted">Sélectionnez un départ dans la liste pour afficher ses détails techniques.</div>
-                    @endif
+                        @foreach(range(1, $departements->lastPage()) as $page)
+                            @if($page <= 3 || $page === $departements->lastPage() || abs($page - $departements->currentPage()) <= 1)
+                                @if($page === $departements->currentPage())
+                                    <span class="is-current">{{ $page }}</span>
+                                @else
+                                    <a href="{{ $departements->url($page) }}">{{ $page }}</a>
+                                @endif
+                            @elseif($page === 4)
+                                <span class="is-gap">...</span>
+                            @endif
+                        @endforeach
+
+                        @if($departements->hasMorePages())
+                            <a href="{{ $departements->nextPageUrl() }}"><span class="material-symbols-outlined" aria-hidden="true">chevron_right</span></a>
+                        @else
+                            <button type="button" disabled><span class="material-symbols-outlined" aria-hidden="true">chevron_right</span></button>
+                        @endif
+                    </nav>
+                @endif
+            </footer>
+        </section>
+
+        <section class="ceet-catalog-summary-grid" aria-label="Synthèse départs">
+            <article class="ceet-catalog-summary-card">
+                <h3>Répartition tension</h3>
+                <div class="ceet-catalog-summary-body">
+                    <strong class="ceet-catalog-square">{{ $htShare }}%</strong>
+                    <p><b>Haute Tension</b><span>Dominance du réseau HT</span></p>
                 </div>
-            </div>
-        </div>
-    </div>
-</x-app-layout>
+            </article>
+
+            <article class="ceet-catalog-summary-card">
+                <h3>État du parc</h3>
+                <div class="ceet-catalog-summary-body">
+                    <strong class="ceet-catalog-square is-green">{{ $stats['activeCount'] }}</strong>
+                    <p><b>Actifs</b><span>Opérationnels en temps réel</span></p>
+                </div>
+            </article>
+
+            <article class="ceet-catalog-summary-card">
+                <h3>Dernière mise à jour</h3>
+                <div class="ceet-catalog-summary-body">
+                    <span class="ceet-catalog-sync-icon"><span class="material-symbols-outlined" aria-hidden="true">history</span></span>
+                    <p><b>{{ $lastUpdated }}</b><span>Synchronisation effectuée</span></p>
+                </div>
+            </article>
+        </section>
+    </main>
+</body>
+</html>

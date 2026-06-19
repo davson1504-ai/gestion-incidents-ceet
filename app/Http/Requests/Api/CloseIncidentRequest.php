@@ -23,10 +23,6 @@ class CloseIncidentRequest extends FormRequest
             'resolution_summary' => ['required', 'string'],
             'resume_resolution' => ['nullable', 'string'],
             'actions_menees' => ['nullable', 'string'],
-            'status_id' => [
-                'nullable',
-                Rule::exists('statuses', 'id')->where(fn ($query) => $query->where('is_final', true)),
-            ],
         ];
     }
 
@@ -37,7 +33,21 @@ class CloseIncidentRequest extends FormRequest
             $incident = $this->route('incident');
             $dateFin = $this->input('date_fin');
 
-            if (! $incident || ! $incident->date_debut || ! $dateFin) {
+            if (! $incident) {
+                return;
+            }
+
+            $incident->loadMissing(['status', 'report']);
+
+            if ($incident->status?->code !== 'VALIDE') {
+                $validator->errors()->add('status', 'La cloture exige un incident au statut VALIDE.');
+            }
+
+            if (! $incident->report) {
+                $validator->errors()->add('rapport', 'La cloture est impossible sans rapport d intervention.');
+            }
+
+            if (! $incident->date_debut || ! $dateFin) {
                 return;
             }
 
@@ -50,7 +60,7 @@ class CloseIncidentRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'status_id.exists' => 'Le statut de cloture doit etre un statut final.',
+            'status' => 'La cloture exige un incident au statut VALIDE.',
         ];
     }
 }

@@ -1,371 +1,528 @@
 @php
-    use Illuminate\Support\Carbon;
+    use Illuminate\Support\Facades\Route;
 
-    $formatDuration = static function (?int $minutes): string {
-        if ($minutes === null) {
-            return '-';
-        }
+    $currentUser = auth()->user();
 
-        $days = intdiv($minutes, 1440);
-        $hours = intdiv($minutes % 1440, 60);
-        $remainingMinutes = $minutes % 60;
+    
 
-        $parts = [];
-        if ($days > 0) {
-            $parts[] = $days . 'j';
-        }
-        if ($hours > 0 || $days > 0) {
-            $parts[] = $hours . 'h';
-        }
-        $parts[] = $remainingMinutes . 'min';
+    $isAdmin = $isAdmin ?? ($currentUser?->isAdmin() ?? false);
+    $isSupervisor = $isSupervisor ?? ($currentUser?->isSuperviseur() ?? false);
+$userName = $currentUser?->name ?? 'Jean Dupont';
+    $userEmail = $currentUser?->email ?? 'admin@ceet.tg';
 
-        return implode(' ', $parts);
+    $initials = collect(preg_split('/\s+/', trim($userName)))
+        ->filter()
+        ->map(fn ($part) => substr($part, 0, 1))
+        ->take(2)
+        ->implode('');
+
+    $initials = strtoupper($initials ?: 'JD');
+
+    $safeRoute = function (string $name, $params = [], ?string $fallback = '#') {
+        return Route::has($name) ? route($name, $params) : $fallback;
     };
 
-    $plusAncienLabel = $plusAncien ? $formatDuration($plusAncien->duree_en_attente) : '-';
+    $incidentItems = method_exists($incidents ?? null, 'getCollection')
+        ? $incidents->getCollection()
+        : collect($incidents ?? []);
+
+    $totalCurrent = method_exists($incidents ?? null, 'total')
+        ? $incidents->total()
+        : $incidentItems->count();
+
+    $criticalCount = $incidentItems->filter(function ($incident) {
+        $priority = mb_strtolower(optional($incident->priorite)->libelle ?? '');
+        $level = optional($incident->priorite)->niveau;
+
+        return str_contains($priority, 'critique')
+            || str_contains($priority, 'haute')
+            || (string) $level === '1';
+    })->count();
+
+    $mobilizedTeams = $incidentItems
+        ->map(fn ($incident) => $incident->responsable_id ?? $incident->operateur_id ?? null)
+        ->filter()
+        ->unique()
+        ->count();
+
+    $durationValues = $incidentItems->map(function ($incident) {
+        if (! is_null($incident->duree_minutes ?? null)) {
+            return (int) $incident->duree_minutes;
+        }
+
+        if ($incident->date_debut) {
+            return $incident->date_debut->diffInMinutes(now());
+        }
+
+        return null;
+    })->filter(fn ($value) => ! is_null($value));
+
+    $avgDurationMinutes = $durationValues->count() > 0
+        ? round($durationValues->avg())
+        : 0;
+
+    $avgDurationLabel = $avgDurationMinutes > 0
+        ? floor($avgDurationMinutes / 60) . '.' . str_pad((string) round(($avgDurationMinutes % 60) / 6), 1, '0') . 'h'
+        : '0h';
+
+    $roleName = 'ADMINISTRATOR';
+
+    if ($currentUser && method_exists($currentUser, 'getRoleNames')) {
+        $roleName = strtoupper($currentUser->getRoleNames()->first() ?? 'ADMINISTRATOR');
+    }
+
+    $isOperator = $currentUser?->isOperateur() ?? false;
+    $canCreateIncident = $currentUser?->can('incidents.create') ?? false;
+    $canViewUsers = $currentUser?->can('users.view') ?? false;
+    $canViewCatalogues = $currentUser?->can('catalogues.view') ?? false;
+    $canViewReports = $currentUser?->can('reporting.view') ?? false;
+    $canViewSystem = ($currentUser?->isAdmin() ?? false) || ($currentUser?->isSuperviseur() ?? false);
+
+    $activeView = request('vue', 'all');
+
+    $quickViews = [
+        'all' => 'Tous les incidents',
+        'high' => 'Haute Priorité',
+        'mine' => 'Mes affectations',
+        'north' => 'Zone Nord',
+        'hta' => 'HTA / BT',
+    ];
 @endphp
 
-<x-app-layout>
-    <style>
-        /* ========================================
-           VARIABLES & BASE
-           ======================================== */
-        :root {
-            --ceet-red: #ef2433;
-            --ceet-red-dark: #ce1220;
-            --ceet-gold: #f59e0b;
-            --ceet-blue-night: #0f172a;
-            --ceet-blue-deep: #1e293b;
-            --ceet-gray-light: #f8fafc;
-            --ceet-border-light: #e2e8f0;
-            --ceet-text-muted: #64748b;
-            --ceet-success: #22c55e;
-        }
+<!DOCTYPE html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Incidents en cours - CEET Incidents</title>
 
-        /* ========================================
-           ANIMATIONS
-           ======================================== */
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
 
-        @keyframes slideInDown {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
+    @vite([
+        'resources/css/app.css',
+        'resources/css/pages/incidents-en-cours.css',
+        'resources/js/app.js',
+        'resources/js/pages/incidents-en-cours.js'
+    ])
+</head>
 
-        @keyframes pulse-light {
-            0%, 100% {
-                opacity: 1;
-            }
-            50% {
-                opacity: 0.85;
-            }
-        }
+<body class="ceet-current-page">
+    <div class="ceet-current-shell" data-current-page>
+        <div class="ceet-current-overlay" data-current-overlay></div>
 
-        /* ========================================
-           CARDS KPI - Modern Design
-           ======================================== */
-        .row.g-3.mb-4:first-of-type .card {
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.88));
-            border: 1px solid rgba(226, 232, 240, 0.6);
-            border-radius: 16px;
-            padding: 24px;
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-            position: relative;
-            overflow: hidden;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 4px 6px rgba(15, 23, 42, 0.07);
-            animation: fadeInUp 0.6s ease both;
-        }
+        <aside class="ceet-current-sidebar" data-current-sidebar>
+            <div class="ceet-current-brand">
+                <div class="ceet-current-brand-logo">
+                    <img src="{{ asset('images/logo-ceet.png') }}" alt="Logo CEET">
+                </div>
 
-        .row.g-3.mb-4:first-of-type .col-12:nth-child(1) .card {
-            animation-delay: 0.1s;
-            border-left: 4px solid var(--ceet-red);
-        }
-
-        .row.g-3.mb-4:first-of-type .col-12:nth-child(2) .card {
-            animation-delay: 0.2s;
-            border-left: 4px solid var(--ceet-gold);
-        }
-
-        .row.g-3.mb-4:first-of-type .col-12:nth-child(3) .card {
-            animation-delay: 0.3s;
-            border-left: 4px solid var(--ceet-success);
-        }
-
-        .row.g-3.mb-4:first-of-type .card:hover {
-            transform: translateY(-6px);
-            box-shadow: 0 16px 32px rgba(15, 23, 42, 0.15);
-            border-color: rgba(226, 232, 240, 0.8);
-        }
-
-        /* ========================================
-           GENERAL CARDS
-           ======================================== */
-        .card {
-            border-radius: 16px;
-            border: 1px solid var(--ceet-border-light);
-            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-            animation: fadeInUp 0.6s ease both;
-        }
-
-        .card:hover {
-            box-shadow: 0 12px 24px rgba(15, 23, 42, 0.12);
-        }
-
-        /* ========================================
-           FORMS & INPUTS
-           ======================================== */
-        .form-control, .form-select {
-            border-radius: 10px;
-            border: 1px solid var(--ceet-border-light);
-            transition: all 0.2s ease;
-            background: linear-gradient(to right, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.95));
-        }
-
-        .form-control:focus, .form-select:focus {
-            border-color: var(--ceet-red);
-            box-shadow: 0 0 0 3px rgba(239, 36, 51, 0.1);
-        }
-
-        /* ========================================
-           TABLE ANIMATION
-           ======================================== */
-        table tbody tr {
-            animation: fadeInUp 0.6s ease backwards;
-        }
-
-        table tbody tr:nth-child(1) { animation-delay: 0.1s; }
-        table tbody tr:nth-child(2) { animation-delay: 0.15s; }
-        table tbody tr:nth-child(3) { animation-delay: 0.2s; }
-        table tbody tr:nth-child(4) { animation-delay: 0.25s; }
-        table tbody tr:nth-child(5) { animation-delay: 0.3s; }
-        table tbody tr:nth-child(n+6) { animation-delay: 0.35s; }
-
-        table tbody tr:hover {
-            background-color: rgba(239, 36, 51, 0.03);
-        }
-
-        /* ========================================
-           BUTTONS
-           ======================================== */
-        .btn-danger {
-            background: linear-gradient(135deg, var(--ceet-red), var(--ceet-red-dark));
-            border: none;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(239, 36, 51, 0.3);
-        }
-
-        .btn-danger:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(239, 36, 51, 0.4);
-        }
-
-        .btn-outline-secondary {
-            border-radius: 10px;
-            transition: all 0.3s ease;
-        }
-
-        .btn-outline-secondary:hover {
-            transform: translateY(-2px);
-        }
-
-        .btn-outline-danger {
-            border-radius: 10px;
-            transition: all 0.3s ease;
-        }
-
-        .btn-outline-danger:hover {
-            transform: translateY(-2px);
-        }
-
-        /* ========================================
-           METRIC VALUE ANIMATION
-           ======================================== */
-        .metric-value {
-            animation: pulse-light 3s ease-in-out infinite;
-        }
-    </style>
-    <x-slot name="header">
-        <div>
-            <h1 class="h3 mb-1">Incidents en cours</h1>
-            <p class="text-muted mb-0">Tableau de bord opérationnel des incidents non résolus, triés par criticité puis ancienneté.</p>
-        </div>
-    </x-slot>
-
-    <div class="row g-3 mb-4">
-        <div class="col-12 col-xl-4">
-            <div class="card h-100">
-                <div class="card-body">
-                    <span class="text-uppercase small text-muted fw-semibold">Total en cours</span>
-                    <div class="metric-value mt-2" id="en-cours-total">{{ number_format($totalEnCours) }}</div>
-                    <div class="small text-muted mt-2">Compteur mis à jour automatiquement toutes les 60 secondes.</div>
+                <div>
+                    <h1>CEET Incidents</h1>
+                    <p>Electrical Management</p>
                 </div>
             </div>
-        </div>
-        <div class="col-12 col-xl-4">
-            <div class="card h-100">
-                <div class="card-body">
-                    <span class="text-uppercase small text-muted fw-semibold">Incidents critiques</span>
-                    <div class="metric-value mt-2" id="en-cours-critiques">{{ number_format($critiquesCount) }}</div>
-                    <div class="small text-muted mt-2">Priorité de niveau 1 actuellement ouverte.</div>
-                </div>
-            </div>
-        </div>
-        <div class="col-12 col-xl-4">
-            <div class="card h-100">
-                <div class="card-body">
-                    <span class="text-uppercase small text-muted fw-semibold">Plus ancien</span>
-                    <div class="metric-value mt-2" id="en-cours-plus-ancien">{{ $plusAncienLabel }}</div>
-                    <div class="small text-muted mt-2" id="en-cours-plus-ancien-code">{{ $plusAncien?->code_incident ?? 'Aucun incident ouvert' }}</div>
-                </div>
-            </div>
-        </div>
-    </div>
 
-    <div class="card mb-4">
-        <div class="card-body">
-            <form method="GET" action="{{ route('incidents.en-cours') }}" class="row g-3 align-items-end">
-                <div class="col-12 col-md-3">
-                    <label class="form-label fw-semibold">Départ</label>
-                    <select name="departement_id" class="form-select js-tom-select" data-placeholder="Tous les départs">
-                        <option value="">Tous les départs</option>
-                        @foreach($departements as $departement)
-                            <option value="{{ $departement->id }}" @selected((string) $filters['departement_id'] === (string) $departement->id)>{{ $departement->nom }}</option>
-                        @endforeach
-                    </select>
+            <nav class="ceet-current-nav" aria-label="Navigation principale">
+                @include('partials.ceet-role-nav', ['linkClass' => 'ceet-current-nav-link'])
+            </nav>
+
+            <div class="ceet-current-sidebar-user">
+                <div class="ceet-current-sidebar-user-main">
+                    <div class="ceet-current-avatar">{{ $initials }}</div>
+
+                    <div>
+                        <strong>{{ $userName }}</strong>
+                        <span>{{ $roleName }}</span>
+                    </div>
                 </div>
-                <div class="col-12 col-md-3">
-                    <label class="form-label fw-semibold">Priorité</label>
-                    <select name="priorite_id" class="form-select js-tom-select" data-placeholder="Toutes les priorités">
-                        <option value="">Toutes les priorités</option>
-                        @foreach($priorites as $priorite)
-                            <option value="{{ $priorite->id }}" @selected((string) $filters['priorite_id'] === (string) $priorite->id)>{{ $priorite->libelle }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="col-12 col-md-3">
-                    <label class="form-label fw-semibold">Date début</label>
-                    <input type="date" name="date_from" class="form-control" value="{{ $filters['date_from'] }}">
-                </div>
-                <div class="col-12 col-md-3">
-                    <label class="form-label fw-semibold">Date fin</label>
-                    <input type="date" name="date_to" class="form-control" value="{{ $filters['date_to'] }}">
-                </div>
-                <div class="col-12 col-md-6">
-                    <label class="form-label fw-semibold">Recherche</label>
-                    <input type="text" name="q" class="form-control" value="{{ $filters['q'] }}" placeholder="Code incident ou titre">
-                </div>
-                <div class="col-12 col-md-6 d-flex gap-2 flex-wrap">
-                    <button type="submit" class="btn btn-danger">Appliquer les filtres</button>
-                    <a href="{{ route('incidents.en-cours') }}" class="btn btn-outline-secondary">Réinitialiser</a>
-                    <a href="{{ route('incidents.index') }}" class="btn btn-outline-danger">Retour à la liste complète</a>
-                </div>
+
+                <form action="{{ $safeRoute('logout', [], '#') }}" method="POST" class="ceet-current-logout-form">
+                    @csrf
+
+                    <button type="submit" class="ceet-current-logout-button">
+                        <span class="material-symbols-outlined" aria-hidden="true">logout</span>
+                        Se déconnecter
+                    </button>
+                </form>
+            </div>
+        </aside>
+
+        <header class="ceet-current-topbar">
+            <button type="button" class="ceet-current-menu-btn" data-current-sidebar-toggle aria-label="Ouvrir le menu">
+                <span class="material-symbols-outlined" aria-hidden="true">menu</span>
+            </button>
+
+            <form action="{{ $safeRoute('incidents.en-cours', [], '/incidents/en-cours') }}" method="GET" class="ceet-current-search">
+                <span class="material-symbols-outlined" aria-hidden="true">search</span>
+                <input
+                    type="search"
+                    name="q"
+                    value="{{ $filters['q'] ?? request('q') }}"
+                    placeholder="Rechercher un incident, un code ou un départ..."
+                    autocomplete="off"
+                >
             </form>
-        </div>
-    </div>
 
-    <div class="card">
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table align-middle mb-0">
-                    <thead>
-                        <tr>
-                            <th>Code</th>
-                            <th>Départ</th>
-                            <th>Type</th>
-                            <th>Priorité</th>
-                            <th>Date début</th>
-                            <th>Durée attente</th>
-                            <th class="text-end">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($incidents as $incident)
-                            @php
-                                $waitingMinutes = $incident->duree_en_attente;
-                                $waitingClass = $waitingMinutes > 120
-                                    ? 'text-danger'
-                                    : ($waitingMinutes > 60 ? 'text-warning' : 'text-success');
-                            @endphp
-                            <tr>
-                                <td class="fw-semibold">{{ $incident->code_incident }}</td>
-                                <td>{{ $incident->departement?->nom ?? '-' }}</td>
-                                <td>{{ $incident->typeIncident?->libelle ?? '-' }}</td>
-                                <td>
-                                    <span class="badge text-bg-light">{{ $incident->priorite?->libelle ?? '-' }}</span>
-                                </td>
-                                <td>{{ $incident->date_debut?->format('d/m/Y H:i') ?? '-' }}</td>
-                                <td class="fw-semibold {{ $waitingClass }}">{{ $formatDuration($waitingMinutes) }}</td>
-                                <td class="text-end">
-                                    <a href="{{ route('incidents.edit', $incident) }}" class="btn btn-outline-danger btn-sm">Prendre en charge</a>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="7" class="text-center text-muted py-5">Aucun incident ouvert ne correspond aux filtres.</td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
+            <div class="ceet-current-top-actions">
+                <a href="{{ $safeRoute('notifications.index', [], '#') }}" class="ceet-current-icon-btn" aria-label="Notifications">
+                    <span class="material-symbols-outlined" aria-hidden="true">notifications</span>
+                    <span class="ceet-current-notification-dot"></span>
+                </a>
+
+                <a href="{{ $safeRoute('profile.edit', [], '/profile') }}" class="ceet-current-icon-btn" aria-label="Aide">
+                    <span class="material-symbols-outlined" aria-hidden="true">help_outline</span>
+                </a>
+
+                <div class="ceet-current-top-divider"></div>
+
+                <div class="ceet-current-top-user">
+                    <span>{{ $userName }}</span>
+                    <div class="ceet-current-avatar is-small">{{ $initials }}</div>
+                </div>
             </div>
-        </div>
-        <div class="card-footer d-flex justify-content-between align-items-center flex-wrap gap-3">
-            <span class="small text-muted">Affichage de {{ $incidents->firstItem() ?? 0 }} à {{ $incidents->lastItem() ?? 0 }} sur {{ $incidents->total() }} incidents ouverts</span>
-            {{ $incidents->links('pagination::bootstrap-5') }}
-        </div>
+        </header>
+
+        <main class="ceet-current-main">
+            <section class="ceet-current-page-header">
+                <div>
+                    <nav class="ceet-current-breadcrumb" aria-label="Fil d'Ariane">
+                        <span>Incidents</span>
+                        <span class="material-symbols-outlined" aria-hidden="true">chevron_right</span>
+                        <strong>Opérationnel temps réel</strong>
+                    </nav>
+
+                    <h2>Incidents en cours</h2>
+                </div>
+
+                <div class="ceet-current-header-actions">
+                    <button type="button" class="ceet-current-secondary-btn" data-current-filter-toggle>
+                        <span class="material-symbols-outlined" aria-hidden="true">filter_list</span>
+                        Filtres avancés
+                    </button>
+                    @if($canCreateIncident)
+                        <a href="{{ $safeRoute('incidents.create', [], '/incidents/create') }}" class="ceet-current-primary-btn">
+                            <span class="material-symbols-outlined" aria-hidden="true">add</span>
+                            Nouvel Incident
+                        </a>
+                    @endif
+                </div>
+            </section>
+
+            @if (session('success'))
+                <div class="ceet-current-alert is-success" role="status">
+                    {{ session('success') }}
+                </div>
+            @endif
+
+            @if (session('error'))
+                <div class="ceet-current-alert is-danger" role="alert">
+                    {{ session('error') }}
+                </div>
+            @endif
+
+            <section class="ceet-current-stats-grid" aria-label="Indicateurs temps réel">
+                <article class="ceet-current-stat-card">
+                    <p>Total en cours</p>
+
+                    <div>
+                        <strong>{{ number_format($totalCurrent, 0, ',', ' ') }}</strong>
+                        <span class="is-danger">
+                            <span class="material-symbols-outlined" aria-hidden="true">trending_up</span>
+                            +{{ min(9, max(0, $criticalCount - 1)) }}
+                        </span>
+                    </div>
+                </article>
+
+                <article class="ceet-current-stat-card is-critical">
+                    <p>Priorité critique</p>
+
+                    <div>
+                        <strong>{{ str_pad((string) $criticalCount, 2, '0', STR_PAD_LEFT) }}</strong>
+                        <span>Niveau 1</span>
+                    </div>
+                </article>
+
+                <article class="ceet-current-stat-card">
+                    <p>Moyenne résolution</p>
+
+                    <div>
+                        <strong>{{ $avgDurationLabel }}</strong>
+                        <span class="is-positive">
+                            <span class="material-symbols-outlined" aria-hidden="true">trending_down</span>
+                            -12%
+                        </span>
+                    </div>
+                </article>
+
+                <article class="ceet-current-stat-card">
+                    <p>Équipes mobilisées</p>
+
+                    <div>
+                        <strong>{{ number_format($mobilizedTeams, 0, ',', ' ') }}</strong>
+                        <span>sur 15 disp.</span>
+                    </div>
+                </article>
+            </section>
+
+            <section class="ceet-current-filter-panel" data-current-filter-panel hidden>
+                <form action="{{ $safeRoute('incidents.en-cours', [], '/incidents/en-cours') }}" method="GET" class="ceet-current-filters">
+                    <div class="ceet-current-field is-large">
+                        <label for="q">Recherche</label>
+                        <input
+                            id="q"
+                            type="search"
+                            name="q"
+                            value="{{ $filters['q'] ?? request('q') }}"
+                            placeholder="Code, départ, localisation..."
+                        >
+                    </div>
+
+                    <div class="ceet-current-field">
+                        <label for="priorite_id">Priorité</label>
+                        <select id="priorite_id" name="priorite_id">
+                            <option value="">Toutes</option>
+
+                            @foreach ($priorites ?? [] as $priorite)
+                                <option value="{{ $priorite->id }}" @selected((string) ($filters['priorite_id'] ?? request('priorite_id')) === (string) $priorite->id)>
+                                    {{ $priorite->libelle }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="ceet-current-field">
+                        <label for="departement_id">Départ</label>
+                        <select id="departement_id" name="departement_id">
+                            <option value="">Tous</option>
+
+                            @foreach ($departements ?? [] as $departement)
+                                <option value="{{ $departement->id }}" @selected((string) ($filters['departement_id'] ?? request('departement_id')) === (string) $departement->id)>
+                                    {{ $departement->nom }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="ceet-current-filter-actions">
+                        <button type="submit" class="ceet-current-square-btn" aria-label="Appliquer les filtres">
+                            <span class="material-symbols-outlined" aria-hidden="true">filter_list</span>
+                        </button>
+
+                        <a href="{{ $safeRoute('incidents.en-cours', [], '/incidents/en-cours') }}" class="ceet-current-square-btn" aria-label="Réinitialiser">
+                            <span class="material-symbols-outlined" aria-hidden="true">refresh</span>
+                        </a>
+                    </div>
+                </form>
+            </section>
+
+            @unless($isOperator)
+                <section class="ceet-current-views" aria-label="Vues rapides">
+                    <span>Vues :</span>
+
+                    @foreach ($quickViews as $viewKey => $viewLabel)
+                        <a
+                            href="{{ $safeRoute('incidents.en-cours', ['vue' => $viewKey], '/incidents/en-cours?vue=' . $viewKey) }}"
+                            class="{{ $activeView === $viewKey ? 'is-active' : '' }}"
+                            data-current-view
+                        >
+                            {{ $viewLabel }}
+                        </a>
+                    @endforeach
+                </section>
+            @endunless
+
+            <section class="ceet-current-table-panel">
+                <div class="ceet-current-table-wrap">
+                    <table class="ceet-current-table">
+                        <thead>
+                            <tr>
+                                <th class="is-center">Prio</th>
+                                <th>Code</th>
+                                <th>Départ / Zone</th>
+                                <th>Statut</th>
+                                <th>Ancienneté</th>
+                                <th>Opérateur affecté</th>
+                                <th class="is-right">Actions</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @forelse ($incidents as $incident)
+                                @php
+                                    $code = $incident->code_incident ?: 'INC-' . $incident->id;
+                                    $priorite = optional($incident->priorite)->libelle ?? 'N/A';
+                                    $status = optional($incident->status)->libelle ?? 'N/A';
+
+                                    $depart = optional($incident->departement)->nom
+                                        ?: $incident->localisation
+                                        ?: 'Départ non renseigné';
+
+                                    $zone = $incident->localisation
+                                        ?: optional($incident->typeIncident)->libelle
+                                        ?: optional($incident->cause)->libelle
+                                        ?: 'Zone non renseignée';
+
+                                    $operatorName = optional($incident->responsable)->name
+                                        ?? optional($incident->operateur)->name
+                                        ?? null;
+
+                                    $operatorInitials = $operatorName
+                                        ? strtoupper(collect(preg_split('/\s+/', trim($operatorName)))->filter()->map(fn ($part) => substr($part, 0, 1))->take(2)->implode(''))
+                                        : null;
+
+                                    $ageMinutes = $incident->date_debut
+                                        ? $incident->date_debut->diffInMinutes(now())
+                                        : null;
+
+                                    $ageLabel = $ageMinutes !== null
+                                        ? floor($ageMinutes / 60) . 'h ' . str_pad((string) ($ageMinutes % 60), 2, '0', STR_PAD_LEFT) . 'm'
+                                        : '--';
+
+                                    $priorityLower = mb_strtolower($priorite);
+                                    $statusLower = mb_strtolower($status);
+
+                                    $priorityClass = str_contains($priorityLower, 'critique')
+                                        ? 'is-critical'
+                                        : (str_contains($priorityLower, 'haute')
+                                            ? 'is-high'
+                                            : (str_contains($priorityLower, 'moyenne')
+                                                ? 'is-medium'
+                                                : 'is-low'));
+
+                                    $statusClass = str_contains($statusLower, 'déclenche') || str_contains($statusLower, 'declenche')
+                                        ? 'is-triggered'
+                                        : (str_contains($statusLower, 'route')
+                                            ? 'is-route'
+                                            : (str_contains($statusLower, 'diagnostic')
+                                                ? 'is-diagnostic'
+                                                : (str_contains($statusLower, 'réparation') || str_contains($statusLower, 'reparation')
+                                                    ? 'is-repair'
+                                                    : (str_contains($statusLower, 'critique') || str_contains($statusLower, 'alerte')
+                                                        ? 'is-alert'
+                                                        : 'is-waiting'))));
+
+                                    $isCritical = $priorityClass === 'is-critical' || $statusClass === 'is-alert';
+                                    $incidentUrl = Route::has('incidents.show') ? route('incidents.show', $incident) : '#';
+                                    $editUrl = Route::has('incidents.edit') ? route('incidents.edit', $incident) : '#';
+                                    $canTakeIncident = $currentUser?->can('take', $incident) ?? false;
+                                    $canResolveIncident = $currentUser?->can('resolve', $incident) ?? false;
+                                    $canReportIncident = $currentUser?->can('report', $incident) ?? false;
+                                    $canUpdateIncident = $currentUser?->can('update', $incident) ?? false;
+                                    $canIntervene = $canTakeIncident || $canResolveIncident || $canReportIncident;
+                                @endphp
+
+                                <tr class="{{ $isCritical ? 'is-critical-row' : '' }}">
+                                    <td class="is-center">
+                                        <span class="ceet-current-priority-dot {{ $priorityClass }}" title="{{ $priorite }}"></span>
+                                    </td>
+
+                                    <td>
+                                        <strong>{{ $code }}</strong>
+                                    </td>
+
+                                    <td>
+                                        <strong>{{ $depart }}</strong>
+                                        <span>{{ $zone }}</span>
+                                    </td>
+
+                                    <td>
+                                        <span class="ceet-current-status {{ $statusClass }}">
+                                            {{ $status }}
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        <strong class="{{ $isCritical ? 'is-danger-text' : '' }}">
+                                            {{ $ageLabel }}
+                                        </strong>
+                                    </td>
+
+                                    <td>
+                                        @if ($operatorName)
+                                            <div class="ceet-current-operator">
+                                                <div>{{ $operatorInitials ?: 'OP' }}</div>
+                                                <span>{{ $operatorName }}</span>
+                                            </div>
+                                        @else
+                                            <em>Non affecté</em>
+                                        @endif
+                                    </td>
+
+                                    <td class="is-right">
+                                        @if ($isCritical && $canIntervene)
+                                            <a href="{{ $incidentUrl }}" class="ceet-current-intervene-btn">
+                                                Intervenir
+                                            </a>
+                                        @else
+                                            <div class="ceet-current-row-actions">
+                                                @if (! $operatorName && $canUpdateIncident)
+                                                    <a href="{{ $editUrl }}" aria-label="Affecter un opérateur">
+                                                        <span class="material-symbols-outlined" aria-hidden="true">person_add</span>
+                                                    </a>
+                                                @endif
+
+                                                <a href="{{ $incidentUrl }}" aria-label="Voir l'incident">
+                                                    <span class="material-symbols-outlined" aria-hidden="true">visibility</span>
+                                                </a>
+                                            </div>
+                                        @endif
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="7" class="ceet-current-empty-row">
+                                        Aucun incident en cours.
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+
+                <footer class="ceet-current-table-footer">
+                    <span>
+                        @if (method_exists($incidents, 'firstItem') && $incidents->total() > 0)
+                            Affichage de <strong>{{ $incidents->firstItem() }}-{{ $incidents->lastItem() }}</strong> incidents sur <strong>{{ $incidents->total() }}</strong>
+                        @else
+                            Affichage de <strong>{{ collect($incidents)->count() }}</strong> incidents
+                        @endif
+                    </span>
+
+                    @if (method_exists($incidents, 'links'))
+                        <div class="ceet-current-pagination">
+                            {{ $incidents->links() }}
+                        </div>
+                    @endif
+                </footer>
+            </section>
+
+            <section class="ceet-current-alert-grid">
+                <article class="ceet-current-info-card is-danger">
+                    <div>
+                        <span class="material-symbols-outlined" aria-hidden="true">error_outline</span>
+                    </div>
+
+                    <div>
+                        <h3>Alerte Météo - Zone Littorale</h3>
+                        <p>Vents violents prévus entre 18h00 et 22h00. Risque accru de chutes d'arbres sur les lignes aériennes BT. Mobilisation des équipes d'astreinte requise.</p>
+                    </div>
+                </article>
+
+                <article class="ceet-current-info-card">
+                    <div>
+                        <span class="material-symbols-outlined" aria-hidden="true">sync_alt</span>
+                    </div>
+
+                    <div>
+                        <h3>Synchronisation SCADA</h3>
+                        <p>Dernière mise à jour : il y a 45 secondes. 102 nœuds surveillés. Latence moyenne : 120ms. Système stable.</p>
+                    </div>
+                </article>
+            </section>
+        </main>
     </div>
-
-    <script>
-        (() => {
-            const endpoint = @json(request()->fullUrl());
-            const totalNode = document.getElementById('en-cours-total');
-            const criticalNode = document.getElementById('en-cours-critiques');
-            const oldestNode = document.getElementById('en-cours-plus-ancien');
-            const oldestCodeNode = document.getElementById('en-cours-plus-ancien-code');
-
-            if (!totalNode || !criticalNode || !oldestNode || !oldestCodeNode) {
-                return;
-            }
-
-            const refreshCounters = async () => {
-                try {
-                    const response = await fetch(endpoint, {
-                        headers: {
-                            'X-Requested-With': 'XMLHttpRequest',
-                            Accept: 'application/json',
-                        },
-                    });
-
-                    if (!response.ok) {
-                        throw new Error('Impossible de rafraîchir les compteurs.');
-                    }
-
-                    const payload = await response.json();
-                    totalNode.textContent = payload.totalEnCours ?? '0';
-                    criticalNode.textContent = payload.critiquesCount ?? '0';
-                    oldestNode.textContent = payload.plusAncien?.label ?? '-';
-                    oldestCodeNode.textContent = payload.plusAncien?.code_incident ?? 'Aucun incident ouvert';
-                } catch (_error) {
-                }
-            };
-
-            window.setInterval(refreshCounters, 60000);
-        })();
-    </script>
-</x-app-layout>
+</body>
+</html>

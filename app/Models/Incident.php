@@ -94,6 +94,21 @@ class Incident extends Model
         return $this->hasMany(Intervention::class);
     }
 
+    public function intervention()
+    {
+        return $this->hasOne(Intervention::class)->latestOfMany();
+    }
+
+    public function report()
+    {
+        return $this->hasOne(IncidentReport::class);
+    }
+
+    public function rapportIntervention()
+    {
+        return $this->report();
+    }
+
     public function logs()
     {
         return $this->hasMany(Log::class);
@@ -121,13 +136,13 @@ class Incident extends Model
     public function scopeFilter(Builder $query, array $filters): Builder
     {
         return $query
-            ->when($filters['departement_id'] ?? null, fn (Builder $q, $v) => $q->where('departement_id', $v))
-            ->when($filters['type_incident_id'] ?? null, fn (Builder $q, $v) => $q->where('type_incident_id', $v))
-            ->when($filters['cause_id'] ?? null, fn (Builder $q, $v) => $q->where('cause_id', $v))
-            ->when($filters['operateur_id'] ?? null, fn (Builder $q, $v) => $q->where('operateur_id', $v))
-            ->when($filters['status_id'] ?? null, fn (Builder $q, $v) => $q->where('status_id', $v))
-            ->when($filters['date_from'] ?? null, fn (Builder $q, $v) => $q->whereDate('date_debut', '>=', $v))
-            ->when($filters['date_to'] ?? null, fn (Builder $q, $v) => $q->whereDate('date_debut', '<=', $v))
+            ->when($filters['departement_id'] ?? null, fn (Builder $q, $v) => $q->where('incidents.departement_id', $v))
+            ->when($filters['type_incident_id'] ?? null, fn (Builder $q, $v) => $q->where('incidents.type_incident_id', $v))
+            ->when($filters['cause_id'] ?? null, fn (Builder $q, $v) => $q->where('incidents.cause_id', $v))
+            ->when($filters['operateur_id'] ?? null, fn (Builder $q, $v) => $q->where('incidents.responsable_id', $v))
+            ->when($filters['status_id'] ?? null, fn (Builder $q, $v) => $q->where('incidents.status_id', $v))
+            ->when($filters['date_from'] ?? null, fn (Builder $q, $v) => $q->whereDate('incidents.date_debut', '>=', $v))
+            ->when($filters['date_to'] ?? null, fn (Builder $q, $v) => $q->whereDate('incidents.date_debut', '<=', $v))
             ->when($filters['q'] ?? null, function (Builder $q, $term) {
                 $term = trim((string) $term);
                 if ($term === '') {
@@ -135,11 +150,11 @@ class Incident extends Model
                 }
 
                 $q->where(function (Builder $search) use ($term) {
-                    $search->where('code_incident', 'like', "%{$term}%")
-                        ->orWhere('titre', 'like', "%{$term}%")
-                        ->orWhere('description', 'like', "%{$term}%")
-                        ->orWhere('localisation', 'like', "%{$term}%")
-                        ->orWhere('resolution_summary', 'like', "%{$term}%");
+                    $search->where('incidents.code_incident', 'like', "%{$term}%")
+                        ->orWhere('incidents.titre', 'like', "%{$term}%")
+                        ->orWhere('incidents.description', 'like', "%{$term}%")
+                        ->orWhere('incidents.localisation', 'like', "%{$term}%")
+                        ->orWhere('incidents.resolution_summary', 'like', "%{$term}%");
                 });
             });
     }
@@ -150,12 +165,7 @@ class Incident extends Model
             return $query;
         }
 
-        return $query->where(function (Builder $incidentQuery) use ($user) {
-            $incidentQuery
-                ->where('operateur_id', $user->id)
-                ->orWhere('responsable_id', $user->id)
-                ->orWhere('superviseur_id', $user->id);
-        });
+        return $query->where('incidents.responsable_id', $user->id);
     }
 
     public function recalculateDuration(): void

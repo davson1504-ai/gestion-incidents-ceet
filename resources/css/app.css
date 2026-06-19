@@ -1,102 +1,27 @@
 @import "bootstrap/dist/css/bootstrap.min.css";
-@import "./mobile.css";
 
-:root {
-    --ceet-primary: #1e3a5f;
-    --ceet-primary-dark: #10243d;
-    --ceet-accent: #0ea5e9;
-    --ceet-surface: #f5f7fb;
+@import "./theme/variables.css";
+@import "./theme/reset.css";
+@import "./theme/typography.css";
+
+@import "./layouts/app-shell.css";
+@import "./layouts/sidebar.css";
+@import "./layouts/topbar.css";
+
+@import "./components/buttons.css";
+@import "./components/cards.css";
+@import "./components/forms.css";
+@import "./components/tables.css";
+@import "./components/badges.css";
+@import "./components/alerts.css";
+@import "./components/modals.css";
+
+@import "./pages/login.css";
+
+.ceet-spin {
+    animation: ceet-spin 800ms linear infinite;
 }
 
-body {
-    background-color: var(--ceet-surface);
-    color: #1f2937;
-}
-
-.navbar-ceet {
-    background: linear-gradient(90deg, var(--ceet-primary-dark), var(--ceet-primary));
-}
-
-.card {
-    border: 1px solid rgba(15, 23, 42, 0.06);
-    box-shadow: 0 0.5rem 1rem rgba(2, 6, 23, 0.04);
-}
-
-.metric-value {
-    font-weight: 700;
-    font-size: 1.6rem;
-    line-height: 1;
-}
-
-.badge-soft {
-    background-color: rgba(14, 165, 233, 0.12);
-    color: #0369a1;
-}
-
-.table td,
-.table th {
-    vertical-align: middle;
-}
-
-.chart-card {
-    min-height: 360px;
-}
-
-.dashboard-chart-box {
-    height: 280px;
-}
-
-.reports-chart-box {
-    height: 320px;
-}
-
-.ceet-avatar-circle {
-    width: 2.5rem;
-    height: 2.5rem;
-    border-radius: 999px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    flex-shrink: 0;
-}
-
-.ceet-avatar-circle-sm {
-    width: 2rem;
-    height: 2rem;
-    font-size: 0.75rem;
-}
-
-.ceet-action-pill {
-    border-radius: 999px;
-    padding: 0.2rem 0.55rem;
-    font-size: 0.72rem;
-    font-weight: 700;
-    display: inline-block;
-    white-space: nowrap;
-}
-
-.ceet-action-pill-modification {
-    background: #eff6ff;
-    color: #1d4ed8;
-}
-
-.ceet-action-pill-creation {
-    background: #ecfdf3;
-    color: #15803d;
-}
-
-.ceet-action-pill-cloture {
-    background: #fef3c7;
-    color: #92400e;
-}
-
-.ceet-action-pill-connexion {
-    background: #f3f4f6;
-    color: #4b5563;
-}
-
-.ceet-action-pill-systeme {
-    background: #fee2e2;
-    color: #b91c1c;
+@keyframes ceet-spin {
+    to { transform: rotate(360deg); }
 }

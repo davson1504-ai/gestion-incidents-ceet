@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\DB;
 
 class DashboardService
 {
+    public function __construct(private readonly ReportPageService $reportPageService) {}
+
     /** @param array{date_from?: string|null, date_to?: string|null} $filters */
     public function buildForUser(User $user, array $filters): array
     {
@@ -157,6 +159,14 @@ class DashboardService
                 ->limit(5)
                 ->get();
 
+            $adminUsers = User::query()
+                ->with(['roles', 'departement'])
+                ->latest('updated_at')
+                ->limit(5)
+                ->get();
+
+            $totalUsers = User::query()->count();
+
             $roleCountsRow = DB::query()
                 ->selectRaw('1 as anchor')
                 ->selectSub($this->roleCountSubquery(RoleAliases::adminNames(), RoleAliases::adminLikePatterns()), 'admin_count')
@@ -206,6 +216,8 @@ class DashboardService
                 'topDepart' => $topDepart,
                 'timeseries' => $timeseries,
                 'recentIncidents' => $recentIncidents,
+                'adminUsers' => $adminUsers,
+                'totalUsers' => $totalUsers,
                 'roleCounts' => $roleCounts,
                 'weekDelta' => $weekDelta,
                 'focusText' => $focusText,
@@ -228,6 +240,8 @@ class DashboardService
             'topDepart' => [],
             'timeseries' => [],
             'recentIncidents' => [],
+            'adminUsers' => collect(),
+            'totalUsers' => 0,
             'roleCounts' => [
                 ['label' => 'Administrateur', 'count' => 0],
                 ['label' => 'Superviseur', 'count' => 0],
@@ -243,10 +257,7 @@ class DashboardService
     {
         $myOpenIncidents = Incident::query()
             ->with(['departement', 'typeIncident', 'priorite', 'status'])
-            ->where(function ($query) use ($user) {
-                $query->where('operateur_id', $user->id)
-                    ->orWhere('responsable_id', $user->id);
-            })
+            ->where('responsable_id', $user->id)
             ->join('statuses', 'statuses.id', '=', 'incidents.status_id')
             ->where('statuses.is_final', false)
             ->select('incidents.*')
@@ -264,23 +275,20 @@ class DashboardService
             });
 
         $myTotalOpen = Incident::query()
-            ->where(function ($query) use ($user) {
-                $query->where('operateur_id', $user->id)
-                    ->orWhere('responsable_id', $user->id);
-            })
+            ->where('responsable_id', $user->id)
             ->join('statuses', 'statuses.id', '=', 'incidents.status_id')
             ->where('statuses.is_final', false)
             ->count();
 
         $myResolvedToday = Incident::query()
-            ->where('operateur_id', $user->id)
+            ->where('responsable_id', $user->id)
             ->join('statuses', 'statuses.id', '=', 'incidents.status_id')
             ->where('statuses.is_final', true)
             ->whereDate('incidents.date_fin', now()->toDateString())
             ->count();
 
         $myTotalMonth = Incident::query()
-            ->where('operateur_id', $user->id)
+            ->where('responsable_id', $user->id)
             ->whereMonth('date_debut', now()->month)
             ->whereYear('date_debut', now()->year)
             ->count();
@@ -303,6 +311,12 @@ class DashboardService
 
     private function supervisorData(User $user): array
     {
+        $reportDashboard = $this->reportPageService->buildMonthlyIndexData(now()->startOfMonth(), [
+            'period' => now()->format('Y-m'),
+            'departement_id' => null,
+            'cause_id' => null,
+        ]);
+
         $teamOpenIncidents = Incident::query()
             ->with(['departement', 'typeIncident', 'priorite', 'status', 'operateur'])
             ->where(function ($query) use ($user) {
@@ -386,7 +400,8 @@ class DashboardService
             'teamResolved',
             'teamResolutionRate',
             'teamOpenCount',
-            'teamOperators'
+            'teamOperators',
+            'reportDashboard'
         );
     }
 

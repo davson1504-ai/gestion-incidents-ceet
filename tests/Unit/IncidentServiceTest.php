@@ -83,7 +83,15 @@ class IncidentServiceTest extends TestCase
         $supervisor = $this->makeUserWithRole('supervisor');
         $incident = $this->makeIncident($context, [
             'date_debut' => now()->subMinutes(90),
-            'status_id' => $context['statusOpen']->id,
+            'status_id' => $context['statusValidated']->id,
+        ]);
+
+        \App\Models\IncidentReport::create([
+            'incident_id' => $incident->id,
+            'user_id' => $supervisor->id,
+            'actions_realisees' => 'Verification disjoncteur',
+            'resultat' => 'Remise en service confirmee',
+            'submitted_at' => now(),
         ]);
 
         $service->closeIncident($incident, [

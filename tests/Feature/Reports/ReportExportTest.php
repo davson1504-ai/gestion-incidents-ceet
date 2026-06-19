@@ -13,11 +13,11 @@ class ReportExportTest extends TestCase
     use BuildsIncidentContext;
     use RefreshDatabase;
 
-    public function test_operator_can_download_daily_report_as_pdf(): void
+    public function test_supervisor_can_download_daily_report_as_pdf(): void
     {
         $this->seedRolesAndPermissions();
         $context = $this->createCatalogContext();
-        $operator = $this->makeUserWithRole('operator');
+        $operator = $this->makeUserWithRole('supervisor');
 
         $this->makeIncident($context, [
             'code_incident' => 'INC-DAILY-PDF',
@@ -41,11 +41,11 @@ class ReportExportTest extends TestCase
         );
     }
 
-    public function test_operator_can_download_monthly_report_as_excel(): void
+    public function test_supervisor_can_download_monthly_report_as_excel(): void
     {
         $this->seedRolesAndPermissions();
         $context = $this->createCatalogContext();
-        $operator = $this->makeUserWithRole('operator');
+        $operator = $this->makeUserWithRole('supervisor');
 
         $this->makeIncident($context, [
             'code_incident' => 'INC-MONTH-EXCEL',
@@ -90,7 +90,7 @@ class ReportExportTest extends TestCase
     public function test_monthly_report_rejects_invalid_month_format(): void
     {
         $this->seedRolesAndPermissions();
-        $operator = $this->makeUserWithRole('operator');
+        $operator = $this->makeUserWithRole('supervisor');
 
         $response = $this->actingAs($operator)
             ->from(route('dashboard'))

@@ -1,0 +1,717 @@
+.ceet-users-admin-page {
+    min-height: 100vh;
+    margin: 0;
+    background: #f8f9fb;
+    color: #191c1e;
+    font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.ceet-users-admin-page a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.ceet-users-admin-page button,
+.ceet-users-admin-page input,
+.ceet-users-admin-page select {
+    font: inherit;
+}
+
+.ceet-users-admin-shell {
+    min-height: 100vh;
+}
+
+.ceet-users-admin-sidebar {
+    position: fixed;
+    inset: 0 auto 0 0;
+    z-index: 50;
+    width: 320px;
+    display: flex;
+    flex-direction: column;
+    padding: 24px 16px;
+    border-right: 1px solid #c6c6cd;
+    background: #f3f4f6;
+}
+
+.ceet-users-admin-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 42px;
+    padding: 0 8px;
+}
+
+.ceet-users-admin-brand-logo {
+    width: 56px;
+    height: 56px;
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
+    overflow: hidden;
+    border: 1px solid #d9dadc;
+    border-radius: 12px;
+    background: #ffffff;
+}
+
+.ceet-users-admin-brand-logo img {
+    width: 46px;
+    height: 46px;
+    display: block;
+    object-fit: contain;
+}
+
+.ceet-users-admin-brand h1 {
+    margin: 0;
+    color: #191c1e;
+    font-size: 25px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+}
+
+.ceet-users-admin-brand p {
+    margin: 4px 0 0;
+    color: #555f6d;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.ceet-users-admin-nav {
+    display: grid;
+    gap: 4px;
+}
+
+.ceet-users-admin-nav-link {
+    min-height: 52px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 18px;
+    border-radius: 4px;
+    color: #45464c;
+    font-size: 15px;
+    font-weight: 600;
+    transition: background-color 160ms ease, color 160ms ease;
+}
+
+.ceet-users-admin-nav-link:hover,
+.ceet-users-admin-nav-link.is-active {
+    background: #e1e2e4;
+    color: #000000;
+}
+
+.ceet-users-admin-nav-link.is-active {
+    font-weight: 800;
+}
+
+.ceet-users-admin-nav-link .material-symbols-outlined {
+    font-size: 23px;
+}
+
+.ceet-users-admin-sidebar-user {
+    display: grid;
+    gap: 14px;
+    margin-top: auto;
+    padding: 20px 8px 0;
+    border-top: 1px solid #c6c6cd;
+}
+
+.ceet-users-admin-sidebar-user-main {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.ceet-users-admin-sidebar-user strong {
+    display: block;
+    color: #191c1e;
+    font-size: 14px;
+    font-weight: 800;
+    line-height: 1.3;
+}
+
+.ceet-users-admin-sidebar-user span {
+    display: block;
+    margin-top: 2px;
+    color: #555f6d;
+    font-size: 12px;
+    line-height: 1.4;
+    text-transform: uppercase;
+}
+
+.ceet-users-admin-avatar {
+    width: 40px;
+    height: 40px;
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
+    border-radius: 999px;
+    background: #191c1e;
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.ceet-users-admin-avatar.is-small {
+    width: 32px;
+    height: 32px;
+    background: #e1e2e4;
+    color: #191c1e;
+}
+
+.ceet-users-admin-logout-form {
+    margin: 0;
+}
+
+.ceet-users-admin-logout-button {
+    width: 100%;
+    min-height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 9px 12px;
+    border: 1px solid #c6c6cd;
+    border-radius: 4px;
+    background: #ffffff;
+    color: #191c1e;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 800;
+    transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease;
+}
+
+.ceet-users-admin-logout-button:hover {
+    border-color: #ba1a1a;
+    background: #ffdad6;
+    color: #93000a;
+}
+
+.ceet-users-admin-logout-button .material-symbols-outlined {
+    font-size: 20px;
+}
+
+.ceet-users-admin-topbar {
+    position: fixed;
+    top: 0;
+    right: 0;
+    z-index: 40;
+    width: calc(100% - 320px);
+    height: 64px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    padding: 0 24px;
+    border-bottom: 1px solid #c6c6cd;
+    background: #f8f9fb;
+}
+
+.ceet-users-admin-search {
+    position: relative;
+    width: min(100%, 520px);
+}
+
+.ceet-users-admin-search .material-symbols-outlined {
+    position: absolute;
+    top: 50%;
+    left: 14px;
+    color: #76777d;
+    transform: translateY(-50%);
+}
+
+.ceet-users-admin-search input {
+    width: 100%;
+    min-height: 40px;
+    padding: 8px 14px 8px 44px;
+    border: 1px solid #c6c6cd;
+    border-radius: 4px;
+    background: #ffffff;
+    color: #191c1e;
+    font-size: 14px;
+    outline: none;
+}
+
+.ceet-users-admin-search input:focus {
+    border-color: #000000;
+}
+
+.ceet-users-admin-top-actions {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    margin-left: auto;
+}
+
+.ceet-users-admin-icon-btn {
+    position: relative;
+    display: inline-flex;
+    color: #45464c;
+}
+
+.ceet-users-admin-icon-btn:hover {
+    color: #000000;
+}
+
+.ceet-users-admin-notification-dot {
+    position: absolute;
+    top: 1px;
+    right: -1px;
+    width: 8px;
+    height: 8px;
+    border: 1px solid #f8f9fb;
+    border-radius: 999px;
+    background: #ba1a1a;
+}
+
+.ceet-users-admin-top-divider {
+    width: 1px;
+    height: 32px;
+    background: #c6c6cd;
+}
+
+.ceet-users-admin-top-user {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: #191c1e;
+    font-size: 14px;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.ceet-users-admin-primary-btn,
+.ceet-users-admin-secondary-btn {
+    min-height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 9px 14px;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 800;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.ceet-users-admin-primary-btn {
+    border: 1px solid #000000;
+    background: #000000;
+    color: #ffffff !important;
+}
+
+.ceet-users-admin-primary-btn:hover {
+    background: #2e3132;
+    border-color: #2e3132;
+}
+
+.ceet-users-admin-primary-btn.is-filter {
+    min-width: 110px;
+}
+
+.ceet-users-admin-secondary-btn {
+    border: 1px solid #c6c6cd;
+    background: #ffffff;
+    color: #45464c !important;
+}
+
+.ceet-users-admin-secondary-btn:hover {
+    background: #f3f4f6;
+    color: #191c1e !important;
+}
+
+.ceet-users-admin-main {
+    min-height: 100vh;
+    margin-left: 320px;
+    padding: 88px 24px 32px;
+}
+
+.ceet-users-admin-page-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 18px;
+    margin-bottom: 24px;
+}
+
+.ceet-users-admin-page-header h2 {
+    margin: 0;
+    color: #000000;
+    font-size: 34px;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.12;
+}
+
+.ceet-users-admin-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+    color: #555f6d;
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.ceet-users-admin-breadcrumb strong {
+    color: #191c1e;
+}
+
+.ceet-users-admin-alert {
+    margin-bottom: 16px;
+    padding: 12px 14px;
+    border: 1px solid #c6c6cd;
+    border-radius: 4px;
+    background: #ffffff;
+    color: #191c1e;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.ceet-users-admin-alert.is-success {
+    border-color: #86a789;
+    background: #eff7ef;
+    color: #24522a;
+}
+
+.ceet-users-admin-alert.is-danger {
+    border-color: #ffb4ab;
+    background: #ffdad6;
+    color: #93000a;
+}
+
+.ceet-users-admin-stats {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.ceet-users-admin-stats article {
+    min-height: 92px;
+    padding: 18px;
+    border: 1px solid #c6c6cd;
+    border-radius: 4px;
+    background: #ffffff;
+}
+
+.ceet-users-admin-stats span {
+    display: block;
+    color: #45464c;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.ceet-users-admin-stats strong {
+    display: block;
+    margin-top: 10px;
+    color: #000000;
+    font-size: 30px;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.ceet-users-admin-filter-panel {
+    margin-bottom: 20px;
+    border: 1px solid #c6c6cd;
+    border-radius: 8px;
+    background: #ffffff;
+    padding: 18px;
+}
+
+.ceet-users-admin-filters {
+    display: grid;
+    grid-template-columns: minmax(260px, 2fr) minmax(180px, 1fr) minmax(160px, 1fr) auto;
+    gap: 16px;
+    align-items: end;
+}
+
+.ceet-users-admin-filters label {
+    display: block;
+    margin-bottom: 8px;
+    color: #45464c;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.ceet-users-admin-filters input,
+.ceet-users-admin-filters select {
+    width: 100%;
+    min-height: 42px;
+    padding: 8px 12px;
+    border: 1px solid #c6c6cd;
+    border-radius: 4px;
+    background: #ffffff;
+    color: #191c1e;
+    font-size: 14px;
+    outline: none;
+}
+
+.ceet-users-admin-filters input:focus,
+.ceet-users-admin-filters select:focus {
+    border-color: #000000;
+}
+
+.ceet-users-admin-filter-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.ceet-users-admin-table-card {
+    border: 1px solid #c6c6cd;
+    border-radius: 4px;
+    background: #ffffff;
+    overflow: hidden;
+}
+
+.ceet-users-admin-table-wrap {
+    overflow-x: auto;
+}
+
+.ceet-users-admin-table {
+    width: 100%;
+    min-width: 980px;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.ceet-users-admin-table thead {
+    background: #f3f4f6;
+}
+
+.ceet-users-admin-table th {
+    padding: 14px 16px;
+    border-bottom: 1px solid #c6c6cd;
+    color: #45464c;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.ceet-users-admin-table td {
+    padding: 16px;
+    border-bottom: 1px solid #e1e2e4;
+    color: #191c1e;
+    font-size: 14px;
+    vertical-align: middle;
+}
+
+.ceet-users-admin-table tbody tr:hover {
+    background: #f8f9fb;
+}
+
+.ceet-users-admin-table .is-muted {
+    color: #555f6d;
+}
+
+.ceet-users-admin-table .is-center {
+    text-align: center;
+}
+
+.ceet-users-admin-table .is-right {
+    text-align: right;
+}
+
+.ceet-users-admin-identity {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.ceet-users-admin-user-avatar {
+    width: 34px;
+    height: 34px;
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
+    border-radius: 999px;
+    background: #dce2f7;
+    color: #141b2b;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.ceet-users-admin-role-badge,
+.ceet-users-admin-status-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 24px;
+    padding: 4px 9px;
+    border: 1px solid #c6c6cd;
+    border-radius: 4px;
+    background: #f3f4f6;
+    color: #374151;
+    font-size: 12px;
+    font-weight: 800;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.ceet-users-admin-status-badge.is-active {
+    background: #f3f4f6;
+    color: #374151;
+}
+
+.ceet-users-admin-status-badge.is-inactive {
+    background: #ffdad6;
+    border-color: #ffb4ab;
+    color: #93000a;
+}
+
+.ceet-users-admin-row-actions {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.ceet-users-admin-row-actions form {
+    margin: 0;
+}
+
+.ceet-users-admin-action-btn {
+    width: 32px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    border-radius: 4px;
+    background: transparent;
+    color: #555f6d;
+    cursor: pointer;
+    transition: background-color 160ms ease, color 160ms ease;
+}
+
+.ceet-users-admin-action-btn:hover {
+    background: #e1e2e4;
+    color: #000000;
+}
+
+.ceet-users-admin-action-btn.is-danger:hover {
+    background: #ffdad6;
+    color: #93000a;
+}
+
+.ceet-users-admin-action-btn .material-symbols-outlined {
+    font-size: 19px;
+}
+
+.ceet-users-admin-empty {
+    padding: 34px 16px;
+    color: #555f6d;
+    text-align: center;
+    font-weight: 700;
+}
+
+.ceet-users-admin-table-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 14px 16px;
+    background: #ffffff;
+    color: #555f6d;
+    font-size: 13px;
+}
+
+.ceet-users-admin-pagination {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.ceet-users-admin-pagination a,
+.ceet-users-admin-pagination span,
+.ceet-users-admin-pagination strong {
+    min-height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 10px;
+    border: 1px solid #c6c6cd;
+    border-radius: 4px;
+    background: #ffffff;
+    color: #191c1e;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.ceet-users-admin-pagination .is-disabled {
+    color: #76777d;
+    background: #f3f4f6;
+}
+
+@media (max-width: 1180px) {
+    .ceet-users-admin-stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .ceet-users-admin-filters {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .ceet-users-admin-filter-actions {
+        grid-column: 1 / -1;
+        justify-content: flex-end;
+    }
+}
+
+@media (max-width: 900px) {
+    .ceet-users-admin-sidebar {
+        position: static;
+        width: 100%;
+        min-height: auto;
+    }
+
+    .ceet-users-admin-topbar,
+    .ceet-users-admin-main {
+        position: static;
+        width: 100%;
+        margin-left: 0;
+    }
+
+    .ceet-users-admin-topbar {
+        height: auto;
+        flex-wrap: wrap;
+        padding: 14px;
+    }
+
+    .ceet-users-admin-main {
+        padding: 24px 14px;
+    }
+
+    .ceet-users-admin-search {
+        width: 100%;
+    }
+
+    .ceet-users-admin-top-actions {
+        width: 100%;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+    }
+}
+
+@media (max-width: 640px) {
+    .ceet-users-admin-stats,
+    .ceet-users-admin-filters {
+        grid-template-columns: 1fr;
+    }
+
+    .ceet-users-admin-page-header h2 {
+        font-size: 28px;
+    }
+
+    .ceet-users-admin-table-footer {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}

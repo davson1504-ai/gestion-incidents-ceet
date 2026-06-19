@@ -15,11 +15,33 @@ class PrioriteController extends Controller
         $this->middleware('permission:catalogues.manage')->except(['index']);
     }
 
-    public function index(): View
+    public function index(Request $request): View
     {
-        $priorites = Priorite::orderBy('niveau')->orderBy('libelle')->paginate(25);
+        $filters = [
+            'q' => (string) $request->query('q', ''),
+            'status' => (string) $request->query('status', ''),
+        ];
 
-        return view('catalogues.priorites.index', compact('priorites'));
+        $priorites = Priorite::query()
+            ->when($filters['q'] !== '', function ($query) use ($filters): void {
+                $search = '%'.$filters['q'].'%';
+
+                $query->where(function ($subQuery) use ($search): void {
+                    $subQuery
+                        ->where('code', 'like', $search)
+                        ->orWhere('libelle', 'like', $search)
+                        ->orWhere('description', 'like', $search);
+                });
+            })
+            ->when(in_array($filters['status'], ['active', 'inactive'], true), function ($query) use ($filters): void {
+                $query->where('is_active', $filters['status'] === 'active');
+            })
+            ->orderBy('niveau')
+            ->orderBy('libelle')
+            ->paginate(5)
+            ->withQueryString();
+
+        return view('catalogues.priorites.index', compact('priorites', 'filters'));
     }
 
     public function create(): View

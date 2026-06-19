@@ -19,6 +19,7 @@ class DepartementController extends Controller
     {
         $filters = [
             'q' => trim((string) $request->input('q', '')),
+            'zone' => trim((string) $request->input('zone', '')),
             'selected' => $request->input('selected'),
         ];
 
@@ -33,6 +34,9 @@ class DepartementController extends Controller
                         ->orWhere('poste_repartition', 'like', $term)
                         ->orWhere('poste_source', 'like', $term);
                 });
+            })
+            ->when($filters['zone'] !== '', function ($q) use ($filters) {
+                $q->where('zone', $filters['zone']);
             });
 
         $departements = (clone $query)
@@ -57,12 +61,19 @@ class DepartementController extends Controller
             ->where('zone', '!=', '')
             ->distinct('zone')
             ->count('zone');
+        $zones = Departement::query()
+            ->whereNotNull('zone')
+            ->where('zone', '!=', '')
+            ->distinct()
+            ->orderBy('zone')
+            ->pluck('zone');
         $totalPowerMw = (float) Departement::sum('charge_maximale');
 
         return view('catalogues.departements.index', [
             'departements' => $departements,
             'selectedDepartement' => $selectedDepartement,
             'filters' => $filters,
+            'zones' => $zones,
             'stats' => [
                 'totalCount' => $totalCount,
                 'activeCount' => $activeCount,

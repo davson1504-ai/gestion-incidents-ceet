@@ -1,0 +1,27 @@
+.ceet-dashboard-page .ceet-card,
+.ceet-dashboard-card {
+    border: 1px solid #d8dce2;
+    border-left: 4px solid #5f6673;
+    border-radius: 6px;
+    background: #ffffff;
+}
+
+.ceet-dashboard-metric {
+    display: grid;
+    gap: 6px;
+}
+
+.ceet-dashboard-metric span {
+    color: #5f6673;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+}
+
+.ceet-dashboard-metric strong {
+    color: #020617;
+    font-size: 32px;
+    font-weight: 900;
+    line-height: 1;
+}

@@ -16,7 +16,7 @@ class CataloguesManagementTest extends TestCase
     use BuildsIncidentContext;
     use RefreshDatabase;
 
-    public function test_operator_can_view_catalogues_but_cannot_manage_them(): void
+    public function test_operator_cannot_view_or_manage_catalogues(): void
     {
         $this->seedRolesAndPermissions();
         Departement::create([
@@ -28,8 +28,7 @@ class CataloguesManagementTest extends TestCase
         $operator = $this->makeUserWithRole('operator');
 
         $indexResponse = $this->actingAs($operator)->get(route('catalogues.departements.index'));
-        $indexResponse->assertOk();
-        $indexResponse->assertSee('Departement Visible');
+        $indexResponse->assertForbidden();
 
         $createResponse = $this->actingAs($operator)->get(route('catalogues.departements.create'));
         $createResponse->assertForbidden();

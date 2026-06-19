@@ -13,12 +13,12 @@ class UserManagementTest extends TestCase
     use BuildsIncidentContext;
     use RefreshDatabase;
 
-    public function test_supervisor_can_create_user_and_assign_role(): void
+    public function test_admin_can_create_user_and_assign_role(): void
     {
         $this->seedRolesAndPermissions();
         $context = $this->createCatalogContext();
 
-        $manager = $this->makeUserWithRole('supervisor');
+        $manager = $this->makeUserWithRole('admin');
         $operatorRole = $this->roleName('operator');
 
         $response = $this->actingAs($manager)->post(route('users.store'), [
@@ -41,6 +41,26 @@ class UserManagementTest extends TestCase
         $this->assertTrue($created->hasRole($operatorRole));
     }
 
+    public function test_supervisor_cannot_manage_users(): void
+    {
+        $this->seedRolesAndPermissions();
+        $context = $this->createCatalogContext();
+
+        $manager = $this->makeUserWithRole('supervisor');
+        $operatorRole = $this->roleName('operator');
+
+        $response = $this->actingAs($manager)->post(route('users.store'), [
+            'name' => 'Nouvel Operateur',
+            'email' => 'forbidden.operator@ceet.test',
+            'departement_id' => $context['departement']->id,
+            'role' => $operatorRole,
+            'password' => 'password123',
+            'password_confirmation' => 'password123',
+        ]);
+
+        $response->assertForbidden();
+    }
+
     public function test_operator_cannot_access_users_index(): void
     {
         $this->seedRolesAndPermissions();
@@ -56,7 +76,7 @@ class UserManagementTest extends TestCase
         $this->seedRolesAndPermissions();
         $context = $this->createCatalogContext();
 
-        $manager = $this->makeUserWithRole('supervisor');
+        $manager = $this->makeUserWithRole('admin');
         $target = $this->makeUserWithRole('operator', ['is_active' => true]);
 
         $this->makeIncident($context, [
@@ -77,7 +97,7 @@ class UserManagementTest extends TestCase
     {
         $this->seedRolesAndPermissions();
 
-        $manager = $this->makeUserWithRole('supervisor');
+        $manager = $this->makeUserWithRole('admin');
         $target = $this->makeUserWithRole('operator');
 
         $response = $this->actingAs($manager)->delete(route('users.destroy', $target));
@@ -90,7 +110,7 @@ class UserManagementTest extends TestCase
     {
         $this->seedRolesAndPermissions();
 
-        $manager = $this->makeUserWithRole('supervisor');
+        $manager = $this->makeUserWithRole('admin');
 
         $response = $this->actingAs($manager)->delete(route('users.destroy', $manager));
 

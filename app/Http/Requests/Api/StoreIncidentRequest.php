@@ -17,23 +17,19 @@ class StoreIncidentRequest extends FormRequest
     {
         return [
             'titre' => ['nullable', 'string', 'max:255'],
-            'description' => ['nullable', 'string'],
+            'description' => ['required', 'string'],
             'departement_id' => ['required', 'exists:departements,id'],
             'type_incident_id' => ['required', 'exists:type_incidents,id'],
             'cause_id' => [
-                'nullable',
+                'required',
                 Rule::exists('causes', 'id')->where(fn ($query) => $query->where('type_incident_id', $this->input('type_incident_id'))),
             ],
-            'status_id' => ['nullable', 'exists:statuses,id'],
             'priorite_id' => ['nullable', 'exists:priorites,id'],
-            'localisation' => ['nullable', 'string', 'max:255'],
+            'localisation' => ['required', 'string', 'max:255'],
             'date_debut' => ['required', 'date'],
             'date_fin' => ['nullable', 'date', 'after_or_equal:date_debut'],
             'responsable_id' => ['nullable', 'exists:users,id'],
             'superviseur_id' => ['nullable', 'exists:users,id'],
-            'actions_menees' => ['nullable', 'string'],
-            'resolution_summary' => ['nullable', 'string'],
-            'resume_resolution' => ['nullable', 'string'],
         ];
     }
 

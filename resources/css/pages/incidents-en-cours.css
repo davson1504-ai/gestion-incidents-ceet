@@ -1,0 +1,1007 @@
+.ceet-current-page {
+    min-height: 100vh;
+    margin: 0;
+    background: #f8f9fb;
+    color: #191c1e;
+    font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.ceet-current-page a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.ceet-current-page button,
+.ceet-current-page input,
+.ceet-current-page select {
+    font: inherit;
+}
+
+.ceet-current-shell {
+    min-height: 100vh;
+}
+
+.ceet-current-sidebar {
+    position: fixed;
+    inset: 0 auto 0 0;
+    z-index: 50;
+    width: 320px;
+    display: flex;
+    flex-direction: column;
+    padding: 24px 16px;
+    border-right: 1px solid #c6c6cd;
+    background: #f3f4f6;
+}
+
+.ceet-current-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 42px;
+    padding: 0 8px;
+}
+
+.ceet-current-brand-logo {
+    width: 56px;
+    height: 56px;
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
+    overflow: hidden;
+    border: 1px solid #d9dadc;
+    border-radius: 12px;
+    background: #ffffff;
+}
+
+.ceet-current-brand-logo img {
+    width: 46px;
+    height: 46px;
+    display: block;
+    object-fit: contain;
+}
+
+.ceet-current-brand h1 {
+    margin: 0;
+    color: #191c1e;
+    font-size: 25px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+}
+
+.ceet-current-brand p {
+    margin: 4px 0 0;
+    color: #555f6d;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.ceet-current-nav {
+    display: grid;
+    gap: 4px;
+}
+
+.ceet-current-nav-link {
+    min-height: 52px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 18px;
+    border-radius: 4px;
+    color: #45464c;
+    font-size: 15px;
+    font-weight: 500;
+    transition: background-color 160ms ease, color 160ms ease;
+}
+
+.ceet-current-nav-link:hover,
+.ceet-current-nav-link.is-active {
+    background: #e1e2e4;
+    color: #000000;
+}
+
+.ceet-current-nav-link.is-active {
+    font-weight: 800;
+}
+
+.ceet-current-nav-link .material-symbols-outlined {
+    font-size: 23px;
+}
+
+.ceet-current-sidebar-user {
+    display: grid;
+    gap: 14px;
+    margin-top: auto;
+    padding: 20px 8px 0;
+    border-top: 1px solid #c6c6cd;
+}
+
+.ceet-current-sidebar-user-main {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.ceet-current-sidebar-user strong {
+    display: block;
+    color: #191c1e;
+    font-size: 14px;
+    font-weight: 800;
+    line-height: 1.3;
+}
+
+.ceet-current-sidebar-user span {
+    display: block;
+    margin-top: 2px;
+    color: #555f6d;
+    font-size: 12px;
+    line-height: 1.4;
+    text-transform: uppercase;
+}
+
+.ceet-current-avatar {
+    width: 40px;
+    height: 40px;
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
+    border-radius: 999px;
+    background: #191c1e;
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.ceet-current-avatar.is-small {
+    width: 32px;
+    height: 32px;
+    background: #e1e2e4;
+    color: #191c1e;
+}
+
+.ceet-current-logout-form {
+    margin: 0;
+}
+
+.ceet-current-logout-button {
+    width: 100%;
+    min-height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 9px 12px;
+    border: 1px solid #c6c6cd;
+    border-radius: 4px;
+    background: #ffffff;
+    color: #191c1e;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 800;
+    transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease;
+}
+
+.ceet-current-logout-button:hover {
+    border-color: #ba1a1a;
+    background: #ffdad6;
+    color: #93000a;
+}
+
+.ceet-current-logout-button .material-symbols-outlined {
+    font-size: 20px;
+}
+
+.ceet-current-topbar {
+    position: fixed;
+    top: 0;
+    right: 0;
+    z-index: 40;
+    width: calc(100% - 320px);
+    height: 64px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    padding: 0 24px;
+    border-bottom: 1px solid #c6c6cd;
+    background: #f8f9fb;
+}
+
+.ceet-current-menu-btn {
+    display: none;
+    width: 40px;
+    height: 40px;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #c6c6cd;
+    border-radius: 4px;
+    background: #ffffff;
+    color: #191c1e;
+    cursor: pointer;
+}
+
+.ceet-current-search {
+    position: relative;
+    width: min(100%, 470px);
+}
+
+.ceet-current-search .material-symbols-outlined {
+    position: absolute;
+    top: 50%;
+    left: 14px;
+    color: #76777d;
+    transform: translateY(-50%);
+}
+
+.ceet-current-search input {
+    width: 100%;
+    min-height: 40px;
+    padding: 8px 14px 8px 44px;
+    border: 1px solid #c6c6cd;
+    border-radius: 2px;
+    background: #f3f4f6;
+    color: #191c1e;
+    font-size: 14px;
+    outline: none;
+}
+
+.ceet-current-search input:focus {
+    border-color: #000000;
+    background: #ffffff;
+}
+
+.ceet-current-top-actions {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    margin-left: auto;
+}
+
+.ceet-current-icon-btn {
+    position: relative;
+    display: inline-flex;
+    color: #45464c;
+}
+
+.ceet-current-icon-btn:hover {
+    color: #000000;
+}
+
+.ceet-current-notification-dot {
+    position: absolute;
+    top: 1px;
+    right: -1px;
+    width: 8px;
+    height: 8px;
+    border: 1px solid #f8f9fb;
+    border-radius: 999px;
+    background: #ba1a1a;
+}
+
+.ceet-current-top-divider {
+    width: 1px;
+    height: 32px;
+    background: #c6c6cd;
+}
+
+.ceet-current-top-user {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: #191c1e;
+    font-size: 14px;
+    font-weight: 800;
+}
+
+.ceet-current-main {
+    min-height: 100vh;
+    margin-left: 320px;
+    padding: 88px 24px 32px;
+}
+
+.ceet-current-page-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 18px;
+    margin-bottom: 32px;
+}
+
+.ceet-current-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    color: #555f6d;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    line-height: 1.2;
+    text-transform: uppercase;
+}
+
+.ceet-current-breadcrumb .material-symbols-outlined {
+    font-size: 16px;
+}
+
+.ceet-current-breadcrumb strong {
+    color: #191c1e;
+}
+
+.ceet-current-page-header h2 {
+    margin: 0;
+    color: #000000;
+    font-size: 34px;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.12;
+}
+
+.ceet-current-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.ceet-current-primary-btn,
+.ceet-current-secondary-btn {
+    min-height: 42px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 9px 16px;
+    border-radius: 2px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.ceet-current-primary-btn {
+    border: 1px solid #000000;
+    background: #000000;
+    color: #ffffff;
+}
+
+.ceet-current-secondary-btn {
+    border: 1px solid #c6c6cd;
+    background: #ffffff;
+    color: #555f6d;
+}
+
+.ceet-current-primary-btn:hover,
+.ceet-current-secondary-btn:hover {
+    opacity: 0.88;
+}
+
+.ceet-current-alert {
+    margin-bottom: 16px;
+    padding: 12px 14px;
+    border: 1px solid #c6c6cd;
+    border-radius: 4px;
+    background: #ffffff;
+    color: #191c1e;
+    font-size: 14px;
+}
+
+.ceet-current-alert.is-success {
+    border-color: #b8d8c2;
+    background: #ecf8f0;
+}
+
+.ceet-current-alert.is-danger {
+    border-color: #ffb4ab;
+    background: #ffdad6;
+    color: #93000a;
+}
+
+.ceet-current-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+}
+
+.ceet-current-stat-card {
+    padding: 18px;
+    border: 1px solid #c6c6cd;
+    border-radius: 2px;
+    background: #ffffff;
+}
+
+.ceet-current-stat-card.is-critical {
+    border-left: 4px solid #ba1a1a;
+}
+
+.ceet-current-stat-card p {
+    margin: 0 0 8px;
+    color: #555f6d;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    line-height: 1.2;
+    text-transform: uppercase;
+}
+
+.ceet-current-stat-card div {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+}
+
+.ceet-current-stat-card strong {
+    color: #000000;
+    font-size: 32px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1;
+}
+
+.ceet-current-stat-card span {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    color: #555f6d;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.ceet-current-stat-card span .material-symbols-outlined {
+    font-size: 14px;
+}
+
+.ceet-current-stat-card span.is-danger {
+    color: #ba1a1a;
+}
+
+.ceet-current-stat-card span.is-positive {
+    color: #16a34a;
+}
+
+.ceet-current-filter-panel {
+    margin-bottom: 18px;
+    padding: 18px;
+    border: 1px solid #c6c6cd;
+    border-radius: 8px;
+    background: #ffffff;
+}
+
+.ceet-current-filters {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1.2fr auto;
+    gap: 16px;
+    align-items: end;
+}
+
+.ceet-current-field {
+    display: grid;
+    gap: 8px;
+}
+
+.ceet-current-field label {
+    color: #45464c;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    line-height: 1.2;
+    text-transform: uppercase;
+}
+
+.ceet-current-field input,
+.ceet-current-field select {
+    width: 100%;
+    min-height: 40px;
+    padding: 8px 12px;
+    border: 1px solid #c6c6cd;
+    border-radius: 2px;
+    background: #f3f4f6;
+    color: #191c1e;
+    font-size: 14px;
+    outline: none;
+}
+
+.ceet-current-field input:focus,
+.ceet-current-field select:focus {
+    border-color: #000000;
+    background: #ffffff;
+}
+
+.ceet-current-filter-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.ceet-current-square-btn {
+    width: 42px;
+    height: 40px;
+    display: grid;
+    place-items: center;
+    border: 1px solid #c6c6cd;
+    border-radius: 2px;
+    background: #ffffff;
+    color: #191c1e;
+    cursor: pointer;
+}
+
+.ceet-current-square-btn:hover {
+    border-color: #000000;
+    background: #f3f4f6;
+}
+
+.ceet-current-views {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 24px;
+    overflow-x: auto;
+    padding-bottom: 2px;
+}
+
+.ceet-current-views span {
+    color: #555f6d;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.ceet-current-views a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 30px;
+    padding: 6px 14px;
+    border-radius: 999px;
+    background: #e1e2e4;
+    color: #555f6d;
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+.ceet-current-views a:hover,
+.ceet-current-views a.is-active {
+    background: #000000;
+    color: #ffffff;
+}
+
+.ceet-current-table-panel {
+    overflow: hidden;
+    border: 1px solid #c6c6cd;
+    border-radius: 2px;
+    background: #ffffff;
+}
+
+.ceet-current-table-wrap {
+    overflow-x: auto;
+}
+
+.ceet-current-table {
+    width: 100%;
+    min-width: 1040px;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.ceet-current-table thead {
+    background: #f3f4f6;
+}
+
+.ceet-current-table th {
+    padding: 14px 18px;
+    border-bottom: 1px solid #c6c6cd;
+    color: #555f6d;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    line-height: 1.2;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.ceet-current-table th.is-center,
+.ceet-current-table td.is-center {
+    text-align: center;
+}
+
+.ceet-current-table td {
+    padding: 18px;
+    border-top: 1px solid #c6c6cd;
+    color: #191c1e;
+    font-size: 14px;
+    line-height: 1.45;
+    vertical-align: middle;
+}
+
+.ceet-current-table tbody tr:hover td {
+    background: #f3f4f6;
+}
+
+.ceet-current-table tr.is-critical-row td {
+    background: #f8f9fb;
+    border-left: 4px solid #76777d;
+}
+
+.ceet-current-table td strong {
+    display: block;
+    color: #191c1e;
+    font-weight: 800;
+}
+
+.ceet-current-table td span {
+    display: block;
+    margin-top: 2px;
+    color: #555f6d;
+    font-size: 13px;
+}
+
+.ceet-current-table td em {
+    color: #76777d;
+    font-size: 12px;
+}
+
+.ceet-current-table .is-right {
+    text-align: right;
+}
+
+.ceet-current-priority-dot {
+    width: 12px;
+    height: 12px;
+    display: inline-flex;
+    border-radius: 999px;
+    background: #c6c6cd;
+}
+
+.ceet-current-priority-dot.is-critical {
+    background: #ba1a1a;
+}
+
+.ceet-current-priority-dot.is-high {
+    background: #f97316;
+}
+
+.ceet-current-priority-dot.is-medium {
+    background: #c6c6cd;
+}
+
+.ceet-current-priority-dot.is-low {
+    background: #d9dadc;
+}
+
+.ceet-current-status {
+    display: inline-flex !important;
+    align-items: center;
+    min-height: 24px;
+    width: fit-content;
+    margin: 0 !important;
+    padding: 4px 10px;
+    border: 1px solid #c6c6cd;
+    border-radius: 2px;
+    background: #f3f4f6;
+    color: #45464c !important;
+    font-size: 11px !important;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.ceet-current-status.is-triggered,
+.ceet-current-status.is-alert {
+    border-color: #ffdad6;
+    background: #ffefed;
+    color: #ba1a1a !important;
+}
+
+.ceet-current-status.is-route {
+    border-color: #ffe8d6;
+    background: #fff4eb;
+    color: #8a3a00 !important;
+}
+
+.ceet-current-status.is-diagnostic {
+    border-color: #dfe7f5;
+    background: #f4f7ff;
+    color: #0f57d0 !important;
+}
+
+.ceet-current-status.is-repair {
+    border-color: #fff0b8;
+    background: #fff9df;
+    color: #875500 !important;
+}
+
+.ceet-current-status.is-waiting {
+    background: #f3f4f6;
+    color: #45464c !important;
+}
+
+.ceet-current-table .is-danger-text {
+    color: #ba1a1a;
+}
+
+.ceet-current-operator {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.ceet-current-operator div {
+    width: 26px;
+    height: 26px;
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
+    border-radius: 999px;
+    background: #e1e2e4;
+    color: #191c1e;
+    font-size: 10px;
+    font-weight: 800;
+}
+
+.ceet-current-operator span {
+    margin: 0 !important;
+    color: #191c1e !important;
+    font-size: 14px !important;
+}
+
+.ceet-current-row-actions {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.ceet-current-row-actions a,
+.ceet-current-row-actions button {
+    width: 32px;
+    height: 32px;
+    display: grid;
+    place-items: center;
+    border: 0;
+    border-radius: 4px;
+    background: transparent;
+    color: #45464c;
+    cursor: pointer;
+}
+
+.ceet-current-row-actions a:hover,
+.ceet-current-row-actions button:hover {
+    background: #e1e2e4;
+    color: #000000;
+}
+
+.ceet-current-intervene-btn {
+    min-height: 30px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 12px;
+    border-radius: 2px;
+    background: #000000;
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.ceet-current-empty-row {
+    padding: 48px 24px !important;
+    color: #76777d !important;
+    text-align: center;
+}
+
+.ceet-current-table-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 14px 18px;
+    border-top: 1px solid #c6c6cd;
+    background: #f3f4f6;
+}
+
+.ceet-current-table-footer > span {
+    color: #555f6d;
+    font-size: 13px;
+}
+
+.ceet-current-table-footer strong {
+    color: #191c1e;
+}
+
+.ceet-current-pagination nav {
+    display: flex;
+}
+
+.ceet-current-pagination svg {
+    width: 16px;
+    height: 16px;
+}
+
+.ceet-current-pagination p {
+    display: none;
+}
+
+.ceet-current-alert-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px;
+    margin-top: 32px;
+}
+
+.ceet-current-info-card {
+    display: flex;
+    gap: 16px;
+    padding: 18px;
+    border: 1px solid #c6c6cd;
+    border-radius: 2px;
+    background: #f3f4f6;
+}
+
+.ceet-current-info-card > div:first-child {
+    width: 48px;
+    height: 48px;
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
+    border-radius: 4px;
+    background: #dce2f7;
+    color: #141b2b;
+}
+
+.ceet-current-info-card.is-danger > div:first-child {
+    background: #ffdad6;
+    color: #93000a;
+}
+
+.ceet-current-info-card h3 {
+    margin: 0;
+    color: #191c1e;
+    font-size: 16px;
+    font-weight: 800;
+    line-height: 1.3;
+}
+
+.ceet-current-info-card p {
+    margin: 6px 0 0;
+    color: #555f6d;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.ceet-current-overlay {
+    display: none;
+}
+
+@media (max-width: 1199.98px) {
+    .ceet-current-stats-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .ceet-current-filters {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .ceet-current-alert-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 991.98px) {
+    .ceet-current-sidebar {
+        transform: translateX(-100%);
+        transition: transform 180ms ease;
+    }
+
+    .ceet-current-sidebar-open .ceet-current-sidebar {
+        transform: translateX(0);
+    }
+
+    .ceet-current-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 45;
+        display: none;
+        background: rgba(0, 0, 0, 0.32);
+    }
+
+    .ceet-current-sidebar-open .ceet-current-overlay {
+        display: block;
+    }
+
+    .ceet-current-topbar {
+        left: 0;
+        width: 100%;
+    }
+
+    .ceet-current-menu-btn {
+        display: inline-flex;
+    }
+
+    .ceet-current-main {
+        margin-left: 0;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .ceet-current-topbar {
+        gap: 12px;
+        padding: 0 16px;
+    }
+
+    .ceet-current-top-actions {
+        gap: 10px;
+    }
+
+    .ceet-current-live-state,
+    .ceet-current-top-divider,
+    .ceet-current-icon-btn[aria-label="Aide"] {
+        display: none;
+    }
+
+    .ceet-current-main {
+        padding: 84px 16px 24px;
+    }
+
+    .ceet-current-page-header {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .ceet-current-page-header h2 {
+        font-size: 28px;
+    }
+
+    .ceet-current-header-actions,
+    .ceet-current-primary-btn,
+    .ceet-current-secondary-btn {
+        width: 100%;
+    }
+
+    .ceet-current-stats-grid,
+    .ceet-current-filters {
+        grid-template-columns: 1fr;
+    }
+
+    .ceet-current-filter-actions {
+        width: 100%;
+    }
+
+    .ceet-current-square-btn {
+        flex: 1;
+        width: auto;
+    }
+
+    .ceet-current-table-footer {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .ceet-current-sidebar {
+        width: min(320px, 88vw);
+    }
+
+    .ceet-current-brand h1 {
+        font-size: 22px;
+    }
+}
+
+/* Fix Intervenir button readable text */
+.ceet-current-page .ceet-current-intervene-btn,
+.ceet-current-page .ceet-current-intervene-btn:link,
+.ceet-current-page .ceet-current-intervene-btn:visited,
+.ceet-current-page .ceet-current-intervene-btn:hover,
+.ceet-current-page .ceet-current-intervene-btn:focus,
+.ceet-current-page .ceet-current-intervene-btn:active {
+    background: #000000 !important;
+    border-color: #000000 !important;
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    opacity: 1 !important;
+    text-decoration: none !important;
+}
+
+.ceet-current-page .ceet-current-intervene-btn *,
+.ceet-current-page .ceet-current-intervene-btn span {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+}

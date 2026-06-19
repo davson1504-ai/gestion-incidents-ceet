@@ -1,36 +1,21 @@
 import './bootstrap';
+import { initNavigation } from './core/navigation';
+import { initNotifications } from './core/notifications';
+import { initAjaxForms } from './core/ajax-forms';
+import { initToasts } from './core/toasts';
 
-import Alpine from 'alpinejs';
-import Chart from 'chart.js/auto';
-import TomSelect from 'tom-select';
-import 'tom-select/dist/css/tom-select.bootstrap5.css';
+const boot = () => {
+    window.CEET = window.CEET || {};
+    window.CEET.appReady = true;
 
-window.Alpine = Alpine;
-window.Chart = Chart;
-
-Alpine.start();
-
-const initTomSelect = () => {
-    document.querySelectorAll('select.js-tom-select').forEach((select) => {
-        if (select.tomselect) {
-            return;
-        }
-
-        const placeholder = select.dataset.placeholder ?? 'Rechercher...';
-
-        new TomSelect(select, {
-            create: false,
-            allowEmptyOption: true,
-            maxOptions: 500,
-            closeAfterSelect: true,
-            placeholder,
-            sortField: [{ field: 'text', direction: 'asc' }],
-        });
-    });
+    initNavigation();
+    initNotifications();
+    initAjaxForms();
+    initToasts();
 };
 
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initTomSelect);
+    document.addEventListener('DOMContentLoaded', boot, { once: true });
 } else {
-    initTomSelect();
+    boot();
 }

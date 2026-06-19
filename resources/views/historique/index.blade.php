@@ -1,326 +1,385 @@
 @php
-    use Illuminate\Support\Str;
+    $currentUser = auth()->user();
+    $userName = $currentUser?->name ?? 'Administrateur';
+    $userEmail = $currentUser?->email ?? 'system@ceet.tg';
+    $roleName = $currentUser && method_exists($currentUser, 'getRoleNames') ? ($currentUser->getRoleNames()->first() ?: 'Administrateur') : 'Administrateur';
 
-    $from = $actions->firstItem() ?? 0;
-    $to = $actions->lastItem() ?? 0;
+    $initials = collect(preg_split('/\s+/', trim($userName)))
+        ->filter()
+        ->map(fn ($part) => mb_substr($part, 0, 1))
+        ->take(2)
+        ->implode('');
+
+    $initials = mb_strtoupper($initials ?: 'AD');
+
+    $logs = $logs ?? collect();
+    $filters = $filters ?? [];
+    $modules = collect($modules ?? []);
+    $users = collect($users ?? []);
+    $recentActivity = collect($recentActivity ?? []);
+    $notificationCount = $currentUser?->unreadNotifications()->count() ?? 0;
+
+    $moduleLabels = [
+        'auth' => 'Authentification',
+        'incidents' => 'Incidents',
+        'catalogues' => 'Catalogues',
+        'reporting' => 'Rapports',
+        'users' => 'Utilisateurs',
+        'system' => 'Système',
+        'configuration' => 'Configuration',
+    ];
+
+    $actionLabels = [
+        'login' => 'CONNEXION',
+        'logout' => 'DÉCONNEXION',
+        'create_incident' => 'CRÉATION_INCIDENT',
+        'update_incident' => 'MODIFICATION_INCIDENT',
+        'delete_incident' => 'SUPPRESSION_INCIDENT',
+        'close_incident' => 'CLÔTURE_INCIDENT',
+        'create_user' => 'CRÉATION_UTILISATEUR',
+        'update_user' => 'MODIFICATION_UTILISATEUR',
+        'delete_user' => 'SUPPRESSION_UTILISATEUR',
+        'export_report' => 'EXPORT_RAPPORT',
+        'update_catalogue' => 'MODIFICATION_CATALOGUE',
+    ];
+
+    $moduleLabel = function ($module) use ($moduleLabels) {
+        $key = mb_strtolower((string) $module);
+
+        return $moduleLabels[$key] ?? str($module ?: 'Système')->replace('_', ' ')->title();
+    };
+
+    $actionLabel = function ($action) use ($actionLabels) {
+        $key = mb_strtolower((string) $action);
+
+        return $actionLabels[$key] ?? str($action ?: 'ACTION_SYSTÈME')->replace(' ', '_')->upper();
+    };
+
+    $targetLabel = function ($log) {
+        if ($log->incident) {
+            return '#' . ($log->incident->code_incident ?: 'INC-' . str_pad((string) $log->incident->id, 5, '0', STR_PAD_LEFT));
+        }
+
+        $targetType = $log->target_type ?? null;
+        $targetId = $targetId ?? null;
+
+        if ($targetType && $targetId) {
+            $target = class_basename($targetType);
+
+            $target = match ($target) {
+                'User' => 'Utilisateur',
+                'Incident' => 'Incident',
+                'Report' => 'Rapport',
+                'Catalogue' => 'Catalogue',
+                default => $target,
+            };
+
+            return $target . ' #' . $targetId;
+        }
+
+        return '--';
+    };
+
+    $detailsLabel = function ($details) {
+        if (! $details) {
+            return 'Aucun détail complémentaire.';
+        }
+
+        if (is_array($details)) {
+            return json_encode($details, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+        }
+
+        return (string) $details;
+    };
 @endphp
 
-<x-app-layout>
-    <style>
-        /* ========================================
-           VARIABLES & BASE
-           ======================================== */
-        :root {
-            --ceet-red: #ef2433;
-            --ceet-red-dark: #ce1220;
-            --ceet-gold: #f59e0b;
-            --ceet-blue-night: #0f172a;
-            --ceet-blue-deep: #1e293b;
-            --ceet-gray-light: #f8fafc;
-            --ceet-border-light: #e2e8f0;
-            --ceet-text-muted: #64748b;
-            --ceet-success: #22c55e;
-        }
+<!DOCTYPE html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Historique du système - CEET Incidents</title>
 
-        /* ========================================
-           ANIMATIONS
-           ======================================== */
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
 
-        @keyframes slideInDown {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
+    @vite([
+        'resources/css/app.css',
+        'resources/css/pages/admin-dashboard.css',
+        'resources/js/pages/admin-dashboard.js'
+    ])
+</head>
 
-        @keyframes pulse-light {
-            0%, 100% {
-                opacity: 1;
-            }
-            50% {
-                opacity: 0.85;
-            }
-        }
+<body class="ceet-admin-dashboard-page ceet-history-page">
+    <div class="ceet-admin-shell" data-admin-dashboard data-history-page>
+        <div class="ceet-dashboard-overlay" data-dashboard-overlay></div>
 
-        /* ========================================
-           CARDS - Modern Design
-           ======================================== */
-        .card {
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.88));
-            border: 1px solid rgba(226, 232, 240, 0.6);
-            border-radius: 16px;
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-            position: relative;
-            overflow: hidden;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 4px 6px rgba(15, 23, 42, 0.07);
-            animation: fadeInUp 0.6s ease both;
-        }
+        <aside class="ceet-admin-sidebar ceet-history-sidebar ceet-role-sidebar" data-dashboard-sidebar>
+            <div class="ceet-history-brand ceet-role-brand">
+                <div class="ceet-history-brand-logo ceet-role-brand-logo"><img src="{{ asset('images/logo-ceet.png') }}" alt="Logo CEET" loading="lazy"></div>
 
-        .card:hover {
-            transform: translateY(-6px);
-            box-shadow: 0 16px 32px rgba(15, 23, 42, 0.15);
-            border-color: rgba(226, 232, 240, 0.8);
-        }
-
-        /* ========================================
-           FORMS & INPUTS
-           ======================================== */
-        .form-control, .form-select {
-            border-radius: 10px;
-            border: 1px solid var(--ceet-border-light);
-            transition: all 0.2s ease;
-            background: linear-gradient(to right, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.95));
-        }
-
-        .form-control:focus, .form-select:focus {
-            border-color: var(--ceet-red);
-            box-shadow: 0 0 0 3px rgba(239, 36, 51, 0.1);
-        }
-
-        /* ========================================
-           TABLE ANIMATION
-           ======================================== */
-        table tbody tr {
-            animation: fadeInUp 0.6s ease backwards;
-        }
-
-        table tbody tr:nth-child(1) { animation-delay: 0.1s; }
-        table tbody tr:nth-child(2) { animation-delay: 0.15s; }
-        table tbody tr:nth-child(3) { animation-delay: 0.2s; }
-        table tbody tr:nth-child(4) { animation-delay: 0.25s; }
-        table tbody tr:nth-child(5) { animation-delay: 0.3s; }
-        table tbody tr:nth-child(n+6) { animation-delay: 0.35s; }
-
-        table tbody tr:hover {
-            background-color: rgba(239, 36, 51, 0.03);
-            transition: all 0.2s ease;
-        }
-
-        /* ========================================
-           BUTTONS
-           ======================================== */
-        .btn-danger {
-            background: linear-gradient(135deg, var(--ceet-red), var(--ceet-red-dark));
-            border: none;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(239, 36, 51, 0.3);
-        }
-
-        .btn-danger:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(239, 36, 51, 0.4);
-        }
-
-        .btn-outline-secondary {
-            border-radius: 10px;
-            transition: all 0.3s ease;
-        }
-
-        .btn-outline-secondary:hover {
-            transform: translateY(-2px);
-        }
-
-        .btn-outline-success, .btn-outline-danger {
-            border-radius: 10px;
-            transition: all 0.3s ease;
-        }
-
-        .btn-outline-success:hover, .btn-outline-danger:hover {
-            transform: translateY(-2px);
-        }
-
-        /* ========================================
-           CARD HEADER
-           ======================================== */
-        .card-header {
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.5), rgba(248, 250, 252, 0.3));
-            border-bottom: 1px solid rgba(226, 232, 240, 0.4);
-        }
-    </style>
-    <x-slot name="header">
-        <div class="d-flex w-100 flex-column flex-lg-row justify-content-between align-items-lg-start gap-3">
-            <div>
-                <h1 class="h3 mb-1">Journal d'audit</h1>
-                <p class="text-muted mb-0">Tracez chaque action effectuée sur le réseau électrique et le système.</p>
+                <div>
+                    <h1>CEET Incidents</h1>
+                    <p>Electrical Management</p>
+                </div>
             </div>
-            <div class="d-flex gap-2 flex-wrap">
-                <a href="{{ route('historique.export', array_merge($filters, ['format' => 'excel'])) }}" class="btn btn-outline-success">
-                    Exporter (Excel)
-                </a>
-                <a href="{{ route('historique.export', array_merge($filters, ['format' => 'pdf'])) }}" class="btn btn-outline-danger">
-                    Rapport PDF
-                </a>
-            </div>
-        </div>
-    </x-slot>
 
-    <div class="card mb-4">
-        <div class="card-body">
-            <form class="row g-3 align-items-end" method="GET" action="{{ route('historique.index') }}">
-                <div class="col-12 col-xl-4">
-                    <label class="form-label fw-semibold">Recherche</label>
-                    <input
-                        type="text"
-                        name="q"
-                        class="form-control"
-                        placeholder="Rechercher un log, incident, agent"
-                        value="{{ $filters['q'] }}"
-                    >
+            <nav class="ceet-history-nav ceet-sidebar-nav" aria-label="Navigation principale">
+                @include('partials.ceet-role-nav', ['linkClass' => 'ceet-history-nav-link'])
+            </nav>
+
+            <div class="ceet-history-sidebar-user">
+                <div class="ceet-history-sidebar-avatar">{{ $initials }}</div>
+
+                <div class="ceet-history-sidebar-user-info">
+                    <strong>{{ $userName }}</strong>
+                    <span>{{ strtoupper($roleName) }}</span>
+                    <small>{{ $userEmail }}</small>
                 </div>
-                <div class="col-12 col-md-6 col-xl-3">
-                    <label class="form-label fw-semibold">Utilisateur</label>
-                    <select name="user_id" class="form-select js-tom-select" data-placeholder="Filtrer par utilisateur">
-                        <option value="">Tous les utilisateurs</option>
-                        @foreach($users as $user)
-                            <option value="{{ $user->id }}" @selected((string) $filters['user_id'] === (string) $user->id)>{{ $user->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="col-12 col-md-6 col-xl-2">
-                    <label class="form-label fw-semibold">Type d'action</label>
-                    <select name="action_type" class="form-select js-tom-select" data-placeholder="Toutes les actions">
-                        <option value="">Toutes les actions</option>
-                        @foreach($actionTypes as $type)
-                            <option value="{{ $type }}" @selected((string) $filters['action_type'] === (string) $type)>{{ strtoupper($type) }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="col-12 col-md-6 col-xl-3">
-                    <label class="form-label fw-semibold">Date début</label>
-                    <input type="date" name="date_from" class="form-control" value="{{ $filters['date_from'] }}">
-                </div>
-                <div class="col-12 col-md-6 col-xl-3">
-                    <label class="form-label fw-semibold">Date fin</label>
-                    <input type="date" name="date_to" class="form-control" value="{{ $filters['date_to'] }}">
-                </div>
-                <div class="col-12 d-flex gap-2 flex-wrap">
-                    <button class="btn btn-danger" type="submit">Appliquer les filtres</button>
-                    <a href="{{ route('historique.index') }}" class="btn btn-outline-secondary">Effacer</a>
-                </div>
+            </div>
+
+            <form method="POST" action="{{ route('logout') }}" class="ceet-history-logout-form">
+                @csrf
+
+                <button type="submit" class="ceet-history-logout-button">
+                    <span class="material-symbols-outlined" aria-hidden="true">logout</span>
+                    <span>Se déconnecter</span>
+                </button>
             </form>
-        </div>
-    </div>
+        </aside>
 
-    <div class="card">
-        <div class="card-header bg-white d-flex justify-content-between align-items-center flex-wrap gap-2">
-            <div>
-                <h2 class="h4 mb-1">Historique des activités récentes</h2>
-                <p class="text-muted mb-0">Analyse détaillée des actions enregistrées dans l'application.</p>
+        <header class="ceet-admin-topbar ceet-history-topbar">
+            <button type="button" class="ceet-admin-menu-btn ceet-history-menu-btn" data-dashboard-sidebar-toggle aria-label="Ouvrir le menu" aria-expanded="false">
+                <span class="material-symbols-outlined">menu</span>
+            </button>
+
+            <form action="{{ route('historique.index') }}" method="GET" class="ceet-admin-search ceet-history-search" data-ceet-filter-form>
+                <span class="material-symbols-outlined">search</span>
+                <input
+                    type="search"
+                    name="q"
+                    value="{{ $filters['q'] ?? '' }}"
+                    placeholder="Rechercher dans les logs..."
+                    autocomplete="off"
+                >
+            </form>
+
+            <div class="ceet-history-top-actions">
+                <a href="{{ route('notifications.index') }}" class="ceet-history-icon-btn" aria-label="Notifications" data-ceet-notification-trigger>
+                    <span class="material-symbols-outlined">notifications</span>
+
+                    @if($notificationCount > 0)
+                        <em>{{ $notificationCount > 99 ? '99+' : $notificationCount }}</em>
+                    @endif
+                </a>
+
+                <a href="{{ route('profile.edit') }}" class="ceet-history-icon-btn" aria-label="Aide">
+                    <span class="material-symbols-outlined">help_outline</span>
+                </a>
+
+                <div class="ceet-history-top-divider"></div>
+
+                <a href="{{ route('profile.edit') }}" class="ceet-history-top-user" data-ceet-link>
+                    <strong>{{ $userName }}</strong>
+                    <span>{{ $initials }}</span>
+                </a>
             </div>
-            <span class="badge rounded-pill text-bg-light">{{ number_format($actions->total()) }} événements</span>
-        </div>
+        </header>
 
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead>
-                        <tr>
-                            <th>Date & heure</th>
-                            <th>Utilisateur</th>
-                            <th>Action</th>
-                            <th>Cible</th>
-                            <th>Description des modifications</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($actions as $action)
-                            @php
-                                $type = strtolower((string) $action->action_type);
-                                $actionLabel = match ($type) {
-                                    'create' => 'CREATION',
-                                    'update' => 'MODIFICATION',
-                                    'delete' => 'SUPPRESSION',
-                                    'cloture' => 'CLOTURE',
-                                    'connexion' => 'CONNEXION',
-                                    default => strtoupper($action->action_type),
-                                };
 
-                                $actionClass = match ($type) {
-                                    'update' => 'ceet-action-pill-modification',
-                                    'create' => 'ceet-action-pill-creation',
-                                    'cloture' => 'ceet-action-pill-cloture',
-                                    'connexion' => 'ceet-action-pill-connexion',
-                                    default => 'ceet-action-pill-systeme',
-                                };
+        <main class="ceet-admin-main ceet-history-main">
+            <section class="ceet-history-header">
+                <div>
+                    <h2>Historique du système</h2>
+                    <p>Journal d’audit détaillé des opérations liées à l’infrastructure électrique.</p>
+                </div>
 
-                                $targetTitle = 'Systeme';
-                                $targetRef = '-';
+                <div class="ceet-history-header-actions">
+                    <a href="{{ route('historique.export', array_merge(request()->query(), ['format' => 'csv'])) }}" class="ceet-history-btn is-light">
+                        <span class="material-symbols-outlined">download</span>
+                        Exporter CSV
+                    </a>
 
-                                if ($action->incident) {
-                                    $targetTitle = 'Incident';
-                                    $targetRef = $action->incident->code_incident;
-                                } else {
-                                    $descriptionLower = Str::lower((string) $action->description);
-                                    if (Str::contains($descriptionLower, 'utilisateur')) {
-                                        $targetTitle = 'Utilisateur';
-                                    } elseif (Str::contains($descriptionLower, 'catalogue')) {
-                                        $targetTitle = 'Catalogue';
-                                    } elseif (Str::contains($descriptionLower, 'sauvegarde')) {
-                                        $targetTitle = 'Sauvegarde';
-                                    }
+                    <a href="{{ route('historique.index') }}" class="ceet-history-btn is-dark" data-ceet-link>
+                        <span class="material-symbols-outlined">refresh</span>
+                        Actualiser
+                    </a>
+                </div>
+            </section>
 
-                                    if (preg_match('/([A-Z]{2,5}-[0-9]+)/', (string) $action->description, $matches) === 1) {
-                                        $targetRef = $matches[1];
-                                    }
-                                }
+            <form action="{{ route('historique.index') }}" method="GET" class="ceet-history-filter-card" data-ceet-filter-form>
+                <div class="ceet-history-filter-field">
+                    <label for="user_id">Utilisateur</label>
+                    <select id="user_id" name="user_id">
+                        <option value="">Tous les utilisateurs</option>
+                        @foreach ($users as $user)
+                            <option value="{{ $user->id }}" @selected((string) ($filters['user_id'] ?? '') === (string) $user->id)>
+                                {{ $user->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
 
-                                $userName = $action->user?->name ?? 'System';
-                                $userRole = $action->user?->roles?->first()?->name ?? 'Service';
-                            @endphp
+                <div class="ceet-history-filter-field">
+                    <label for="date_from">Période</label>
+                    <div class="ceet-history-date-range">
+                        <input id="date_from" type="date" name="date_from" value="{{ $filters['date_from'] ?? '' }}">
+                        <span>—</span>
+                        <input type="date" name="date_to" value="{{ $filters['date_to'] ?? '' }}">
+                    </div>
+                </div>
+
+                <div class="ceet-history-filter-field">
+                    <label for="module">Action</label>
+                    <select id="module" name="module">
+                        <option value="">Toutes les actions</option>
+                        @foreach ($modules as $module)
+                            <option value="{{ $module }}" @selected(($filters['module'] ?? '') === $module)>
+                                {{ $moduleLabel($module) }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <input type="hidden" name="q" value="{{ $filters['q'] ?? '' }}">
+
+                <button type="submit" class="ceet-history-apply-btn">Appliquer les filtres</button>
+
+                <a href="{{ route('historique.index') }}" class="ceet-history-reset-btn" aria-label="Réinitialiser les filtres">
+                    <span class="material-symbols-outlined">filter_alt_off</span>
+                </a>
+            </form>
+
+            <section class="ceet-history-table-card">
+                <div class="ceet-history-table-wrap">
+                    <table class="ceet-history-table">
+                        <thead>
                             <tr>
-                                <td class="text-nowrap">
-                                    {{ $action->action_date?->format('Y-m-d H:i:s') ?? '-' }}
-                                </td>
-                                <td>
-                                    <div class="d-flex align-items-center gap-2">
-                                        <span class="ceet-avatar-circle ceet-avatar-circle-sm bg-primary-subtle text-primary-emphasis">
-                                            {{ strtoupper(Str::substr($userName, 0, 2)) }}
-                                        </span>
-                                        <div>
-                                            <div class="fw-semibold">{{ $userName }}</div>
-                                            <div class="small text-muted text-uppercase">{{ $userRole }}</div>
+                                <th>Date & heure</th>
+                                <th>Utilisateur</th>
+                                <th>Action</th>
+                                <th>Module</th>
+                                <th>Cible</th>
+                                <th>Adresse IP</th>
+                                <th>Détails</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @forelse ($logs as $log)
+                                @php
+                                    $displayUser = $log->user?->name ?? 'Système';
+                                    $displayInitials = collect(preg_split('/\s+/', trim($displayUser)))
+                                        ->filter()
+                                        ->map(fn ($part) => mb_substr($part, 0, 1))
+                                        ->take(2)
+                                        ->implode('');
+
+                                    $displayInitials = mb_strtoupper($displayInitials ?: 'SYS');
+                                    $displayAction = $log->action_type ?? $log->action ?? 'action';
+                                    $displayModule = $log->module ?? 'incidents';
+                                    $displayDate = $log->action_date ?? $log->created_at ?? null;
+                                    $displayIp = $log->ip_address ?? 'localhost';
+                                    $displayDetails = $log->description ?? $log->details ?? null;
+                                    $displayUserAgent = $log->user_agent ?? null;
+                                    $isError = str_contains(mb_strtolower((string) $displayAction), 'error') || str_contains(mb_strtolower((string) $displayAction), 'fail');
+                                @endphp
+
+                                <tr>
+                                    <td class="is-mono">{{ optional($displayDate)->format('Y-m-d H:i:s') ?? '--' }}</td>
+
+                                    <td>
+                                        <div class="ceet-history-user-cell">
+                                            <span>{{ $displayInitials }}</span>
+                                            <strong>{{ $displayUser }}</strong>
                                         </div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <span class="ceet-action-pill {{ $actionClass }}">{{ $actionLabel }}</span>
-                                </td>
-                                <td>
-                                    <div class="fw-semibold text-danger">{{ $targetTitle }}</div>
-                                    <div class="small text-muted">{{ $targetRef }}</div>
-                                </td>
-                                <td>{{ $action->description }}</td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="5" class="text-center py-5 text-muted">Aucune action trouvée pour ces critères.</td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-        </div>
+                                    </td>
 
-        <div class="card-footer d-flex justify-content-between align-items-center flex-wrap gap-3">
-            <span class="small text-muted">
-                Affichage de {{ $from }} à {{ $to }} sur {{ number_format($actions->total()) }} événements enregistrés
-            </span>
-            <div>{{ $actions->links('pagination::bootstrap-5') }}</div>
-        </div>
+                                    <td>
+                                        <span class="ceet-history-action-chip {{ $isError ? 'is-error' : '' }}">
+                                            {{ $actionLabel($displayAction) }}
+                                        </span>
+                                    </td>
+
+                                    <td>{{ $moduleLabel($displayModule) }}</td>
+
+                                    <td class="{{ $isError ? 'is-error-text' : '' }}">{{ $targetLabel($log) }}</td>
+
+                                    <td class="is-mono">{{ $displayIp }}</td>
+
+                                    <td>
+                                        <button
+                                            type="button"
+                                            class="ceet-history-detail-btn"
+                                            data-history-detail-toggle="history-detail-{{ $log->id }}"
+                                            aria-label="Afficher les détails du log"
+                                        >
+                                            <span class="material-symbols-outlined">info</span>
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                <tr id="history-detail-{{ $log->id }}" class="ceet-history-detail-row" hidden>
+                                    <td colspan="7">
+                                        <div>
+                                            <strong>Détails techniques</strong>
+                                            <pre>{{ $detailsLabel($displayDetails) }}</pre>
+                                            <small>
+                                                Agent utilisateur :
+                                                {{ $displayUserAgent ?: 'Non renseigné' }}
+                                            </small>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="7" class="ceet-history-empty">
+                                        Aucun log ne correspond aux filtres appliqués.
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+
+                <footer class="ceet-history-pagination">
+                    <span>
+                        Affichage de {{ $logs->firstItem() ?? 0 }} à {{ $logs->lastItem() ?? 0 }}
+                        sur {{ number_format($logs->total(), 0, ',', ' ') }} entrées
+                    </span>
+
+                    {{ $logs->links() }}
+                </footer>
+            </section>
+
+            <section class="ceet-history-bottom-grid">
+                <article class="ceet-history-status-card">
+                    <span>État du journal</span>
+                    <strong>{{ number_format($journalAvailability ?? 0, 1, ',', ' ') }}%</strong>
+                    <em>Disponibilité</em>
+                    <div></div>
+                    <p>
+                        Dernière activité :
+                        {{ $lastLog?->created_at ? $lastLog->created_at->diffForHumans() : 'aucune donnée enregistrée' }}.
+                    </p>
+                </article>
+
+                <article class="ceet-history-chart-card">
+                    <header>Activité récente du journal</header>
+
+                    <div class="ceet-history-chart">
+                        @foreach ($recentActivity as $activity)
+                            <div>
+                                <span style="height: {{ $activity['height'] }}%"></span>
+                                <strong>{{ $activity['label'] }}</strong>
+                            </div>
+                        @endforeach
+                    </div>
+                </article>
+            </section>
+        </main>
     </div>
-</x-app-layout>
+</body>
+</html>

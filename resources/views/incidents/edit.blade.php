@@ -1,135 +1,95 @@
+@php
+    use Illuminate\Support\Str;
+
+    $departements = $departements ?? collect();
+    $types = $types ?? ($typeIncidents ?? collect());
+    $causes = $causes ?? collect();
+    $priorites = $priorites ?? collect();
+    $statuts = $statuts ?? collect();
+    $operateurs = $operateurs ?? collect();
+    $users = $users ?? $operateurs;
+
+    $incident->loadMissing(['departement', 'typeIncident', 'cause', 'status', 'priorite', 'responsable', 'operateur', 'superviseur']);
+
+    $statusLabel = $incident->status?->libelle ?? 'Non défini';
+    $priorityLabel = $incident->priorite?->libelle ?? 'Non définie';
+    $incidentCode = $incident->code_incident ?? ('INC-'.$incident->id);
+    $updateUrl = route('incidents.update', $incident);
+    $showUrl = route('incidents.show', $incident);
+    $incidentsUrl = route('incidents.index');
+
+    $statusClass = function (?string $label): string {
+        $key = Str::lower(Str::ascii((string) $label));
+
+        if (Str::contains($key, ['cloture', 'clos', 'closed'])) return 'status-cloture';
+        if (Str::contains($key, ['resolu', 'resolved'])) return 'status-resolu';
+        if (Str::contains($key, ['rapport'])) return 'status-rapporte';
+        if (Str::contains($key, ['valid'])) return 'status-valide';
+        if (Str::contains($key, ['cours', 'intervention'])) return 'status-en-cours';
+        if (Str::contains($key, ['affect', 'assign'])) return 'status-affecte';
+
+        return 'status-ouvert';
+    };
+
+    $priorityClass = function (?string $label): string {
+        $key = Str::lower(Str::ascii((string) $label));
+
+        if (Str::contains($key, ['critique', 'critical', 'urgent', 'haute', 'p1'])) return 'priority-critique';
+        if (Str::contains($key, ['moyenne', 'normale'])) return 'priority-moyenne';
+
+        return 'priority-basse';
+    };
+@endphp
+
 <x-app-layout>
-    <style>
-        /* ========================================
-           VARIABLES & BASE
-           ======================================== */
-        :root {
-            --ceet-red: #ef2433;
-            --ceet-red-dark: #ce1220;
-            --ceet-gold: #f59e0b;
-            --ceet-blue-night: #0f172a;
-            --ceet-blue-deep: #1e293b;
-            --ceet-gray-light: #f8fafc;
-            --ceet-border-light: #e2e8f0;
-            --ceet-text-muted: #64748b;
-            --ceet-success: #22c55e;
-        }
+    <div class="ceet-page ceet-page-shell ceet-incident-create-page ceet-incident-edit-page">
+        <header class="ceet-page-header d-flex justify-content-between align-items-start flex-wrap gap-3">
+            <div>
+                <span class="ceet-page-kicker">Modification incident</span>
+                <h1 class="ceet-page-title">Modifier l’incident {{ $incidentCode }}</h1>
+                <p class="ceet-page-subtitle">
+                    Mettez à jour les informations de l’incident, sa classification, son affectation et ses données de résolution.
+                </p>
+            </div>
 
-        /* ========================================
-           ANIMATIONS
-           ======================================== */
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
+            <div class="ceet-page-actions d-flex flex-wrap gap-2">
+                <a href="{{ $showUrl }}" class="btn btn-outline-secondary">Voir le détail</a>
+                <a href="{{ $incidentsUrl }}" class="btn btn-outline-secondary">Retour à la liste</a>
+            </div>
+        </header>
 
-        @keyframes slideInDown {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
+        <section class="ceet-card ceet-incident-summary-card">
+            <div class="row g-3 align-items-center">
+                <div class="col-12 col-xl-4">
+                    <div class="small text-muted text-uppercase fw-bold mb-1">Référence</div>
+                    <div class="incident-code fs-5">{{ $incidentCode }}</div>
+                    <div class="text-muted small mt-1">Créé le {{ $incident->created_at?->format('d/m/Y H:i') ?? '-' }}</div>
+                </div>
 
-        @keyframes pulse-light {
-            0%, 100% {
-                opacity: 1;
-            }
-            50% {
-                opacity: 0.85;
-            }
-        }
+                <div class="col-12 col-md-4 col-xl-2">
+                    <div class="small text-muted text-uppercase fw-bold mb-2">Statut actuel</div>
+                    <span class="ceet-status-badge {{ $statusClass($statusLabel) }}">{{ $statusLabel }}</span>
+                </div>
 
-        /* ========================================
-           CARDS - Modern Design
-           ======================================== */
-        .card {
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.88));
-            border: 1px solid rgba(226, 232, 240, 0.6);
-            border-radius: 16px;
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-            position: relative;
-            overflow: hidden;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 4px 6px rgba(15, 23, 42, 0.07);
-            animation: fadeInUp 0.6s ease both;
-        }
+                <div class="col-12 col-md-4 col-xl-2">
+                    <div class="small text-muted text-uppercase fw-bold mb-2">Priorité</div>
+                    <span class="ceet-priority-badge {{ $priorityClass($priorityLabel) }}">{{ $priorityLabel }}</span>
+                </div>
 
-        .card:hover {
-            box-shadow: 0 12px 24px rgba(15, 23, 42, 0.12);
-        }
+                <div class="col-12 col-md-4 col-xl-4">
+                    <div class="small text-muted text-uppercase fw-bold mb-1">Contexte</div>
+                    <div class="fw-semibold">{{ $incident->departement?->nom ?? 'Départ non défini' }}</div>
+                    <div class="text-muted small">
+                        {{ $incident->typeIncident?->libelle ?? 'Type non défini' }}
+                        @if($incident->localisation)
+                            • {{ $incident->localisation }}
+                        @endif
+                    </div>
+                </div>
+            </div>
+        </section>
 
-        /* ========================================
-           FORMS & INPUTS
-           ======================================== */
-        .form-control, .form-select {
-            border-radius: 10px;
-            border: 1px solid var(--ceet-border-light);
-            transition: all 0.2s ease;
-            background: linear-gradient(to right, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.95));
-        }
-
-        .form-control:focus, .form-select:focus {
-            border-color: var(--ceet-red);
-            box-shadow: 0 0 0 3px rgba(239, 36, 51, 0.1);
-        }
-
-        /* ========================================
-           BUTTONS
-           ======================================== */
-        .btn-danger {
-            background: linear-gradient(135deg, var(--ceet-red), var(--ceet-red-dark));
-            border: none;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(239, 36, 51, 0.3);
-        }
-
-        .btn-danger:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(239, 36, 51, 0.4);
-        }
-
-        .btn-outline-secondary {
-            border-radius: 10px;
-            transition: all 0.3s ease;
-        }
-
-        .btn-outline-secondary:hover {
-            transform: translateY(-2px);
-        }
-
-        /* ========================================
-           ALERT MESSAGES
-           ======================================== */
-        .alert {
-            border-radius: 10px;
-            border: 1px solid rgba(239, 36, 51, 0.2);
-            animation: slideInDown 0.4s ease;
-            background: linear-gradient(135deg, rgba(239, 36, 51, 0.05), rgba(239, 36, 51, 0.02));
-        }
-
-        .alert-danger {
-            color: var(--ceet-red);
-        }
-    </style>
-    <x-slot name="header">
-        <div>
-            <h1 class="h3 mb-1">Mettre à jour {{ $incident->code_incident }}</h1>
-            <p class="text-muted mb-0">Actualisez le statut, les intervenants et la chronologie de l’incident sans perdre la traçabilité existante.</p>
-        </div>
-    </x-slot>
-
-    <div class="card">
-        <div class="card-body">
+        <section class="ceet-card ceet-incident-form-card">
             @if($errors->any())
                 <div class="alert alert-danger">
                     <div class="fw-semibold mb-2">Le formulaire contient des erreurs.</div>
@@ -141,11 +101,15 @@
                 </div>
             @endif
 
-            <form method="POST" action="{{ route('incidents.update', $incident) }}" data-incident-form>
+            <form method="POST" action="{{ $updateUrl }}" data-incident-form>
                 @csrf
                 @method('PUT')
+
+                {{-- Le champ statut est affiché en lecture seule dans _form.blade.php, mais UpdateIncidentRequest exige status_id. --}}
+                <input type="hidden" name="status_id" value="{{ old('status_id', $incident->status_id) }}">
+
                 @include('incidents._form', ['incident' => $incident])
             </form>
-        </div>
+        </section>
     </div>
 </x-app-layout>

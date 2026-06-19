@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Statut;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class StatutController extends Controller
@@ -15,11 +16,46 @@ class StatutController extends Controller
         $this->middleware('permission:catalogues.manage')->except(['index']);
     }
 
-    public function index(): View
+    public function index(Request $request): View
     {
-        $statuts = Statut::orderBy('ordre')->orderBy('libelle')->paginate(25);
+        $filters = [
+            'q' => (string) $request->query('q', ''),
+            'status' => (string) $request->query('status', ''),
+        ];
 
-        return view('catalogues.statuts.index', compact('statuts'));
+        $statuts = Statut::query()
+            ->when($filters['q'] !== '', function ($query) use ($filters): void {
+                $search = '%'.$filters['q'].'%';
+
+                $query->where(function ($subQuery) use ($search): void {
+                    $subQuery
+                        ->where('code', 'like', $search)
+                        ->orWhere('libelle', 'like', $search)
+                        ->orWhere('description', 'like', $search);
+                });
+            })
+            ->when(in_array($filters['status'], ['active', 'inactive', 'final'], true), function ($query) use ($filters): void {
+                if ($filters['status'] === 'final') {
+                    $query->where('is_final', true);
+
+                    return;
+                }
+
+                $query->where('is_active', $filters['status'] === 'active');
+            })
+            ->orderBy('ordre')
+            ->orderBy('libelle')
+            ->paginate(5)
+            ->withQueryString();
+
+        $statusMetrics = [
+            'total' => Statut::count(),
+            'active' => Statut::where('is_active', true)->count(),
+            'final' => Statut::where('is_final', true)->count(),
+            'last_updated_at' => Statut::max('updated_at'),
+        ];
+
+        return view('catalogues.statuts.index', compact('statuts', 'filters', 'statusMetrics'));
     }
 
     public function create(): View
@@ -29,6 +65,12 @@ class StatutController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
+        if (! $request->filled('code') && $request->filled('libelle')) {
+            $request->merge([
+                'code' => $this->nextCodeForLabel((string) $request->input('libelle')),
+            ]);
+        }
+
         $data = $this->validated($request);
         $data['is_active'] = $request->boolean('is_active');
         $data['is_final'] = $request->boolean('is_final');
@@ -81,5 +123,19 @@ class StatutController extends Controller
             'is_active' => ['nullable', 'boolean'],
             'is_final' => ['nullable', 'boolean'],
         ]);
+    }
+
+    private function nextCodeForLabel(string $label): string
+    {
+        $baseCode = Str::upper(Str::slug($label, '_')) ?: 'STATUT';
+        $code = $baseCode;
+        $suffix = 2;
+
+        while (Statut::query()->where('code', $code)->exists()) {
+            $code = $baseCode.'_'.$suffix;
+            $suffix++;
+        }
+
+        return $code;
     }
 }
