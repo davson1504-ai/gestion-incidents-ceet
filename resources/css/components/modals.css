@@ -1,0 +1,104 @@
+/* ============================================================
+   CEET — Modals de confirmation
+   ============================================================ */
+
+/* Backdrop */
+.ceet-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    background: rgba(0, 0, 0, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--ceet-space-lg);
+    animation: ceet-backdrop-in 200ms ease;
+}
+
+.ceet-modal-backdrop[hidden] {
+    display: none;
+}
+
+@keyframes ceet-backdrop-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* Modal panel */
+.ceet-modal {
+    width: 100%;
+    max-width: 480px;
+    border-radius: var(--ceet-radius-lg);
+    background: var(--ceet-surface);
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.16);
+    overflow: hidden;
+    animation: ceet-modal-in 200ms ease;
+}
+
+@keyframes ceet-modal-in {
+    from { opacity: 0; transform: scale(0.96) translateY(-8px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.ceet-modal-header {
+    display: flex;
+    align-items: center;
+    gap: var(--ceet-space-md);
+    padding: 18px var(--ceet-space-lg);
+    border-bottom: 1px solid var(--ceet-border);
+}
+
+.ceet-modal-title {
+    flex: 1;
+    color: var(--ceet-text);
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.ceet-modal-close {
+    width: 30px;
+    height: 30px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    border-radius: var(--ceet-radius-sm);
+    background: transparent;
+    color: var(--ceet-text-muted);
+    cursor: pointer;
+}
+
+.ceet-modal-close:hover {
+    background: var(--ceet-surface-low);
+    color: var(--ceet-text);
+}
+
+.ceet-modal-body {
+    padding: var(--ceet-space-lg);
+    color: var(--ceet-text);
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.ceet-modal-body p {
+    margin-bottom: var(--ceet-space-sm);
+}
+
+.ceet-modal-body p:last-child {
+    margin-bottom: 0;
+}
+
+.ceet-modal-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--ceet-space-sm);
+    padding: 14px var(--ceet-space-lg);
+    border-top: 1px solid var(--ceet-border);
+    background: var(--ceet-surface-low);
+}
+
+/* Variante modale large */
+.ceet-modal.is-lg {
+    max-width: 680px;
+}

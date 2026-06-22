@@ -31,9 +31,6 @@ class UpdateIncidentRequest extends FormRequest
             'date_debut' => ['required', 'date'],
             'date_fin' => ['nullable', 'date', 'after_or_equal:date_debut'],
             'responsable_id' => ['nullable', 'exists:users,id'],
-            'superviseur_id' => ['nullable', 'exists:users,id'],
-            'actions_menees' => ['nullable', 'string'],
-            'resolution_summary' => ['nullable', 'string'],
         ];
     }
 }

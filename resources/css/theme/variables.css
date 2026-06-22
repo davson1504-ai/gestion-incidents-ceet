@@ -1,0 +1,110 @@
+/* ============================================================
+   CEET — Design tokens (source unique de vérité)
+   Importer en premier dans app.css
+   ============================================================ */
+
+:root {
+    /* Couleurs de base */
+    --ceet-background: #f8f9fb;
+    --ceet-surface: #ffffff;
+    --ceet-surface-low: #f3f4f6;
+    --ceet-surface-mid: #edeef0;
+
+    /* Couleurs typographiques */
+    --ceet-text: #191c1e;
+    --ceet-text-muted: #45464c;
+    --ceet-text-subtle: #596372;
+
+    /* Couleurs de bordure */
+    --ceet-border: #c6c6cd;
+    --ceet-border-soft: #d8dce2;
+    --ceet-outline: #76777d;
+
+    /* Couleurs primaires */
+    --ceet-primary: #000000;
+    --ceet-primary-hover: #1a1a1a;
+    --ceet-primary-fg: #ffffff;
+
+    /* Couleurs sémantiques */
+    --ceet-danger: #ba1a1a;
+    --ceet-danger-bg: #ffdad6;
+    --ceet-danger-border: #efb9b9;
+    --ceet-success: #2f6b45;
+    --ceet-success-bg: #d1f4dd;
+    --ceet-success-border: #b7d8c1;
+    --ceet-warning: #7c5800;
+    --ceet-warning-bg: #ffefc0;
+    --ceet-info: #005db0;
+    --ceet-info-bg: #dce8f7;
+
+    /* Typographie */
+    --ceet-font: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --ceet-font-mono: "JetBrains Mono", "Fira Code", monospace;
+
+    /* Layout shell */
+    --ceet-sidebar-width: 280px;
+    --ceet-topbar-height: 64px;
+    --ceet-content-max: 1680px;
+
+    /* Espacements */
+    --ceet-space-xs: 4px;
+    --ceet-space-sm: 8px;
+    --ceet-space-md: 16px;
+    --ceet-space-lg: 24px;
+    --ceet-space-xl: 32px;
+    --ceet-space-2xl: 48px;
+
+    /* Rayons de bordure */
+    --ceet-radius-sm: 2px;
+    --ceet-radius-md: 4px;
+    --ceet-radius-lg: 8px;
+    --ceet-radius-full: 999px;
+
+    /* Ombres */
+    --ceet-shadow-sm: 0 1px 2px rgba(17, 24, 39, 0.05);
+    --ceet-shadow-md: 0 4px 16px rgba(17, 24, 39, 0.08);
+
+    /* Transitions */
+    --ceet-transition: 160ms ease;
+
+    /* Aliases de compatibilité (anciens tokens) */
+    --ceet-border-soft: #d8dce2;
+    --ceet-border-strong: #9ea3ab;
+    --ceet-muted: #5f6673;
+    --ceet-muted-soft: #8b95a1;
+    --ceet-text-strong: #111827;
+    --ceet-surface-high: #f0f1f3;
+    --ceet-surface-mid: #edeef0;
+    --ceet-info-bg: #dce8f7;
+    --ceet-info: #005db0;
+    --ceet-success-bg: #d1f4dd;
+    --ceet-success-border: #b7d8c1;
+    --ceet-warning-bg: #ffefc0;
+    --ceet-warning: #7c5800;
+
+    /* Statuts incidents */
+    --ceet-status-ouvert: #005db0;
+    --ceet-status-ouvert-bg: #dce8f7;
+    --ceet-status-affecte: #7c5800;
+    --ceet-status-affecte-bg: #ffefc0;
+    --ceet-status-en-cours: #4a4800;
+    --ceet-status-en-cours-bg: #f5f0a0;
+    --ceet-status-resolu: #2f6b45;
+    --ceet-status-resolu-bg: #d1f4dd;
+    --ceet-status-rapporte: #6750a4;
+    --ceet-status-rapporte-bg: #e8def8;
+    --ceet-status-valide: #2f6b45;
+    --ceet-status-valide-bg: #d1f4dd;
+    --ceet-status-cloture: #45464c;
+    --ceet-status-cloture-bg: #edeef0;
+
+    /* Priorités */
+    --ceet-priority-critique: #ba1a1a;
+    --ceet-priority-critique-bg: #ffdad6;
+    --ceet-priority-haute: #7c5800;
+    --ceet-priority-haute-bg: #ffefc0;
+    --ceet-priority-medium: #005db0;
+    --ceet-priority-medium-bg: #dce8f7;
+    --ceet-priority-basse: #2f6b45;
+    --ceet-priority-basse-bg: #d1f4dd;
+}

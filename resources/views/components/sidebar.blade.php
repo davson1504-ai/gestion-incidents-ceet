@@ -44,7 +44,7 @@
                     $iconSvg = $icons[$iconKey] ?? null;
                 @endphp
 
-                <a href="{{ $href }}" class="ceet-sidebar-nav-link {{ $active ? 'is-active' : '' }}" @if($active) aria-current="page" @endif data-ceet-link>
+                <a href="{{ $href }}" class="ceet-sidebar-nav-link {{ $active ? 'is-active' : '' }}" @if($active) aria-current="page" @endif>
                     @if($iconSvg)
                         <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                             {!! $iconSvg !!}

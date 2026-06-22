@@ -15,6 +15,7 @@ use App\Http\Controllers\TypeIncidentController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VueConsoleController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\CatalogueImportController;
 
 Route::redirect('/', '/login')->name('home');
 
@@ -22,6 +23,7 @@ Route::middleware(['auth', 'verified'])->group(function (): void {
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
 
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::get('/notifications/count', [NotificationController::class, 'count'])->name('notifications.count');
     Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
     Route::post('/notifications/{notification}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
 
@@ -130,6 +132,14 @@ Route::middleware(['auth', 'verified'])->group(function (): void {
                     ->get(),
             ]);
         })->name('index');
+
+        Route::get('import/template', [CatalogueImportController::class, 'template'])
+            ->middleware('permission:catalogues.manage')
+            ->name('import.template');
+
+        Route::post('import', [CatalogueImportController::class, 'store'])
+            ->middleware('permission:catalogues.manage')
+            ->name('import.store');
 
         Route::resource('departements', DepartementController::class)->except('show');
         Route::resource('types', TypeIncidentController::class)->except('show');

@@ -149,7 +149,7 @@
                 @error('date_fin')<div class="invalid-feedback">{{ $message }}</div>@enderror
             </div>
 
-            <div class="col-12 col-md-6">
+            <div class="col-12">
                 <label for="responsable_id" class="form-label">Responsable terrain</label>
                 <select id="responsable_id" name="responsable_id" class="form-select @error('responsable_id') is-invalid @enderror">
                     <option value="">Non affecté</option>
@@ -162,18 +162,6 @@
                 @error('responsable_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
             </div>
 
-            <div class="col-12 col-md-6">
-                <label for="superviseur_id" class="form-label">Superviseur</label>
-                <select id="superviseur_id" name="superviseur_id" class="form-select @error('superviseur_id') is-invalid @enderror">
-                    <option value="">Non affecté</option>
-                    @foreach ($users as $user)
-                        <option value="{{ $user->id }}" @selected((string) $value('superviseur_id') === (string) $user->id)>
-                            {{ $user->name }}
-                        </option>
-                    @endforeach
-                </select>
-                @error('superviseur_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
-            </div>
 
             @if ($incident)
                 <div class="col-12">
@@ -187,30 +175,10 @@
         </div>
     </section>
 
-    <section class="ceet-form-section">
-        <div class="ceet-form-section-header">
-            <h2>Traitement</h2>
-            <p>Actions menées et synthèse de résolution lorsque l’incident est avancé.</p>
-        </div>
 
-        <div class="row g-3">
-            <div class="col-12">
-                <label for="actions_menees" class="form-label">Actions menées</label>
-                <textarea id="actions_menees" name="actions_menees" rows="4" class="form-control @error('actions_menees') is-invalid @enderror">{{ $value('actions_menees') }}</textarea>
-                @error('actions_menees')<div class="invalid-feedback">{{ $message }}</div>@enderror
-            </div>
-
-            <div class="col-12">
-                <label for="resolution_summary" class="form-label">Résumé de résolution</label>
-                <textarea id="resolution_summary" name="resolution_summary" rows="4" class="form-control @error('resolution_summary') is-invalid @enderror">{{ $value('resolution_summary') }}</textarea>
-                @error('resolution_summary')<div class="invalid-feedback">{{ $message }}</div>@enderror
-            </div>
-        </div>
-    </section>
-
-    <footer class="ceet-form-actions">
-        <a href="{{ route('incidents.index') }}" class="btn btn-outline-secondary">Annuler</a>
-        <button type="submit" class="btn btn-primary">
+    <footer class="ceet-form-actions ceet-incident-form-actions">
+        <a href="{{ route('incidents.index') }}" class="ceet-incident-btn is-secondary">Annuler</a>
+        <button type="submit" class="ceet-incident-btn is-primary">
             {{ $incident ? 'Enregistrer les modifications' : 'Créer l’incident' }}
         </button>
     </footer>

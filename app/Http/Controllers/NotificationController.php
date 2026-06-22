@@ -18,18 +18,32 @@ class NotificationController extends Controller
             ->latest()
             ->limit(20)
             ->get()
-            ->map(fn ($notification) => [
-                'id' => $notification->id,
-                'type' => $notification->type,
-                'data' => $notification->data,
-                'read_at' => $notification->read_at?->toIso8601String(),
-                'created_at' => $notification->created_at?->toIso8601String(),
-            ]);
+            ->map(function ($notification) {
+                $data = $notification->data;
+
+                return [
+                    'id' => $notification->id,
+                    'title' => (string) ($data['title'] ?? 'Notification'),
+                    'message' => (string) ($data['message'] ?? $data['incident_title'] ?? 'Nouvelle information disponible.'),
+                    'type' => (string) ($data['kind'] ?? class_basename($notification->type)),
+                    'url' => $data['incident_url'] ?? null,
+                    'read_at' => $notification->read_at?->toIso8601String(),
+                    'created_at' => $notification->created_at?->toIso8601String(),
+                    'data' => $data,
+                ];
+            });
 
         return response()->json([
             'unread_count' => $request->user()->unreadNotifications()->count(),
             'notifications' => $notifications,
             'updated_at' => now()->format('H:i:s'),
+        ]);
+    }
+
+    public function count(Request $request): JsonResponse
+    {
+        return response()->json([
+            'unread_count' => $request->user()->unreadNotifications()->count(),
         ]);
     }
 

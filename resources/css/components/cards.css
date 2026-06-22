@@ -1,0 +1,130 @@
+/* ============================================================
+   CEET — Cards et panneaux
+   ============================================================ */
+
+/* Card de base */
+.ceet-card {
+    border: 1px solid var(--ceet-border);
+    border-radius: var(--ceet-radius-md);
+    background: var(--ceet-surface);
+    overflow: hidden;
+}
+
+/* Card avec padding */
+.ceet-card-body {
+    padding: var(--ceet-space-lg);
+}
+
+/* Card header */
+.ceet-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--ceet-space-md);
+    min-height: 52px;
+    padding: 12px var(--ceet-space-lg);
+    border-bottom: 1px solid var(--ceet-border);
+    background: var(--ceet-surface-low);
+}
+
+.ceet-card-header h2,
+.ceet-card-header h3 {
+    color: var(--ceet-text);
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.ceet-card-header-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--ceet-space-sm);
+}
+
+/* Card footer */
+.ceet-card-footer {
+    padding: 12px var(--ceet-space-lg);
+    border-top: 1px solid var(--ceet-border);
+    background: var(--ceet-surface-low);
+}
+
+/* Stat card */
+.ceet-stat-card {
+    border: 1px solid var(--ceet-border);
+    border-radius: var(--ceet-radius-md);
+    background: var(--ceet-surface);
+    padding: var(--ceet-space-lg);
+    display: flex;
+    flex-direction: column;
+    gap: var(--ceet-space-sm);
+}
+
+.ceet-stat-card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--ceet-space-sm);
+}
+
+.ceet-stat-card-label {
+    color: var(--ceet-text-subtle);
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.ceet-stat-card-icon {
+    color: var(--ceet-text-muted);
+    font-size: 20px;
+}
+
+.ceet-stat-card-value {
+    color: var(--ceet-text);
+    font-size: 32px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1;
+}
+
+.ceet-stat-card-meta {
+    color: var(--ceet-text-muted);
+    font-size: 12px;
+}
+
+/* Variantes stat card */
+.ceet-stat-card.is-danger {
+    border-color: var(--ceet-danger-border);
+    background: var(--ceet-danger-bg);
+}
+
+.ceet-stat-card.is-danger .ceet-stat-card-value {
+    color: var(--ceet-danger);
+}
+
+/* Page header card */
+.ceet-page-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--ceet-space-lg);
+    margin-bottom: var(--ceet-space-lg);
+    flex-wrap: wrap;
+}
+
+.ceet-page-header-info {
+    min-width: 0;
+}
+
+.ceet-page-header-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--ceet-space-sm);
+    flex-shrink: 0;
+    flex-wrap: wrap;
+}
+
+/* Grille de stats */
+.ceet-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: var(--ceet-space-md);
+    margin-bottom: var(--ceet-space-lg);
+}

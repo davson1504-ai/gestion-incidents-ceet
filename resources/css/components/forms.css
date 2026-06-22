@@ -1,0 +1,179 @@
+/* ============================================================
+   CEET — Formulaires (composants communs)
+   ============================================================ */
+
+/* Field wrapper */
+.ceet-field {
+    display: grid;
+    gap: 6px;
+}
+
+/* Label */
+.ceet-label {
+    color: var(--ceet-text-muted);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+/* Inputs */
+.ceet-input,
+.ceet-select,
+.ceet-textarea {
+    width: 100%;
+    border: 1px solid var(--ceet-border);
+    border-radius: var(--ceet-radius-sm);
+    background: var(--ceet-surface);
+    color: var(--ceet-text);
+    font-size: 14px;
+    line-height: 1.5;
+    outline: none;
+    transition: border-color var(--ceet-transition), background-color var(--ceet-transition);
+}
+
+.ceet-input,
+.ceet-select {
+    min-height: 40px;
+    padding: 8px 12px;
+}
+
+.ceet-textarea {
+    padding: 10px 12px;
+    resize: vertical;
+    min-height: 100px;
+}
+
+.ceet-input:focus,
+.ceet-select:focus,
+.ceet-textarea:focus {
+    border-color: var(--ceet-primary);
+    background: var(--ceet-surface);
+}
+
+.ceet-input::placeholder,
+.ceet-textarea::placeholder {
+    color: var(--ceet-outline);
+}
+
+.ceet-input.is-invalid,
+.ceet-select.is-invalid,
+.ceet-textarea.is-invalid {
+    border-color: var(--ceet-danger);
+}
+
+.ceet-input:disabled,
+.ceet-select:disabled,
+.ceet-textarea:disabled {
+    background: var(--ceet-surface-low);
+    color: var(--ceet-text-muted);
+    cursor: not-allowed;
+}
+
+/* Input avec icône */
+.ceet-input-wrap {
+    position: relative;
+}
+
+.ceet-input-wrap .ceet-input {
+    padding-left: 38px;
+}
+
+.ceet-input-wrap .material-symbols-outlined {
+    position: absolute;
+    top: 50%;
+    left: 11px;
+    transform: translateY(-50%);
+    color: var(--ceet-outline);
+    font-size: 18px;
+    pointer-events: none;
+}
+
+/* Message d'erreur */
+.ceet-field-error {
+    color: var(--ceet-danger);
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+/* Message d'aide */
+.ceet-field-hint {
+    color: var(--ceet-text-muted);
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+/* Grille de formulaire */
+.ceet-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--ceet-space-md) var(--ceet-space-lg);
+}
+
+.ceet-form-grid.is-3col {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.ceet-form-grid-full {
+    grid-column: 1 / -1;
+}
+
+/* Section de formulaire */
+.ceet-form-section {
+    padding-bottom: var(--ceet-space-lg);
+    border-bottom: 1px solid var(--ceet-border);
+    margin-bottom: var(--ceet-space-lg);
+}
+
+.ceet-form-section:last-child {
+    border-bottom: 0;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.ceet-form-section-title {
+    margin-bottom: var(--ceet-space-md);
+    color: var(--ceet-text);
+    font-size: 14px;
+    font-weight: 700;
+}
+
+/* Actions de formulaire */
+.ceet-form-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--ceet-space-sm);
+    padding-top: var(--ceet-space-lg);
+    border-top: 1px solid var(--ceet-border);
+    margin-top: var(--ceet-space-lg);
+    flex-wrap: wrap;
+}
+
+/* Checkbox et radio */
+.ceet-check {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.ceet-check input {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--ceet-primary);
+    cursor: pointer;
+}
+
+.ceet-check span {
+    color: var(--ceet-text);
+    font-size: 14px;
+}
+
+/* Responsive */
+@media (max-width: 767.98px) {
+    .ceet-form-grid,
+    .ceet-form-grid.is-3col {
+        grid-template-columns: 1fr;
+    }
+}

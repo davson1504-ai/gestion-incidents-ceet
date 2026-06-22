@@ -1,0 +1,204 @@
+/* ============================================================
+   CEET — Topbar (composant app-topbar)
+   Barre fixe en haut, identique pour tous les rôles
+   ============================================================ */
+
+.ceet-topbar {
+    position: fixed;
+    inset: 0 0 auto var(--ceet-sidebar-width);
+    z-index: 80;
+    height: var(--ceet-topbar-height);
+    display: flex;
+    align-items: center;
+    gap: var(--ceet-space-md);
+    padding: 0 var(--ceet-space-lg);
+    border-bottom: 1px solid var(--ceet-border);
+    background: var(--ceet-surface);
+    transition: left var(--ceet-transition);
+}
+
+/* Bouton hamburger (visible mobile) */
+.ceet-topbar-menu-btn {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+    border: 0;
+    border-radius: var(--ceet-radius-sm);
+    background: transparent;
+    color: var(--ceet-text-subtle);
+    cursor: pointer;
+    transition: background-color var(--ceet-transition), color var(--ceet-transition);
+}
+
+.ceet-topbar-menu-btn:hover {
+    background: var(--ceet-surface-low);
+    color: var(--ceet-text);
+}
+
+.ceet-topbar-menu-btn .material-symbols-outlined {
+    font-size: 22px;
+}
+
+/* Barre de recherche */
+.ceet-topbar-search {
+    position: relative;
+    flex: 1 1 auto;
+    max-width: 480px;
+}
+
+.ceet-topbar-search-icon {
+    position: absolute;
+    top: 50%;
+    left: 12px;
+    transform: translateY(-50%);
+    color: var(--ceet-outline);
+    font-size: 18px;
+    pointer-events: none;
+}
+
+.ceet-topbar-search input {
+    width: 100%;
+    height: 36px;
+    padding: 0 14px 0 38px;
+    border: 1px solid var(--ceet-border);
+    border-radius: var(--ceet-radius-sm);
+    background: var(--ceet-surface-low);
+    color: var(--ceet-text);
+    font-size: 13.5px;
+    line-height: 1;
+    outline: none;
+    transition: border-color var(--ceet-transition), background-color var(--ceet-transition);
+}
+
+.ceet-topbar-search input::placeholder {
+    color: var(--ceet-outline);
+}
+
+.ceet-topbar-search input:focus {
+    border-color: var(--ceet-primary);
+    background: var(--ceet-surface);
+}
+
+/* Zone d'actions (droite) */
+.ceet-topbar-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--ceet-space-sm);
+    margin-left: auto;
+    flex-shrink: 0;
+}
+
+/* Boutons icône */
+.ceet-topbar-icon-btn {
+    position: relative;
+    width: 34px;
+    height: 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    border-radius: var(--ceet-radius-sm);
+    background: transparent;
+    color: var(--ceet-text-subtle);
+    cursor: pointer;
+    text-decoration: none;
+    transition: background-color var(--ceet-transition), color var(--ceet-transition);
+}
+
+.ceet-topbar-icon-btn:hover {
+    background: var(--ceet-surface-low);
+    color: var(--ceet-text);
+}
+
+.ceet-topbar-icon-btn .material-symbols-outlined {
+    font-size: 20px;
+}
+
+/* Point de notification */
+.ceet-topbar-notification-dot {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    width: 8px;
+    height: 8px;
+    border-radius: var(--ceet-radius-full);
+    background: var(--ceet-danger);
+    border: 2px solid var(--ceet-surface);
+}
+
+/* Séparateur vertical */
+.ceet-topbar-divider {
+    width: 1px;
+    height: 28px;
+    background: var(--ceet-border);
+    margin: 0 4px;
+    flex-shrink: 0;
+}
+
+/* Bloc utilisateur */
+.ceet-topbar-user {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: default;
+}
+
+.ceet-topbar-user-name {
+    color: var(--ceet-text);
+    font-size: 13.5px;
+    font-weight: 600;
+    white-space: nowrap;
+    max-width: 160px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ceet-topbar-avatar {
+    width: 30px;
+    height: 30px;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    border-radius: var(--ceet-radius-full);
+    background: var(--ceet-text);
+    color: var(--ceet-surface);
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.03em;
+}
+
+/* ============================================================
+   Responsive — topbar mobile
+   ============================================================ */
+
+@media (max-width: 991.98px) {
+    .ceet-topbar {
+        left: 0;
+    }
+
+    .ceet-topbar-menu-btn {
+        display: inline-flex;
+    }
+
+    .ceet-topbar-search {
+        max-width: none;
+    }
+
+    .ceet-topbar-user-name {
+        display: none;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .ceet-topbar {
+        padding: 0 var(--ceet-space-md);
+        gap: var(--ceet-space-sm);
+    }
+
+    .ceet-topbar-search {
+        max-width: 180px;
+    }
+}

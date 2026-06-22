@@ -1,863 +1,518 @@
-.ceet-reports-admin-page {
-    min-height: 100vh;
-    margin: 0;
-    background: #f8f9fb;
-    color: #191c1e;
-    font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+/* ============================================================
+   CEET — reports.css
+   Page rapports & statistiques (contenu uniquement)
+   Le shell sidebar/topbar est dans app.css
+   ============================================================ */
+
+.reports-page {
+    display: grid;
+    gap: var(--ceet-space-md);
 }
 
-.ceet-reports-admin-page a {
-    color: inherit;
+.reports-page .page-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--ceet-space-lg);
+    flex-wrap: wrap;
+}
+
+.reports-page .page-title {
+    margin: 0;
+    color: var(--ceet-text);
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: 0;
+    line-height: 1.2;
+}
+
+.reports-page .page-subtitle {
+    margin: 6px 0 0;
+    color: var(--ceet-text-muted);
+    font-size: 14px;
+}
+
+.reports-page .action-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.reports-page .filters-card,
+.reports-page .content-card,
+.reports-page .form-card,
+.reports-page .stat-card {
+    border: 1px solid var(--ceet-border);
+    border-radius: var(--ceet-radius-md);
+    background: var(--ceet-surface);
+}
+
+.reports-page .filters-card,
+.reports-page .form-card,
+.reports-page .stat-card {
+    padding: var(--ceet-space-md);
+}
+
+.reports-page .btn {
+    min-height: 38px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 7px 14px;
+    border-radius: var(--ceet-radius-sm);
+    border: 1px solid transparent;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 700;
     text-decoration: none;
 }
 
-.ceet-reports-admin-page button,
-.ceet-reports-admin-page input,
-.ceet-reports-admin-page select {
-    font: inherit;
+.reports-page .btn-primary {
+    border-color: var(--ceet-primary);
+    background: var(--ceet-primary);
+    color: var(--ceet-primary-fg) !important;
 }
 
-.ceet-reports-admin-shell {
-    min-height: 100vh;
+.reports-page .btn-secondary,
+.reports-page .btn-outline {
+    border-color: var(--ceet-border);
+    background: var(--ceet-surface);
+    color: var(--ceet-text-muted) !important;
 }
 
-.ceet-reports-admin-sidebar {
-    position: fixed;
-    inset: 0 auto 0 0;
-    z-index: 50;
-    width: 320px;
-    display: flex;
-    flex-direction: column;
-    padding: 24px 16px;
-    border-right: 1px solid #c6c6cd;
-    background: #f3f4f6;
+.reports-page .btn:hover {
+    opacity: 0.86;
 }
 
-.ceet-reports-admin-brand {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 42px;
-    padding: 0 8px;
-}
-
-.ceet-reports-admin-brand-logo {
-    width: 56px;
-    height: 56px;
-    display: grid;
-    place-items: center;
-    flex: 0 0 auto;
-    overflow: hidden;
-    border: 1px solid #d9dadc;
-    border-radius: 12px;
-    background: #ffffff;
-}
-
-.ceet-reports-admin-brand-logo img {
-    width: 46px;
-    height: 46px;
-    display: block;
-    object-fit: contain;
-}
-
-.ceet-reports-admin-brand h1 {
-    margin: 0;
-    color: #191c1e;
-    font-size: 25px;
-    font-weight: 800;
-    letter-spacing: -0.02em;
-    line-height: 1.15;
-}
-
-.ceet-reports-admin-brand p {
-    margin: 4px 0 0;
-    color: #555f6d;
-    font-size: 14px;
-    line-height: 1.4;
-}
-
-.ceet-reports-admin-nav {
-    display: grid;
-    gap: 4px;
-}
-
-.ceet-reports-admin-nav-link {
-    min-height: 52px;
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    padding: 12px 18px;
-    border-radius: 4px;
-    color: #45464c;
-    font-size: 15px;
-    font-weight: 600;
-    transition: background-color 160ms ease, color 160ms ease;
-}
-
-.ceet-reports-admin-nav-link:hover,
-.ceet-reports-admin-nav-link.is-active {
-    background: #e1e2e4;
-    color: #000000;
-}
-
-.ceet-reports-admin-nav-link.is-active {
-    font-weight: 800;
-}
-
-.ceet-reports-admin-nav-link .material-symbols-outlined {
-    font-size: 23px;
-}
-
-.ceet-reports-admin-sidebar-user {
-    display: grid;
-    gap: 14px;
-    margin-top: auto;
-    padding: 20px 8px 0;
-    border-top: 1px solid #c6c6cd;
-}
-
-.ceet-reports-admin-sidebar-user-main {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.ceet-reports-admin-sidebar-user strong {
-    display: block;
-    color: #191c1e;
-    font-size: 14px;
-    font-weight: 800;
-    line-height: 1.3;
-}
-
-.ceet-reports-admin-sidebar-user span {
-    display: block;
-    margin-top: 2px;
-    color: #555f6d;
-    font-size: 12px;
-    line-height: 1.4;
-    text-transform: uppercase;
-}
-
-.ceet-reports-admin-avatar {
-    width: 40px;
-    height: 40px;
-    display: grid;
-    place-items: center;
-    flex: 0 0 auto;
-    border-radius: 999px;
-    background: #191c1e;
-    color: #ffffff;
-    font-size: 12px;
-    font-weight: 800;
-}
-
-.ceet-reports-admin-avatar.is-small {
-    width: 32px;
-    height: 32px;
-    background: #e1e2e4;
-    color: #191c1e;
-}
-
-.ceet-reports-admin-logout-form {
-    margin: 0;
-}
-
-.ceet-reports-admin-logout-button {
-    width: 100%;
-    min-height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    padding: 9px 12px;
-    border: 1px solid #c6c6cd;
-    border-radius: 4px;
-    background: #ffffff;
-    color: #191c1e;
-    cursor: pointer;
+.reports-page .empty-state {
+    padding: var(--ceet-space-lg);
+    text-align: center;
+    color: var(--ceet-text-muted);
     font-size: 13px;
-    font-weight: 800;
-    transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease;
 }
 
-.ceet-reports-admin-logout-button:hover {
-    border-color: #ba1a1a;
-    background: #ffdad6;
-    color: #93000a;
-}
-
-.ceet-reports-admin-logout-button .material-symbols-outlined {
-    font-size: 20px;
-}
-
-.ceet-reports-admin-topbar {
-    position: fixed;
-    top: 0;
-    right: 0;
-    z-index: 40;
-    width: calc(100% - 320px);
-    height: 64px;
-    display: flex;
-    align-items: center;
-    gap: 24px;
-    padding: 0 24px;
-    border-bottom: 1px solid #c6c6cd;
-    background: #f8f9fb;
-}
-
-.ceet-reports-admin-search {
-    position: relative;
-    width: min(100%, 520px);
-}
-
-.ceet-reports-admin-search .material-symbols-outlined {
-    position: absolute;
-    top: 50%;
-    left: 14px;
-    color: #76777d;
-    transform: translateY(-50%);
-}
-
-.ceet-reports-admin-search input {
-    width: 100%;
-    min-height: 40px;
-    padding: 8px 14px 8px 44px;
-    border: 1px solid #c6c6cd;
-    border-radius: 4px;
-    background: #ffffff;
-    color: #191c1e;
-    font-size: 14px;
-    outline: none;
-}
-
-.ceet-reports-admin-search input:focus {
-    border-color: #000000;
-}
-
-.ceet-reports-admin-top-actions {
-    display: flex;
-    align-items: center;
-    gap: 18px;
-    margin-left: auto;
-}
-
-.ceet-reports-admin-icon-btn {
-    position: relative;
-    display: inline-flex;
-    color: #45464c;
-}
-
-.ceet-reports-admin-icon-btn:hover {
-    color: #000000;
-}
-
-.ceet-reports-admin-notification-dot {
-    position: absolute;
-    top: 1px;
-    right: -1px;
-    width: 8px;
-    height: 8px;
-    border: 1px solid #f8f9fb;
-    border-radius: 999px;
-    background: #ba1a1a;
-}
-
-.ceet-reports-admin-top-divider {
-    width: 1px;
-    height: 32px;
-    background: #c6c6cd;
-}
-
-.ceet-reports-admin-top-user {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    color: #191c1e;
-    font-size: 14px;
-    font-weight: 800;
-}
-
-.ceet-reports-admin-main {
-    min-height: 100vh;
-    margin-left: 320px;
-    padding: 88px 24px 32px;
-}
-
+/* ── En-tête page ─────────────────────────────────────────── */
 .ceet-reports-admin-page-header {
     display: flex;
     align-items: flex-end;
     justify-content: space-between;
-    gap: 18px;
-    margin-bottom: 24px;
+    gap: var(--ceet-space-lg);
+    margin-bottom: var(--ceet-space-lg);
+    flex-wrap: wrap;
 }
-
 .ceet-reports-admin-page-header h2 {
     margin: 0;
-    color: #000000;
-    font-size: 32px;
+    color: var(--ceet-text);
+    font-size: 28px;
     font-weight: 800;
     letter-spacing: -0.02em;
     line-height: 1.2;
 }
-
 .ceet-reports-admin-page-header p {
     margin: 6px 0 0;
-    color: #555f6d;
+    color: var(--ceet-text-muted);
     font-size: 14px;
 }
 
-.ceet-reports-admin-header-actions,
-.ceet-reports-admin-filter-actions,
-.ceet-reports-admin-export-box > div {
+/* Actions header */
+.ceet-reports-admin-header-actions {
     display: flex;
     align-items: center;
     gap: 10px;
     flex-wrap: wrap;
 }
 
+/* Boutons primaire / secondaire */
 .ceet-reports-admin-primary-btn,
 .ceet-reports-admin-secondary-btn {
-    min-height: 40px;
+    min-height: 38px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
-    padding: 8px 14px;
-    border-radius: 4px;
+    padding: 7px 14px;
+    border-radius: var(--ceet-radius-sm);
     cursor: pointer;
     font-size: 13px;
-    font-weight: 800;
-    transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease, opacity 160ms ease;
-}
-
-.ceet-reports-admin-primary-btn {
-    border: 1px solid #000000;
-    background: #000000;
-    color: #ffffff !important;
-}
-
-.ceet-reports-admin-primary-btn:hover {
-    opacity: 0.86;
-}
-
-.ceet-reports-admin-secondary-btn {
-    border: 1px solid #c6c6cd;
-    background: #ffffff;
-    color: #45464c !important;
-}
-
-.ceet-reports-admin-secondary-btn:hover {
-    border-color: #000000;
-    color: #000000 !important;
-}
-
-.ceet-reports-admin-primary-btn .material-symbols-outlined,
-.ceet-reports-admin-secondary-btn .material-symbols-outlined {
-    font-size: 19px;
-}
-
-.ceet-reports-admin-alert {
-    margin-bottom: 16px;
-    padding: 12px 14px;
-    border-radius: 4px;
-    font-size: 14px;
     font-weight: 700;
+    text-decoration: none;
+    transition: opacity var(--ceet-transition), border-color var(--ceet-transition), background-color var(--ceet-transition);
 }
-
-.ceet-reports-admin-alert.is-success {
-    border: 1px solid #badbcc;
-    background: #d1e7dd;
-    color: #0f5132;
+.ceet-reports-admin-primary-btn {
+    border: 1px solid var(--ceet-primary);
+    background: var(--ceet-primary);
+    color: var(--ceet-primary-fg) !important;
 }
-
-.ceet-reports-admin-alert.is-danger {
-    border: 1px solid #f5c2c7;
-    background: #f8d7da;
-    color: #842029;
+.ceet-reports-admin-primary-btn:hover { opacity: 0.86; }
+.ceet-reports-admin-secondary-btn {
+    border: 1px solid var(--ceet-border);
+    background: var(--ceet-surface);
+    color: var(--ceet-text-muted) !important;
 }
-
-.ceet-reports-admin-filter-panel,
-.ceet-reports-admin-panel,
-.ceet-reports-admin-kpi-card,
-.ceet-reports-admin-export-box {
-    border: 1px solid #c6c6cd;
-    border-radius: 4px;
-    background: #ffffff;
+.ceet-reports-admin-secondary-btn:hover {
+    border-color: var(--ceet-text);
+    color: var(--ceet-text) !important;
 }
+.ceet-reports-admin-primary-btn .material-symbols-outlined,
+.ceet-reports-admin-secondary-btn .material-symbols-outlined { font-size: 18px; }
 
+/* ── Panneau filtres ──────────────────────────────────────── */
 .ceet-reports-admin-filter-panel {
-    margin-bottom: 16px;
-    padding: 16px;
+    margin-bottom: var(--ceet-space-md);
+    padding: var(--ceet-space-md);
+    border: 1px solid var(--ceet-border);
+    border-radius: var(--ceet-radius-md);
+    background: var(--ceet-surface);
 }
-
 .ceet-reports-admin-filter-form {
     display: grid;
     grid-template-columns: minmax(180px, 0.7fr) minmax(190px, 1fr) minmax(190px, 1fr) auto;
     align-items: end;
     gap: 14px;
 }
-
-.ceet-reports-admin-field {
-    display: grid;
-    gap: 6px;
-}
-
-.ceet-reports-admin-field label,
-.ceet-reports-admin-export-box label {
-    color: #555f6d;
+.ceet-reports-admin-field { display: grid; gap: 6px; }
+.ceet-reports-admin-field label {
+    color: var(--ceet-text-muted);
     font-size: 11px;
-    font-weight: 800;
+    font-weight: 700;
     letter-spacing: 0.05em;
-    line-height: 1.2;
     text-transform: uppercase;
 }
-
-.ceet-reports-admin-field select,
-.ceet-reports-admin-export-box input {
+.ceet-reports-admin-field select {
     width: 100%;
     min-height: 38px;
     padding: 7px 10px;
-    border: 1px solid #c6c6cd;
-    border-radius: 4px;
-    background: #f8f9fb;
-    color: #191c1e;
+    border: 1px solid var(--ceet-border);
+    border-radius: var(--ceet-radius-sm);
+    background: var(--ceet-surface-low);
+    color: var(--ceet-text);
     font-size: 14px;
     outline: none;
+    transition: border-color var(--ceet-transition);
 }
+.ceet-reports-admin-field select:focus { border-color: var(--ceet-primary); background: var(--ceet-surface); }
+.ceet-reports-admin-filter-actions { display: flex; align-items: center; gap: 8px; }
 
-.ceet-reports-admin-field select:focus,
-.ceet-reports-admin-export-box input:focus {
-    border-color: #000000;
-    background: #ffffff;
-}
-
+/* ── Grille KPI ───────────────────────────────────────────── */
 .ceet-reports-admin-kpi-grid {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 16px;
-    margin-bottom: 16px;
+    gap: var(--ceet-space-md);
+    margin-bottom: var(--ceet-space-md);
 }
-
 .ceet-reports-admin-kpi-card {
-    min-height: 146px;
-    padding: 20px;
+    padding: var(--ceet-space-lg);
+    border: 1px solid var(--ceet-border);
+    border-radius: var(--ceet-radius-md);
+    background: var(--ceet-surface);
 }
-
 .ceet-reports-admin-kpi-head {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
-    gap: 12px;
-    color: #555f6d;
+    gap: 10px;
+    color: var(--ceet-text-muted);
     font-size: 11px;
-    font-weight: 800;
+    font-weight: 700;
     letter-spacing: 0.05em;
-    line-height: 1.2;
     text-transform: uppercase;
 }
-
-.ceet-reports-admin-kpi-head .material-symbols-outlined {
-    color: #76777d;
-    font-size: 24px;
-}
-
+.ceet-reports-admin-kpi-head .material-symbols-outlined { color: var(--ceet-outline); font-size: 22px; }
 .ceet-reports-admin-kpi-value {
-    margin-top: 18px;
-    color: #000000;
-    font-size: 32px;
+    margin-top: 16px;
+    color: var(--ceet-text);
+    font-size: 30px;
     font-weight: 800;
-    letter-spacing: -0.03em;
+    letter-spacing: -0.02em;
     line-height: 1;
 }
-
 .ceet-reports-admin-kpi-card p {
     display: flex;
     align-items: center;
-    gap: 8px;
-    margin: 10px 0 0;
-    color: #555f6d;
+    gap: 6px;
+    margin: 8px 0 0;
+    color: var(--ceet-text-muted);
     font-size: 12px;
 }
+.ceet-reports-admin-delta { font-weight: 800; }
+.ceet-reports-admin-delta.is-up   { color: var(--ceet-danger); }
+.ceet-reports-admin-delta.is-down { color: var(--ceet-success); }
 
-.ceet-reports-admin-delta {
-    font-weight: 800;
+/* ── Grilles de panneaux ──────────────────────────────────── */
+.ceet-reports-admin-chart-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--ceet-space-md);
+    margin-bottom: var(--ceet-space-md);
 }
-
-.ceet-reports-admin-delta.is-up {
-    color: #ba1a1a;
-}
-
-.ceet-reports-admin-delta.is-down {
-    color: #45464c;
-}
-
-.ceet-reports-admin-chart-grid,
 .ceet-reports-admin-lower-grid {
     display: grid;
-    gap: 16px;
-    margin-bottom: 16px;
-}
-
-.ceet-reports-admin-chart-grid {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-}
-
-.ceet-reports-admin-lower-grid {
     grid-template-columns: minmax(320px, 0.8fr) minmax(0, 1.2fr);
+    gap: var(--ceet-space-md);
+    margin-bottom: var(--ceet-space-md);
 }
 
+/* ── Panneau générique ────────────────────────────────────── */
 .ceet-reports-admin-panel {
+    border: 1px solid var(--ceet-border);
+    border-radius: var(--ceet-radius-md);
+    background: var(--ceet-surface);
     overflow: hidden;
 }
-
 .ceet-reports-admin-panel > header {
-    min-height: 58px;
+    min-height: 54px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 14px;
-    padding: 16px 20px;
-    border-bottom: 1px solid #c6c6cd;
-    background: #f3f4f6;
+    padding: 14px var(--ceet-space-lg);
+    border-bottom: 1px solid var(--ceet-border);
+    background: var(--ceet-surface-low);
 }
-
 .ceet-reports-admin-panel > header h3 {
     margin: 0;
-    color: #191c1e;
-    font-size: 18px;
-    font-weight: 800;
-    letter-spacing: -0.01em;
+    color: var(--ceet-text);
+    font-size: 16px;
+    font-weight: 700;
 }
-
 .ceet-reports-admin-panel > header a,
 .ceet-reports-admin-panel > header .material-symbols-outlined {
-    color: #555f6d;
+    color: var(--ceet-text-muted);
     font-size: 13px;
-    font-weight: 800;
 }
 
+/* ── Chart barres ─────────────────────────────────────────── */
 .ceet-reports-admin-bar-chart {
-    height: 338px;
+    height: 300px;
     display: flex;
-    align-items: end;
+    align-items: flex-end;
     justify-content: space-between;
-    gap: 18px;
-    padding: 32px 24px 24px;
+    gap: 14px;
+    padding: 28px var(--ceet-space-lg) var(--ceet-space-md);
 }
-
 .ceet-reports-admin-chart-column {
-    min-width: 0;
     flex: 1;
+    min-width: 0;
     display: grid;
     align-items: end;
     justify-items: center;
     gap: 8px;
     height: 100%;
 }
-
 .ceet-reports-admin-chart-bar-wrap {
     width: 100%;
-    height: 230px;
+    height: 210px;
     display: flex;
-    align-items: end;
+    align-items: flex-end;
 }
-
 .ceet-reports-admin-chart-bar-wrap span {
     width: 100%;
     display: block;
     border-radius: 2px 2px 0 0;
-    background: #e1e2e4;
-    transition: transform 160ms ease, background-color 160ms ease;
+    background: var(--ceet-surface-mid);
+    transition: background-color var(--ceet-transition), transform var(--ceet-transition);
 }
-
-.ceet-reports-admin-chart-column:nth-child(3) .ceet-reports-admin-chart-bar-wrap span,
-.ceet-reports-admin-chart-bar-wrap span:hover {
-    background: #000000;
-    transform: scaleY(1.03);
+.ceet-reports-admin-chart-column:hover .ceet-reports-admin-chart-bar-wrap span,
+.ceet-reports-admin-chart-column:nth-child(3) .ceet-reports-admin-chart-bar-wrap span {
+    background: var(--ceet-primary);
+    transform: scaleY(1.02);
 }
-
-.ceet-reports-admin-chart-column strong {
-    color: #191c1e;
-    font-size: 12px;
-    font-weight: 800;
-}
-
+.ceet-reports-admin-chart-column strong { color: var(--ceet-text); font-size: 12px; font-weight: 700; }
 .ceet-reports-admin-chart-column small {
-    max-width: 100%;
-    color: #555f6d;
+    color: var(--ceet-text-muted);
     font-size: 10px;
-    line-height: 1.25;
     text-align: center;
+    line-height: 1.3;
 }
 
+/* ── Donut chart ──────────────────────────────────────────── */
 .ceet-reports-admin-donut-layout {
-    min-height: 338px;
+    min-height: 300px;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 42px;
-    padding: 28px;
+    gap: 36px;
+    padding: var(--ceet-space-xl);
 }
-
 .ceet-reports-admin-donut {
-    width: 190px;
-    height: 190px;
+    width: 180px;
+    height: 180px;
     position: relative;
     display: grid;
     place-items: center;
-    flex: 0 0 auto;
-    border-radius: 999px;
+    border-radius: var(--ceet-radius-full);
+    flex-shrink: 0;
 }
-
 .ceet-reports-admin-donut::after {
     content: "";
     position: absolute;
-    inset: 34px;
+    inset: 32px;
     border-radius: inherit;
-    background: #ffffff;
+    background: var(--ceet-surface);
 }
+.ceet-reports-admin-donut > div { position: relative; z-index: 1; text-align: center; }
+.ceet-reports-admin-donut strong { display: block; color: var(--ceet-text); font-size: 22px; font-weight: 800; line-height: 1; }
+.ceet-reports-admin-donut span  { color: var(--ceet-text-muted); font-size: 10px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
+.ceet-reports-admin-legend { display: grid; gap: 10px; }
+.ceet-reports-admin-legend div { display: flex; align-items: center; gap: 9px; color: var(--ceet-text-muted); font-size: 13px; }
+.ceet-reports-admin-legend i {
+    width: 11px; height: 11px; flex-shrink: 0; border-radius: 2px; background: var(--ceet-text);
+}
+.ceet-reports-admin-legend div:nth-child(2) i { background: var(--ceet-text-muted); }
+.ceet-reports-admin-legend div:nth-child(3) i { background: var(--ceet-border); }
+.ceet-reports-admin-legend div:nth-child(4) i { background: var(--ceet-surface-mid); }
 
-.ceet-reports-admin-donut > div {
-    position: relative;
-    z-index: 1;
-    display: grid;
-    gap: 4px;
+/* ── Liste causes ─────────────────────────────────────────── */
+.ceet-reports-admin-cause-list { display: grid; gap: 14px; padding: var(--ceet-space-lg); }
+.ceet-reports-admin-cause-row > div:first-child {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 6px;
+    color: var(--ceet-text);
+    font-size: 13px;
+    font-weight: 600;
+}
+.ceet-reports-admin-cause-row strong { color: var(--ceet-text-muted); font-weight: 600; }
+.ceet-reports-admin-cause-track { height: 8px; border-radius: var(--ceet-radius-full); background: var(--ceet-surface-mid); overflow: hidden; }
+.ceet-reports-admin-cause-track span { display: block; height: 100%; border-radius: inherit; background: var(--ceet-primary); }
+.ceet-reports-admin-mini-track { width: 88px; height: 7px; border-radius: var(--ceet-radius-full); background: var(--ceet-surface-mid); overflow: hidden; }
+.ceet-reports-admin-mini-track span { display: block; height: 100%; border-radius: inherit; background: var(--ceet-primary); }
+
+/* ── Tableau ──────────────────────────────────────────────── */
+.ceet-reports-admin-table-wrap { overflow-x: auto; }
+.ceet-reports-admin-table { width: 100%; border-collapse: collapse; text-align: left; }
+.ceet-reports-admin-table th {
+    padding: 11px var(--ceet-space-lg);
+    border-bottom: 1px solid var(--ceet-border);
+    background: var(--ceet-surface-low);
+    color: var(--ceet-text-muted);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+.ceet-reports-admin-table td {
+    padding: 13px var(--ceet-space-lg);
+    border-bottom: 1px solid var(--ceet-border);
+    color: var(--ceet-text);
+    font-size: 13.5px;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+.ceet-reports-admin-table tbody tr:last-child td { border-bottom: 0; }
+.ceet-reports-admin-table tbody tr:hover td { background: var(--ceet-surface-low); }
+.ceet-reports-admin-table .is-right { text-align: right; }
+.ceet-reports-admin-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 22px;
+    padding: 3px 9px;
+    border-radius: var(--ceet-radius-sm);
+    background: var(--ceet-surface-mid);
+    color: var(--ceet-text-muted);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+}
+.ceet-reports-admin-empty {
+    padding: var(--ceet-space-lg);
     text-align: center;
+    color: var(--ceet-text-muted);
+    font-size: 13px;
 }
 
-.ceet-reports-admin-donut strong {
-    color: #191c1e;
-    font-size: 24px;
-    font-weight: 800;
-    line-height: 1;
+/* ── Exports ──────────────────────────────────────────────── */
+.ceet-reports-admin-export-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--ceet-space-md);
+    margin-top: var(--ceet-space-md);
 }
-
-.ceet-reports-admin-donut span {
-    color: #555f6d;
-    font-size: 10px;
-    font-weight: 800;
+.ceet-reports-admin-export-box {
+    display: grid;
+    gap: 12px;
+    padding: var(--ceet-space-lg);
+    border: 1px solid var(--ceet-border);
+    border-radius: var(--ceet-radius-md);
+    background: var(--ceet-surface);
+}
+.ceet-reports-admin-export-box h3 {
+    margin: 0;
+    color: var(--ceet-text);
+    font-size: 16px;
+    font-weight: 700;
+}
+.ceet-reports-admin-export-box label {
+    color: var(--ceet-text-muted);
+    font-size: 11px;
+    font-weight: 700;
     letter-spacing: 0.05em;
     text-transform: uppercase;
 }
+.ceet-reports-admin-export-box input {
+    width: 100%;
+    min-height: 38px;
+    padding: 7px 10px;
+    border: 1px solid var(--ceet-border);
+    border-radius: var(--ceet-radius-sm);
+    background: var(--ceet-surface-low);
+    color: var(--ceet-text);
+    font: inherit;
+    font-size: 14px;
+    outline: none;
+}
+.ceet-reports-admin-export-box input:focus { border-color: var(--ceet-primary); }
+.ceet-reports-admin-export-box > div { display: flex; gap: 8px; }
 
+/* ── Responsive ───────────────────────────────────────────── */
+@media (max-width: 1199.98px) {
+    .ceet-reports-admin-filter-form,
+    .ceet-reports-admin-chart-grid,
+    .ceet-reports-admin-lower-grid { grid-template-columns: 1fr; }
+    .ceet-reports-admin-kpi-grid   { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 767.98px) {
+    .ceet-reports-admin-kpi-grid,
+    .ceet-reports-admin-export-grid { grid-template-columns: 1fr; }
+    .ceet-reports-admin-page-header { flex-direction: column; align-items: flex-start; }
+    .ceet-reports-admin-donut-layout { flex-direction: column; gap: var(--ceet-space-md); }
+}
+
+/* === REPORTS LEGEND COLOR FIX START === */
 .ceet-reports-admin-legend {
     display: grid;
-    gap: 12px;
+    gap: 10px;
 }
 
 .ceet-reports-admin-legend div {
     display: flex;
     align-items: center;
     gap: 9px;
-    color: #555f6d;
+    color: var(--ceet-text-muted);
     font-size: 13px;
 }
 
 .ceet-reports-admin-legend i {
-    width: 12px;
-    height: 12px;
-    flex: 0 0 auto;
+    display: inline-block;
+    width: 11px;
+    height: 11px;
+    min-width: 11px;
+    flex-shrink: 0;
     border-radius: 2px;
-    background: #111827;
+    background: var(--legend-color, var(--ceet-text));
+    border: 1px solid rgba(15, 23, 42, 0.08);
 }
 
-.ceet-reports-admin-legend div:nth-child(2) i {
-    background: #4b5563;
-}
-
-.ceet-reports-admin-legend div:nth-child(3) i {
-    background: #9ca3af;
-}
-
+.ceet-reports-admin-legend div:nth-child(2) i,
+.ceet-reports-admin-legend div:nth-child(3) i,
 .ceet-reports-admin-legend div:nth-child(4) i {
-    background: #d1d5db;
+    background: var(--legend-color, var(--ceet-text));
 }
-
-.ceet-reports-admin-cause-list {
-    display: grid;
-    gap: 16px;
-    padding: 20px;
-}
-
-.ceet-reports-admin-cause-row > div:first-child {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    margin-bottom: 8px;
-    color: #191c1e;
-    font-size: 13px;
-    font-weight: 800;
-}
-
-.ceet-reports-admin-cause-row strong {
-    color: #555f6d;
-}
-
-.ceet-reports-admin-cause-track,
-.ceet-reports-admin-mini-track {
-    overflow: hidden;
-    border-radius: 999px;
-    background: #e1e2e4;
-}
-
-.ceet-reports-admin-cause-track {
-    height: 9px;
-}
-
-.ceet-reports-admin-mini-track {
-    width: 96px;
-    height: 8px;
-}
-
-.ceet-reports-admin-cause-track span,
-.ceet-reports-admin-mini-track span {
-    display: block;
-    height: 100%;
-    border-radius: inherit;
-    background: #000000;
-}
-
-.ceet-reports-admin-table-wrap {
-    overflow-x: auto;
-}
-
-.ceet-reports-admin-table {
-    width: 100%;
-    border-collapse: collapse;
-    text-align: left;
-}
-
-.ceet-reports-admin-table th {
-    padding: 12px 20px;
-    border-bottom: 1px solid #c6c6cd;
-    background: #f3f4f6;
-    color: #555f6d;
-    font-size: 11px;
-    font-weight: 800;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    white-space: nowrap;
-}
-
-.ceet-reports-admin-table td {
-    padding: 15px 20px;
-    border-bottom: 1px solid #edeef0;
-    color: #191c1e;
-    font-size: 14px;
-    vertical-align: middle;
-    white-space: nowrap;
-}
-
-.ceet-reports-admin-table tbody tr:hover {
-    background: #f3f4f6;
-}
-
-.ceet-reports-admin-table .is-right {
-    text-align: right;
-}
-
-.ceet-reports-admin-badge {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 26px;
-    padding: 4px 9px;
-    border-radius: 4px;
-    background: #e1e2e4;
-    color: #191c1e;
-    font-size: 11px;
-    font-weight: 800;
-    letter-spacing: 0.04em;
-}
-
-.ceet-reports-admin-empty {
-    padding: 20px;
-    border: 1px dashed #c6c6cd;
-    border-radius: 4px;
-    background: #f3f4f6;
-    color: #555f6d;
-    font-size: 13px;
-    text-align: center;
-}
-
-.ceet-reports-admin-export-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 16px;
-    margin-top: 16px;
-}
-
-.ceet-reports-admin-export-box {
-    display: grid;
-    gap: 12px;
-    padding: 18px;
-}
-
-.ceet-reports-admin-export-box h3 {
-    margin: 0;
-    color: #191c1e;
-    font-size: 17px;
-    font-weight: 800;
-}
-
-@media (max-width: 1199.98px) {
-    .ceet-reports-admin-filter-form,
-    .ceet-reports-admin-chart-grid,
-    .ceet-reports-admin-lower-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .ceet-reports-admin-filter-actions {
-        justify-content: flex-start;
-    }
-}
-
-@media (max-width: 991.98px) {
-    .ceet-reports-admin-sidebar {
-        transform: translateX(-100%);
-    }
-
-    .ceet-reports-admin-topbar,
-    .ceet-reports-admin-main {
-        width: 100%;
-        margin-left: 0;
-    }
-
-    .ceet-reports-admin-page-header {
-        align-items: flex-start;
-        flex-direction: column;
-    }
-
-    .ceet-reports-admin-kpi-grid,
-    .ceet-reports-admin-export-grid {
-        grid-template-columns: 1fr;
-    }
-}
-
-@media (max-width: 575.98px) {
-    .ceet-reports-admin-topbar {
-        gap: 12px;
-        padding: 0 16px;
-    }
-
-    .ceet-reports-admin-search {
-        display: none;
-    }
-
-    .ceet-reports-admin-top-user span {
-        display: none;
-    }
-
-    .ceet-reports-admin-main {
-        padding: 88px 16px 24px;
-    }
-
-    .ceet-reports-admin-donut-layout,
-    .ceet-reports-admin-header-actions {
-        align-items: flex-start;
-        flex-direction: column;
-    }
-}
-
+/* === REPORTS LEGEND COLOR FIX END === */

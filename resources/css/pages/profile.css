@@ -1,0 +1,288 @@
+﻿/* ============================================================
+   CEET — profile.css
+   Page profil utilisateur (informations + sécurité)
+   ============================================================ */
+
+/* ── En-tête page ─────────────────────────────────────────── */
+.ceet-profile-heading {
+    margin-bottom: var(--ceet-space-lg);
+}
+.ceet-profile-heading h2 {
+    margin: 0 0 6px;
+    color: var(--ceet-text);
+    font-size: 26px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+}
+.ceet-profile-heading p {
+    margin: 0;
+    color: var(--ceet-text-muted);
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+/* ── Grille 2 colonnes ────────────────────────────────────── */
+.ceet-profile-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 320px;
+    gap: var(--ceet-space-md);
+    align-items: start;
+}
+
+/* ── Carte générique ──────────────────────────────────────── */
+.ceet-profile-card {
+    border: 1px solid var(--ceet-border);
+    border-radius: var(--ceet-radius-md);
+    background: var(--ceet-surface);
+    overflow: hidden;
+}
+
+.ceet-profile-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--ceet-space-md);
+    min-height: 52px;
+    padding: 13px var(--ceet-space-lg);
+    border-bottom: 1px solid var(--ceet-border);
+    background: var(--ceet-surface-low);
+}
+.ceet-profile-card-header h3 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+    color: var(--ceet-text);
+    font-size: 15px;
+    font-weight: 700;
+}
+.ceet-profile-card-header h3 .material-symbols-outlined { font-size: 19px; color: var(--ceet-text-muted); }
+.ceet-profile-card-header > span {
+    color: var(--ceet-text-muted);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+/* ── Formulaire identité ──────────────────────────────────── */
+.ceet-profile-form {
+    display: grid;
+    grid-template-columns: 130px minmax(0, 1fr);
+    gap: var(--ceet-space-lg);
+    padding: var(--ceet-space-lg);
+    align-items: start;
+}
+
+/* Avatar */
+.ceet-profile-avatar-block {
+    display: grid;
+    gap: 12px;
+    align-content: start;
+    justify-items: center;
+}
+.ceet-profile-avatar {
+    width: 88px;
+    height: 88px;
+    display: grid;
+    place-items: center;
+    border: 2px solid var(--ceet-border);
+    border-radius: var(--ceet-radius-md);
+    background: var(--ceet-surface-mid);
+    color: var(--ceet-text);
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+}
+.ceet-profile-avatar-edit {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    border: 0;
+    background: transparent;
+    color: var(--ceet-text-muted);
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    transition: color var(--ceet-transition);
+}
+.ceet-profile-avatar-edit:hover { color: var(--ceet-text); }
+.ceet-profile-avatar-edit .material-symbols-outlined { font-size: 16px; }
+
+/* Champs */
+.ceet-profile-fields {
+    display: grid;
+    gap: var(--ceet-space-lg);
+}
+.ceet-profile-field-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--ceet-space-md);
+}
+.ceet-profile-fields label,
+.ceet-profile-password-form label {
+    display: grid;
+    gap: 8px;
+}
+.ceet-profile-fields label > span,
+.ceet-profile-password-form label > span {
+    color: var(--ceet-text-muted);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+.ceet-profile-fields input,
+.ceet-profile-password-form input {
+    width: 100%;
+    min-height: 42px;
+    padding: 9px 12px;
+    border: 1px solid var(--ceet-border);
+    border-radius: var(--ceet-radius-sm);
+    background: var(--ceet-surface-low);
+    color: var(--ceet-text);
+    font: inherit;
+    font-size: 14px;
+    outline: none;
+    transition: border-color var(--ceet-transition), background-color var(--ceet-transition);
+}
+.ceet-profile-fields input:focus,
+.ceet-profile-password-form input:focus {
+    border-color: var(--ceet-primary);
+    background: var(--ceet-surface);
+}
+.ceet-profile-fields small,
+.ceet-profile-password-form small,
+.ceet-profile-error {
+    color: var(--ceet-danger);
+    font-size: 12px;
+}
+
+/* Champ verrouillé (rôle) */
+.ceet-profile-locked-field {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    min-height: 42px;
+    padding: 9px 12px;
+    border: 1px solid var(--ceet-border);
+    border-radius: var(--ceet-radius-sm);
+    background: var(--ceet-surface-mid);
+    color: var(--ceet-text-muted);
+    font-size: 14px;
+}
+.ceet-profile-locked-field .material-symbols-outlined { font-size: 17px; color: var(--ceet-outline); }
+
+/* Bouton principal */
+.ceet-profile-primary-btn {
+    min-height: 42px;
+    padding: 9px 24px;
+    border: 1px solid var(--ceet-primary);
+    border-radius: var(--ceet-radius-sm);
+    background: var(--ceet-primary);
+    color: var(--ceet-primary-fg);
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 700;
+    transition: opacity var(--ceet-transition);
+}
+.ceet-profile-primary-btn:hover { opacity: 0.86; }
+
+/* Actions */
+.ceet-profile-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 4px;
+}
+
+/* ── Panneau latéral ──────────────────────────────────────── */
+.ceet-profile-side {
+    display: grid;
+    gap: var(--ceet-space-md);
+}
+
+/* Carte sécurité */
+.ceet-profile-security-card > p {
+    margin: var(--ceet-space-md) var(--ceet-space-lg);
+    color: var(--ceet-text-muted);
+    font-size: 13.5px;
+    line-height: 1.5;
+}
+.ceet-profile-password-form {
+    display: grid;
+    gap: var(--ceet-space-md);
+    padding: 0 var(--ceet-space-lg) var(--ceet-space-lg);
+}
+.ceet-profile-password-form hr {
+    width: 100%;
+    margin: 0;
+    border: 0;
+    border-top: 1px solid var(--ceet-border);
+}
+.ceet-profile-secondary-btn {
+    min-height: 40px;
+    padding: 8px 18px;
+    border: 1px solid var(--ceet-border);
+    border-radius: var(--ceet-radius-sm);
+    background: var(--ceet-surface);
+    color: var(--ceet-text);
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: border-color var(--ceet-transition), background-color var(--ceet-transition);
+}
+.ceet-profile-secondary-btn:hover {
+    border-color: var(--ceet-text);
+    background: var(--ceet-surface-low);
+}
+
+/* Carte activité */
+.ceet-profile-activity-card {
+    padding: var(--ceet-space-lg);
+}
+.ceet-profile-activity-card h3 {
+    margin: 0 0 var(--ceet-space-md);
+    color: var(--ceet-text);
+    font-size: 15px;
+    font-weight: 700;
+}
+.ceet-profile-activity-list {
+    display: grid;
+    gap: var(--ceet-space-md);
+}
+.ceet-profile-activity-list article {
+    display: grid;
+    grid-template-columns: 22px 1fr;
+    gap: 10px;
+    align-items: start;
+}
+.ceet-profile-activity-list .material-symbols-outlined {
+    font-size: 18px;
+    color: var(--ceet-text-muted);
+    margin-top: 1px;
+}
+.ceet-profile-activity-list strong {
+    display: block;
+    color: var(--ceet-text);
+    font-size: 13.5px;
+    font-weight: 700;
+    margin-bottom: 2px;
+}
+.ceet-profile-activity-list strong.is-danger { color: var(--ceet-danger); }
+.ceet-profile-activity-list p {
+    margin: 0;
+    color: var(--ceet-text-muted);
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+/* ── Responsive ───────────────────────────────────────────── */
+@media (max-width: 1199.98px) {
+    .ceet-profile-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 767.98px) {
+    .ceet-profile-form        { grid-template-columns: 1fr; }
+    .ceet-profile-field-row   { grid-template-columns: 1fr; }
+    .ceet-profile-avatar-block { justify-items: start; }
+}

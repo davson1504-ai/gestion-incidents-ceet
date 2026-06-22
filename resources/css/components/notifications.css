@@ -1,0 +1,215 @@
+/* Centre de notifications de la topbar CEET */
+
+.ceet-global-notification-root {
+    position: relative;
+    display: inline-flex;
+}
+
+.ceet-global-notification-badge {
+    position: absolute;
+    top: -3px;
+    right: -4px;
+    display: flex;
+    min-width: 18px;
+    height: 18px;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px;
+    border: 2px solid var(--ceet-surface);
+    border-radius: var(--ceet-radius-full);
+    background: var(--ceet-danger);
+    color: #fff;
+    font-size: 9px;
+    font-weight: 800;
+    line-height: 1;
+    pointer-events: none;
+}
+
+.ceet-global-notification-badge[hidden],
+.ceet-global-notification-panel[hidden] {
+    display: none !important;
+}
+
+.ceet-global-notification-panel {
+    position: absolute;
+    top: calc(100% + 12px);
+    right: 0;
+    z-index: 400;
+    display: flex;
+    width: min(380px, calc(100vw - 32px));
+    max-height: min(520px, calc(100vh - 92px));
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid var(--ceet-border-soft);
+    border-radius: 10px;
+    background: var(--ceet-surface);
+    box-shadow: 0 16px 40px rgba(17, 24, 39, 0.16);
+}
+
+.ceet-global-notification-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--ceet-border-soft);
+}
+
+.ceet-global-notification-header > div {
+    min-width: 0;
+}
+
+.ceet-global-notification-header strong {
+    display: block;
+    color: var(--ceet-text);
+    font-size: 14px;
+    font-weight: 750;
+}
+
+.ceet-global-notification-header span {
+    display: block;
+    margin-top: 2px;
+    color: var(--ceet-text-subtle);
+    font-size: 11px;
+}
+
+.ceet-global-notification-header button {
+    flex: 0 0 auto;
+    padding: 5px 7px;
+    border: 0;
+    border-radius: 4px;
+    background: transparent;
+    color: var(--ceet-text);
+    font: inherit;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.ceet-global-notification-header button:hover {
+    background: var(--ceet-surface-low);
+}
+
+.ceet-global-notification-header button:disabled {
+    cursor: default;
+    opacity: 0.45;
+}
+
+.ceet-global-notification-list {
+    flex: 1 1 auto;
+    min-height: 90px;
+    overflow-y: auto;
+}
+
+.ceet-global-notification-empty,
+.ceet-global-notification-error {
+    padding: 30px 20px;
+    color: var(--ceet-text-subtle);
+    font-size: 12px;
+    line-height: 1.5;
+    text-align: center;
+}
+
+.ceet-global-notification-error {
+    color: var(--ceet-danger);
+}
+
+.ceet-global-notification-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 13px 16px;
+    border-bottom: 1px solid var(--ceet-border-soft);
+    background: var(--ceet-surface);
+    color: var(--ceet-text);
+    text-decoration: none;
+    transition: background-color var(--ceet-transition);
+}
+
+.ceet-global-notification-item:last-child {
+    border-bottom: 0;
+}
+
+.ceet-global-notification-item:hover,
+.ceet-global-notification-item:focus-visible {
+    background: var(--ceet-surface-low);
+}
+
+.ceet-global-notification-item.is-unread {
+    background: color-mix(in srgb, var(--ceet-info-bg) 58%, #fff);
+}
+
+.ceet-global-notification-item.is-unread:hover,
+.ceet-global-notification-item.is-unread:focus-visible {
+    background: var(--ceet-info-bg);
+}
+
+.ceet-global-notification-status {
+    width: 8px;
+    height: 8px;
+    flex: 0 0 auto;
+    margin-top: 5px;
+    border-radius: 50%;
+    background: var(--ceet-info);
+}
+
+.ceet-global-notification-item:not(.is-unread) .ceet-global-notification-status {
+    background: var(--ceet-border);
+}
+
+.ceet-global-notification-content {
+    min-width: 0;
+    flex: 1 1 auto;
+}
+
+.ceet-global-notification-content strong {
+    display: block;
+    margin-bottom: 3px;
+    color: var(--ceet-text);
+    font-size: 12px;
+    font-weight: 750;
+    line-height: 1.35;
+}
+
+.ceet-global-notification-content small {
+    display: -webkit-box;
+    overflow: hidden;
+    margin-bottom: 5px;
+    color: var(--ceet-text-muted);
+    font-size: 11px;
+    line-height: 1.45;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+}
+
+.ceet-global-notification-content em {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    color: var(--ceet-outline);
+    font-size: 10px;
+    font-style: normal;
+}
+
+.ceet-global-notification-footer {
+    padding: 9px 16px;
+    border-top: 1px solid var(--ceet-border-soft);
+    background: var(--ceet-surface-low);
+    color: var(--ceet-text-subtle);
+    text-align: center;
+}
+
+.ceet-global-notification-footer small {
+    font-size: 10px;
+}
+
+@media (max-width: 575.98px) {
+    .ceet-global-notification-panel {
+        position: fixed;
+        top: calc(var(--ceet-topbar-height) + 8px);
+        right: 12px;
+        left: 12px;
+        width: auto;
+        max-height: calc(100vh - var(--ceet-topbar-height) - 20px);
+    }
+}

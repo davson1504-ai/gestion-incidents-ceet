@@ -1,0 +1,239 @@
+/* ============================================================
+   CEET — Sidebar (composant app-sidebar)
+   Sidebar fixe, identique pour tous les rôles
+   ============================================================ */
+
+.ceet-sidebar {
+    position: fixed;
+    inset: 0 auto 0 0;
+    z-index: 100;
+    width: var(--ceet-sidebar-width);
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid var(--ceet-border);
+    background: var(--ceet-surface);
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: thin;
+    scrollbar-color: var(--ceet-border) transparent;
+}
+
+/* Brand */
+.ceet-sidebar-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 20px 20px 16px;
+    border-bottom: 1px solid var(--ceet-border);
+    flex-shrink: 0;
+}
+
+.ceet-sidebar-logo {
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+    object-fit: contain;
+}
+
+.ceet-sidebar-brand-text {
+    min-width: 0;
+}
+
+.ceet-sidebar-brand-text strong {
+    display: block;
+    color: var(--ceet-text);
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ceet-sidebar-brand-text span {
+    display: block;
+    margin-top: 1px;
+    color: var(--ceet-text-muted);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+}
+
+/* Navigation */
+.ceet-sidebar-nav {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 12px 10px;
+    overflow-y: auto;
+}
+
+/* Section label dans la nav */
+.ceet-sidebar-nav-section {
+    padding: 10px 10px 4px;
+    color: var(--ceet-outline);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+/* Liens de navigation */
+.ceet-sidebar-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 40px;
+    padding: 8px 12px;
+    border-radius: var(--ceet-radius-sm);
+    color: var(--ceet-text-subtle);
+    font-size: 13.5px;
+    font-weight: 500;
+    transition: background-color var(--ceet-transition), color var(--ceet-transition);
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.ceet-sidebar-link:hover {
+    background: var(--ceet-surface-low);
+    color: var(--ceet-text);
+}
+
+.ceet-sidebar-link.is-active {
+    background: var(--ceet-surface-mid);
+    color: var(--ceet-text);
+    font-weight: 700;
+}
+
+.ceet-sidebar-link .material-symbols-outlined {
+    font-size: 19px;
+    flex-shrink: 0;
+    color: inherit;
+}
+
+.ceet-sidebar-link-label {
+    flex: 1 1 auto;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Point de fallback si pas d'icône */
+.ceet-sidebar-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: var(--ceet-radius-full);
+    background: currentColor;
+    flex-shrink: 0;
+    opacity: 0.4;
+}
+
+/* Séparateur */
+.ceet-sidebar-separator {
+    margin: 8px 10px;
+    border: 0;
+    border-top: 1px solid var(--ceet-border);
+}
+
+/* Bloc utilisateur en bas */
+.ceet-sidebar-footer {
+    flex-shrink: 0;
+    padding: 12px 16px 16px;
+    border-top: 1px solid var(--ceet-border);
+    background: var(--ceet-surface);
+}
+
+.ceet-sidebar-user-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.ceet-sidebar-avatar {
+    width: 34px;
+    height: 34px;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    border-radius: var(--ceet-radius-md);
+    background: var(--ceet-text);
+    color: var(--ceet-surface);
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+}
+
+.ceet-sidebar-user-details {
+    min-width: 0;
+}
+
+.ceet-sidebar-user-name {
+    display: block;
+    color: var(--ceet-text);
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ceet-sidebar-user-role {
+    display: block;
+    margin-top: 2px;
+    color: var(--ceet-text-muted);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Bouton déconnexion */
+.ceet-sidebar-logout {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    min-height: 36px;
+    padding: 7px 12px;
+    border: 1px solid var(--ceet-border);
+    border-radius: var(--ceet-radius-sm);
+    background: var(--ceet-surface);
+    color: var(--ceet-text-subtle);
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    transition: background-color var(--ceet-transition), border-color var(--ceet-transition), color var(--ceet-transition);
+}
+
+.ceet-sidebar-logout:hover {
+    border-color: var(--ceet-danger);
+    background: var(--ceet-danger-bg);
+    color: #93000a;
+}
+
+.ceet-sidebar-logout .material-symbols-outlined {
+    font-size: 17px;
+}
+
+/* ============================================================
+   Responsive — sidebar mobile
+   ============================================================ */
+
+@media (max-width: 991.98px) {
+    .ceet-sidebar {
+        transform: translateX(-100%);
+        transition: transform var(--ceet-transition);
+    }
+
+    .ceet-sidebar.is-open {
+        transform: translateX(0);
+        box-shadow: var(--ceet-shadow-md);
+    }
+}

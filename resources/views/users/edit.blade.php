@@ -1,4 +1,12 @@
-<x-app-layout>
+@extends('layouts.app')
+
+@section('title', 'Modifier utilisateur')
+
+@section('page_css')
+    @vite('resources/css/pages/users.css')
+@endsection
+
+@section('content')
     <div class="ceet-page ceet-page-shell ceet-user-form-page">
         <header class="ceet-page-header">
             <div>
@@ -20,4 +28,8 @@
             </form>
         </section>
     </div>
-</x-app-layout>
+@endsection
+
+@section('page_js')
+    @vite('resources/js/pages/users.js')
+@endsection

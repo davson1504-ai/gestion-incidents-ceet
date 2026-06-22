@@ -1,0 +1,1053 @@
+/* ==========================================================================
+   CEET — Dashboard administrateur
+   Contenu central uniquement : le shell, la sidebar et la topbar restent globaux.
+   ========================================================================== */
+
+.ceet-admin-dashboard-page {
+    --admin-ink: #111827;
+    --admin-muted: #4b5563;
+    --admin-subtle: #6b7280;
+    --admin-line: #d1d5db;
+    --admin-line-soft: #e5e7eb;
+    --admin-canvas: #f8f9fb;
+    --admin-surface: #ffffff;
+    --admin-surface-soft: #f3f4f6;
+    --admin-danger: #ba1a1a;
+    --admin-danger-soft: #ffdad6;
+    --admin-warning: #b7791f;
+    width: 100%;
+    min-width: 0;
+    color: var(--admin-ink);
+    font-family: var(--ceet-font, "Inter", sans-serif);
+}
+
+.ceet-admin-dashboard-page *,
+.ceet-admin-dashboard-page *::before,
+.ceet-admin-dashboard-page *::after {
+    box-sizing: border-box;
+}
+
+.ceet-admin-main {
+    display: grid;
+    gap: 24px;
+    width: 100%;
+    min-width: 0;
+}
+
+.ceet-admin-hero {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+    padding: 4px 0 10px;
+}
+
+.ceet-admin-hero > div:first-child {
+    min-width: 0;
+}
+
+.ceet-admin-eyebrow {
+    margin: 0 0 5px;
+    color: var(--admin-subtle);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.ceet-admin-hero h1 {
+    margin: 0;
+    color: #0b0c0e;
+    font-size: clamp(1.85rem, 2.6vw, 2.35rem);
+    font-weight: 650;
+    line-height: 1.15;
+    letter-spacing: -0.035em;
+}
+
+.ceet-admin-hero > div:first-child > p:last-child {
+    margin: 8px 0 0;
+    color: var(--admin-muted);
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.ceet-admin-hero-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 0 0 auto;
+    padding: 10px 12px;
+    border: 1px solid var(--admin-line);
+    border-radius: 4px;
+    background: var(--admin-surface);
+}
+
+.ceet-admin-hero-meta > .material-symbols-outlined {
+    color: var(--admin-muted);
+    font-size: 19px;
+}
+
+.ceet-admin-hero-meta div {
+    display: grid;
+    gap: 1px;
+}
+
+.ceet-admin-hero-meta strong {
+    color: var(--admin-ink);
+    font-size: 0.72rem;
+    font-weight: 700;
+}
+
+.ceet-admin-hero-meta small {
+    color: var(--admin-subtle);
+    font-size: 0.66rem;
+}
+
+.ceet-admin-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.ceet-admin-kpi-card {
+    display: flex;
+    min-width: 0;
+    min-height: 136px;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 24px;
+    border: 1px solid var(--admin-line);
+    border-radius: 5px;
+    background: var(--admin-surface);
+}
+
+.ceet-admin-kpi-card > span {
+    color: #334155;
+    font-size: 0.68rem;
+    font-weight: 750;
+    letter-spacing: 0.055em;
+    text-transform: uppercase;
+}
+
+.ceet-admin-kpi-value-row,
+.ceet-admin-kpi-resolution {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 12px;
+    min-width: 0;
+}
+
+.ceet-admin-kpi-card strong {
+    color: #050607;
+    font-size: clamp(1.9rem, 3vw, 2.35rem);
+    font-weight: 700;
+    line-height: 0.95;
+    letter-spacing: -0.045em;
+}
+
+.ceet-admin-kpi-value-row em {
+    color: var(--admin-danger);
+    font-size: 0.78rem;
+    font-style: normal;
+    font-weight: 650;
+    white-space: nowrap;
+}
+
+.ceet-admin-kpi-value-row em.is-down {
+    color: #2f6b45;
+}
+
+.ceet-admin-kpi-value-row small {
+    max-width: 112px;
+    color: #334155;
+    font-size: 0.8rem;
+    line-height: 1.3;
+    text-align: right;
+}
+
+.ceet-admin-kpi-card > small {
+    color: var(--admin-subtle);
+    font-size: 0.68rem;
+    line-height: 1.35;
+}
+
+.ceet-admin-kpi-card.is-critical strong {
+    color: var(--admin-danger);
+}
+
+.ceet-admin-kpi-card.is-critical em {
+    padding: 4px 8px;
+    border-radius: 2px;
+    background: var(--admin-danger-soft);
+    color: #93000a;
+    font-size: 0.61rem;
+    font-weight: 750;
+    letter-spacing: 0.025em;
+    text-transform: uppercase;
+}
+
+.ceet-admin-kpi-resolution i {
+    width: 72px;
+    height: 8px;
+    margin-bottom: 3px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: var(--admin-line-soft);
+}
+
+.ceet-admin-kpi-resolution i b {
+    display: block;
+    width: var(--rate);
+    max-width: 100%;
+    height: 100%;
+    background: #050607;
+}
+
+.ceet-admin-panel {
+    min-width: 0;
+    overflow: hidden;
+    border: 1px solid var(--admin-line);
+    border-radius: 5px;
+    background: var(--admin-surface);
+}
+
+.ceet-admin-network-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 2.05fr) minmax(290px, 0.95fr);
+    gap: 16px;
+    min-width: 0;
+}
+
+.ceet-admin-panel-header {
+    display: flex;
+    min-height: 86px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--admin-line);
+}
+
+.ceet-admin-panel-header h2,
+.ceet-admin-table-header h2 {
+    margin: 0;
+    color: #0b0c0e;
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1.3;
+    letter-spacing: -0.015em;
+}
+
+.ceet-admin-panel-header p,
+.ceet-admin-table-header p {
+    margin: 4px 0 0;
+    color: var(--admin-subtle);
+    font-size: 0.76rem;
+    line-height: 1.4;
+}
+
+.ceet-admin-chart-legend {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    color: var(--admin-muted);
+    font-size: 0.72rem;
+}
+
+.ceet-admin-chart-legend span {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.ceet-admin-chart-legend i {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #d9dadc;
+}
+
+.ceet-admin-chart-legend i.is-black {
+    background: #050607;
+}
+
+.ceet-admin-chart {
+    position: relative;
+    min-height: 310px;
+    padding: 24px 24px 18px;
+}
+
+.ceet-admin-chart::before {
+    position: absolute;
+    inset: 24px 24px 54px;
+    background: repeating-linear-gradient(
+        to bottom,
+        transparent 0,
+        transparent calc(25% - 1px),
+        #eef0f2 25%
+    );
+    content: "";
+    pointer-events: none;
+}
+
+.ceet-admin-chart-bars {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    min-height: 268px;
+    grid-template-columns: repeat(8, minmax(24px, 1fr));
+    align-items: end;
+    gap: clamp(8px, 1.3vw, 18px);
+}
+
+.ceet-admin-chart-bar-item {
+    display: grid;
+    min-width: 0;
+    grid-template-rows: 220px auto;
+    gap: 10px;
+    align-items: end;
+}
+
+.ceet-admin-chart-track {
+    display: flex;
+    height: 220px;
+    align-items: flex-end;
+    justify-content: center;
+}
+
+.ceet-admin-chart-track span {
+    display: block;
+    width: min(34px, 70%);
+    min-height: 2px;
+    border-radius: 2px 2px 0 0;
+    background: #050607;
+    opacity: 0.96;
+    transition: opacity 150ms ease;
+}
+
+.ceet-admin-chart-bar-item.is-secondary .ceet-admin-chart-track span,
+.ceet-admin-chart-bar-item:nth-child(even) .ceet-admin-chart-track span {
+    background: #aeb4bc;
+}
+
+.ceet-admin-chart-bar-item:hover .ceet-admin-chart-track span {
+    opacity: 0.68;
+}
+
+.ceet-admin-chart-bar-item small {
+    overflow: hidden;
+    color: var(--admin-subtle);
+    font-size: 0.61rem;
+    line-height: 1.2;
+    text-align: center;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.ceet-admin-exposed-panel {
+    display: flex;
+    min-height: 397px;
+    flex-direction: column;
+}
+
+.ceet-admin-exposed-list {
+    flex: 1 1 auto;
+}
+
+.ceet-admin-exposed-item {
+    display: flex;
+    min-height: 74px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--admin-line);
+    transition: background-color 140ms ease;
+}
+
+.ceet-admin-exposed-item:hover {
+    background: var(--admin-surface-soft);
+}
+
+.ceet-admin-exposed-item > div {
+    min-width: 0;
+}
+
+.ceet-admin-exposed-item strong {
+    display: block;
+    overflow: hidden;
+    color: #0b0c0e;
+    font-size: 0.87rem;
+    font-weight: 700;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.ceet-admin-exposed-item span {
+    display: block;
+    margin-top: 3px;
+    overflow: hidden;
+    color: #475569;
+    font-size: 0.73rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.ceet-admin-exposed-item em {
+    display: grid;
+    flex: 0 0 auto;
+    color: var(--admin-ink);
+    font-size: 0.9rem;
+    font-style: normal;
+    font-weight: 750;
+    line-height: 1;
+    text-align: right;
+}
+
+.ceet-admin-exposed-item em.is-hot {
+    color: var(--admin-danger);
+}
+
+.ceet-admin-exposed-item em small {
+    margin-top: 5px;
+    color: var(--admin-subtle);
+    font-size: 0.5rem;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.ceet-admin-exposed-panel > .ceet-admin-outline-btn {
+    margin: 14px 18px 16px;
+}
+
+.ceet-admin-outline-btn {
+    display: inline-flex;
+    min-height: 36px;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 0 13px;
+    border: 1px solid var(--admin-line);
+    border-radius: 3px;
+    background: var(--admin-surface);
+    color: var(--admin-ink);
+    font: inherit;
+    font-size: 0.69rem;
+    font-weight: 700;
+    letter-spacing: 0.015em;
+    text-decoration: none;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background-color 140ms ease, border-color 140ms ease;
+}
+
+.ceet-admin-outline-btn:hover {
+    border-color: #9ca3af;
+    background: var(--admin-surface-soft);
+}
+
+.ceet-admin-outline-btn .material-symbols-outlined {
+    font-size: 17px;
+}
+
+.ceet-admin-incidents-panel {
+    min-width: 0;
+}
+
+.ceet-admin-table-header {
+    display: flex;
+    min-height: 88px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--admin-line);
+}
+
+.ceet-admin-table-actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.ceet-admin-filter-panel {
+    display: none;
+    align-items: end;
+    grid-template-columns: repeat(2, minmax(150px, 220px)) auto auto;
+    gap: 12px;
+    padding: 14px 24px;
+    border-bottom: 1px solid var(--admin-line);
+    background: var(--admin-surface-soft);
+}
+
+.ceet-admin-filter-panel.is-open {
+    display: grid;
+}
+
+.ceet-admin-filter-panel label {
+    display: grid;
+    gap: 5px;
+    margin: 0;
+}
+
+.ceet-admin-filter-panel label > span {
+    color: var(--admin-muted);
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.ceet-admin-filter-panel input {
+    width: 100%;
+    min-height: 36px;
+    padding: 6px 9px;
+    border: 1px solid var(--admin-line);
+    border-radius: 3px;
+    background: #fff;
+    color: var(--admin-ink);
+    font: inherit;
+    font-size: 0.76rem;
+}
+
+.ceet-admin-filter-panel button,
+.ceet-admin-filter-panel > a {
+    display: inline-flex;
+    min-height: 36px;
+    align-items: center;
+    justify-content: center;
+    padding: 0 13px;
+    border: 1px solid var(--admin-ink);
+    border-radius: 3px;
+    background: var(--admin-ink);
+    color: #fff;
+    font: inherit;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.ceet-admin-filter-panel > a {
+    border-color: var(--admin-line);
+    background: #fff;
+    color: var(--admin-ink);
+}
+
+.ceet-admin-table-wrap {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.ceet-admin-table {
+    width: 100%;
+    min-width: 820px;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+.ceet-admin-table th,
+.ceet-admin-table td {
+    padding: 13px 24px;
+    border-bottom: 1px solid var(--admin-line);
+    text-align: left;
+    vertical-align: middle;
+}
+
+.ceet-admin-table th {
+    background: var(--admin-surface-soft);
+    color: #475569;
+    font-size: 0.62rem;
+    font-weight: 750;
+    letter-spacing: 0.065em;
+    text-transform: uppercase;
+}
+
+.ceet-admin-table th:nth-child(1) {
+    width: 14%;
+}
+
+.ceet-admin-table th:nth-child(2) {
+    width: 24%;
+}
+
+.ceet-admin-table th:nth-child(3) {
+    width: 23%;
+}
+
+.ceet-admin-table th:nth-child(4) {
+    width: 15%;
+}
+
+.ceet-admin-table th:nth-child(5) {
+    width: 12%;
+}
+
+.ceet-admin-table th:nth-child(6) {
+    width: 12%;
+    text-align: right;
+}
+
+.ceet-admin-table td {
+    color: #1f2937;
+    font-size: 0.78rem;
+    line-height: 1.45;
+}
+
+.ceet-admin-table td:first-child strong {
+    color: #050607;
+    font-size: 0.8rem;
+    font-weight: 750;
+}
+
+.ceet-admin-table td:nth-child(2) strong,
+.ceet-admin-table td:nth-child(2) span {
+    display: block;
+}
+
+.ceet-admin-table td:nth-child(2) strong {
+    color: #111827;
+    font-weight: 500;
+}
+
+.ceet-admin-table td:nth-child(2) span {
+    margin-top: 2px;
+    color: #475569;
+}
+
+.ceet-admin-table td:last-child {
+    text-align: right;
+}
+
+.ceet-admin-table tbody tr {
+    cursor: pointer;
+    transition: background-color 140ms ease;
+}
+
+.ceet-admin-table tbody tr:hover {
+    background: var(--admin-surface-soft);
+}
+
+.ceet-admin-table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.ceet-admin-status {
+    display: inline-flex;
+    min-height: 24px;
+    align-items: center;
+    justify-content: center;
+    padding: 4px 9px;
+    border-radius: 999px;
+    background: #e5e7eb;
+    color: #374151;
+    font-size: 0.6rem;
+    font-weight: 750;
+    line-height: 1.2;
+    text-align: center;
+    text-transform: uppercase;
+}
+
+.ceet-admin-status.is-critical {
+    background: var(--admin-danger-soft);
+    color: #93000a;
+}
+
+.ceet-admin-status.is-waiting {
+    background: #e5e7eb;
+    color: #475569;
+}
+
+.ceet-admin-status.is-planned {
+    background: #050607;
+    color: #fff;
+}
+
+.ceet-admin-status.is-resolved {
+    background: #d9dadc;
+    color: #191c1e;
+}
+
+.ceet-admin-detail-link {
+    color: #050607;
+    font-size: 0.67rem;
+    font-weight: 750;
+    text-decoration: none;
+    text-transform: uppercase;
+}
+
+.ceet-admin-detail-link:hover {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.ceet-admin-empty-state {
+    padding: 30px 18px !important;
+    color: var(--admin-subtle) !important;
+    font-size: 0.78rem !important;
+    text-align: center !important;
+}
+
+.ceet-admin-table-footer {
+    display: flex;
+    min-height: 56px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 12px 18px;
+    border-top: 1px solid var(--admin-line);
+    color: var(--admin-muted);
+    font-size: 0.7rem;
+}
+
+.ceet-admin-table-footer a {
+    color: var(--admin-ink);
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.ceet-admin-table-footer a:hover {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.ceet-admin-utility-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.25fr) minmax(240px, 0.9fr) minmax(260px, 0.9fr);
+    align-items: stretch;
+    gap: 16px;
+}
+
+.ceet-admin-quick-panel,
+.ceet-admin-roles-panel,
+.ceet-admin-system-card {
+    min-height: 220px;
+}
+
+.ceet-admin-quick-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+    padding: 18px;
+}
+
+.ceet-admin-quick-grid a {
+    display: flex;
+    min-height: 92px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 8px;
+    border: 1px solid var(--admin-line);
+    border-radius: 4px;
+    background: #fff;
+    color: var(--admin-ink);
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-align: center;
+    text-decoration: none;
+    transition: background-color 140ms ease, border-color 140ms ease;
+}
+
+.ceet-admin-quick-grid a:hover {
+    border-color: #9ca3af;
+    background: var(--admin-surface-soft);
+}
+
+.ceet-admin-quick-grid .material-symbols-outlined {
+    color: #334155;
+    font-size: 24px;
+}
+
+.ceet-admin-roles-list {
+    display: grid;
+    padding: 6px 18px 14px;
+}
+
+.ceet-admin-roles-list > div {
+    display: flex;
+    min-height: 42px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    border-bottom: 1px solid var(--admin-line-soft);
+}
+
+.ceet-admin-roles-list > div:last-child {
+    border-bottom: 0;
+}
+
+.ceet-admin-roles-list span {
+    color: var(--admin-muted);
+    font-size: 0.76rem;
+}
+
+.ceet-admin-roles-list strong {
+    color: var(--admin-ink);
+    font-size: 0.85rem;
+}
+
+.ceet-admin-system-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 22px;
+    border: 1px solid #050607;
+    border-radius: 5px;
+    background: #050607;
+    color: #fff;
+}
+
+.ceet-admin-system-card .material-symbols-outlined {
+    font-size: 23px;
+}
+
+.ceet-admin-system-card h2 {
+    margin: 16px 0 7px;
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.ceet-admin-system-card p {
+    margin: 0;
+    color: #cbd5e1;
+    font-size: 0.73rem;
+    line-height: 1.55;
+}
+
+.ceet-admin-system-card a {
+    display: inline-flex;
+    width: fit-content;
+    min-height: 34px;
+    align-items: center;
+    justify-content: center;
+    padding: 0 12px;
+    border: 1px solid #6b7280;
+    border-radius: 3px;
+    color: #fff;
+    font-size: 0.67rem;
+    font-weight: 700;
+    text-decoration: none;
+    text-transform: uppercase;
+}
+
+.ceet-admin-system-card a:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.ceet-admin-fab {
+    position: fixed;
+    right: 30px;
+    bottom: 28px;
+    z-index: 50;
+    display: grid;
+    width: 54px;
+    height: 54px;
+    place-items: center;
+    border-radius: 12px;
+    background: #050607;
+    box-shadow: 0 8px 20px rgba(17, 24, 39, 0.22);
+    color: #fff;
+    text-decoration: none;
+    transition: transform 150ms ease, background-color 150ms ease;
+}
+
+.ceet-admin-fab:hover {
+    transform: translateY(-2px);
+    background: #1f2937;
+}
+
+.ceet-admin-fab .material-symbols-outlined {
+    font-size: 27px;
+}
+
+.ceet-admin-dashboard-page a:focus-visible,
+.ceet-admin-dashboard-page button:focus-visible,
+.ceet-admin-dashboard-page input:focus-visible {
+    outline: 2px solid var(--admin-ink);
+    outline-offset: 2px;
+}
+
+@media (max-width: 1279.98px) {
+    .ceet-admin-kpi-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .ceet-admin-network-grid {
+        grid-template-columns: minmax(0, 1.5fr) minmax(280px, 0.8fr);
+    }
+
+    .ceet-admin-utility-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .ceet-admin-system-card {
+        grid-column: 1 / -1;
+        min-height: 190px;
+    }
+}
+
+@media (max-width: 991.98px) {
+    .ceet-admin-network-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .ceet-admin-exposed-panel {
+        min-height: 0;
+    }
+
+    .ceet-admin-exposed-list {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .ceet-admin-exposed-item:nth-child(odd) {
+        border-right: 1px solid var(--admin-line);
+    }
+
+    .ceet-admin-chart {
+        min-height: 280px;
+    }
+
+    .ceet-admin-chart-bars {
+        min-height: 238px;
+    }
+
+    .ceet-admin-chart-bar-item {
+        grid-template-rows: 190px auto;
+    }
+
+    .ceet-admin-chart-track {
+        height: 190px;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .ceet-admin-main {
+        gap: 18px;
+    }
+
+    .ceet-admin-hero {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .ceet-admin-hero-meta {
+        width: 100%;
+    }
+
+    .ceet-admin-kpi-grid,
+    .ceet-admin-utility-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .ceet-admin-kpi-card {
+        min-height: 128px;
+        padding: 20px;
+    }
+
+    .ceet-admin-panel-header,
+    .ceet-admin-table-header {
+        min-height: 0;
+        align-items: flex-start;
+        flex-direction: column;
+        padding: 18px;
+    }
+
+    .ceet-admin-chart-legend {
+        width: 100%;
+    }
+
+    .ceet-admin-filter-panel.is-open {
+        grid-template-columns: 1fr;
+        padding: 14px 18px;
+    }
+
+    .ceet-admin-filter-panel button,
+    .ceet-admin-filter-panel > a {
+        width: 100%;
+    }
+
+    .ceet-admin-exposed-list {
+        grid-template-columns: 1fr;
+    }
+
+    .ceet-admin-exposed-item:nth-child(odd) {
+        border-right: 0;
+    }
+
+    .ceet-admin-quick-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .ceet-admin-quick-grid a {
+        min-height: 72px;
+    }
+
+    .ceet-admin-table-footer {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .ceet-admin-fab {
+        right: 18px;
+        bottom: 18px;
+        width: 50px;
+        height: 50px;
+    }
+}
+
+@media (max-width: 519.98px) {
+    .ceet-admin-kpi-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .ceet-admin-chart {
+        padding-right: 14px;
+        padding-left: 14px;
+    }
+
+    .ceet-admin-chart::before {
+        right: 14px;
+        left: 14px;
+    }
+
+    .ceet-admin-chart-bars {
+        gap: 5px;
+    }
+
+    .ceet-admin-chart-bar-item {
+        grid-template-rows: 150px auto;
+    }
+
+    .ceet-admin-chart-track {
+        height: 150px;
+    }
+
+    .ceet-admin-chart-bar-item small {
+        font-size: 0.52rem;
+    }
+
+    .ceet-admin-table-actions,
+    .ceet-admin-outline-btn {
+        width: 100%;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .ceet-admin-chart-track span,
+    .ceet-admin-exposed-item,
+    .ceet-admin-outline-btn,
+    .ceet-admin-table tbody tr,
+    .ceet-admin-quick-grid a,
+    .ceet-admin-fab {
+        transition: none;
+    }
+}

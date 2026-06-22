@@ -1,0 +1,152 @@
+/* ============================================================
+   CEET — Tableaux (composants communs)
+   ============================================================ */
+
+/* Conteneur avec scroll horizontal */
+.ceet-table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Table de base */
+.ceet-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.ceet-table thead {
+    background: var(--ceet-surface-low);
+}
+
+.ceet-table th {
+    padding: 11px 16px;
+    border-bottom: 1px solid var(--ceet-border);
+    color: var(--ceet-text-muted);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.ceet-table td {
+    padding: 13px 16px;
+    border-bottom: 1px solid var(--ceet-border);
+    color: var(--ceet-text);
+    font-size: 13.5px;
+    vertical-align: middle;
+}
+
+.ceet-table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.ceet-table tbody tr:hover td {
+    background: var(--ceet-surface-low);
+}
+
+.ceet-table td.is-right,
+.ceet-table th.is-right {
+    text-align: right;
+}
+
+.ceet-table td.is-center,
+.ceet-table th.is-center {
+    text-align: center;
+}
+
+/* Cellule d'actions */
+.ceet-table-actions {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 4px;
+}
+
+/* Ligne vide */
+.ceet-table-empty {
+    padding: 48px 16px !important;
+    text-align: center;
+    color: var(--ceet-text-muted);
+    font-size: 13px;
+}
+
+/* Code incident */
+.ceet-table-code {
+    font-family: var(--ceet-font-mono);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    color: var(--ceet-text);
+}
+
+/* Sous-texte dans cellule */
+.ceet-table-sub {
+    display: block;
+    margin-top: 2px;
+    color: var(--ceet-text-muted);
+    font-size: 12px;
+}
+
+/* Pagination */
+.ceet-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--ceet-space-md);
+    padding: 12px var(--ceet-space-lg);
+    border-top: 1px solid var(--ceet-border);
+    background: var(--ceet-surface-low);
+    flex-wrap: wrap;
+}
+
+.ceet-pagination-info {
+    color: var(--ceet-text-muted);
+    font-size: 13px;
+}
+
+.ceet-pagination-nav {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.ceet-pagination-nav a,
+.ceet-pagination-nav button,
+.ceet-pagination-nav span {
+    min-width: 30px;
+    height: 30px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--ceet-radius-sm);
+    color: var(--ceet-text);
+    font-size: 13px;
+}
+
+.ceet-pagination-nav a,
+.ceet-pagination-nav button {
+    border: 1px solid var(--ceet-border);
+    background: var(--ceet-surface);
+    cursor: pointer;
+    transition: border-color var(--ceet-transition), background-color var(--ceet-transition);
+}
+
+.ceet-pagination-nav a:hover,
+.ceet-pagination-nav button:hover:not(:disabled) {
+    border-color: var(--ceet-text);
+    background: var(--ceet-surface-low);
+}
+
+.ceet-pagination-nav a.is-active,
+.ceet-pagination-nav .is-active {
+    background: var(--ceet-primary);
+    border-color: var(--ceet-primary);
+    color: var(--ceet-primary-fg);
+}
+
+.ceet-pagination-nav button:disabled {
+    color: var(--ceet-border);
+    cursor: not-allowed;
+}

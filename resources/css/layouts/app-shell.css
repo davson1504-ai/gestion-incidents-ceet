@@ -1,0 +1,66 @@
+/* ============================================================
+   CEET — Shell principal de l'application
+   Structure : sidebar fixe + topbar fixe + contenu central
+   ============================================================ */
+
+/* Conteneur racine de l'app */
+.ceet-app-wrapper {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* Zone principale (à droite de la sidebar) */
+.ceet-app-main {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-width: 0;
+    margin-left: var(--ceet-sidebar-width);
+    transition: margin-left var(--ceet-transition);
+}
+
+/* Overlay mobile pour sidebar */
+.ceet-app-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 90;
+    background: rgba(0, 0, 0, 0.4);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--ceet-transition);
+}
+
+.ceet-app-overlay.is-visible {
+    opacity: 1;
+    pointer-events: all;
+}
+
+/* Zone de contenu central */
+.ceet-app-content {
+    flex: 1 1 auto;
+    margin-top: var(--ceet-topbar-height);
+    padding: var(--ceet-space-lg);
+    overflow-x: hidden;
+}
+
+/* Conteneur intérieur avec largeur max */
+.ceet-app-content-inner {
+    width: 100%;
+    max-width: var(--ceet-content-max);
+    margin-inline: auto;
+}
+
+/* Flash messages zone */
+.ceet-flash-zone {
+    margin-bottom: var(--ceet-space-md);
+}
+
+/* ============================================================
+   Responsive
+   ============================================================ */
+
+@media (max-width: 991.98px) {
+    .ceet-app-main {
+        margin-left: 0;
+    }
+}

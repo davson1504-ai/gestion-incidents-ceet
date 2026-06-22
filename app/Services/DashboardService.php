@@ -21,20 +21,20 @@ class DashboardService
 
         if ($user->isOperateur()) {
             return [
-                'view' => 'dashboard-operator',
+                'view' => 'pages.operator.dashboard',
                 'data' => array_merge($viewData, $this->operatorData($user)),
             ];
         }
 
         if ($user->isSuperviseur()) {
             return [
-                'view' => 'dashboard-supervisor',
+                'view' => 'pages.supervisor.dashboard',
                 'data' => array_merge($viewData, $this->supervisorData($user)),
             ];
         }
 
         return [
-            'view' => 'dashboard',
+            'view' => 'pages.admin.dashboard',
             'data' => $viewData,
         ];
     }

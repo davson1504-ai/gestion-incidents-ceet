@@ -1,717 +1,442 @@
-.ceet-users-admin-page {
-    min-height: 100vh;
+/* ============================================================
+   CEET — users.css
+   Page gestion des utilisateurs (contenu uniquement)
+   ============================================================ */
+
+.users-page {
+    display: grid;
+    gap: var(--ceet-space-md);
+}
+
+.users-page .page-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--ceet-space-lg);
+    flex-wrap: wrap;
+}
+
+.users-page .page-title {
     margin: 0;
-    background: #f8f9fb;
-    color: #191c1e;
-    font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    color: var(--ceet-text);
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: 0;
+    line-height: 1.2;
 }
 
-.ceet-users-admin-page a {
-    color: inherit;
-    text-decoration: none;
-}
-
-.ceet-users-admin-page button,
-.ceet-users-admin-page input,
-.ceet-users-admin-page select {
-    font: inherit;
-}
-
-.ceet-users-admin-shell {
-    min-height: 100vh;
-}
-
-.ceet-users-admin-sidebar {
-    position: fixed;
-    inset: 0 auto 0 0;
-    z-index: 50;
-    width: 320px;
-    display: flex;
-    flex-direction: column;
-    padding: 24px 16px;
-    border-right: 1px solid #c6c6cd;
-    background: #f3f4f6;
-}
-
-.ceet-users-admin-brand {
+.users-page .page-subtitle {
     display: flex;
     align-items: center;
-    gap: 12px;
-    margin-bottom: 42px;
-    padding: 0 8px;
-}
-
-.ceet-users-admin-brand-logo {
-    width: 56px;
-    height: 56px;
-    display: grid;
-    place-items: center;
-    flex: 0 0 auto;
-    overflow: hidden;
-    border: 1px solid #d9dadc;
-    border-radius: 12px;
-    background: #ffffff;
-}
-
-.ceet-users-admin-brand-logo img {
-    width: 46px;
-    height: 46px;
-    display: block;
-    object-fit: contain;
-}
-
-.ceet-users-admin-brand h1 {
-    margin: 0;
-    color: #191c1e;
-    font-size: 25px;
-    font-weight: 800;
-    letter-spacing: -0.02em;
-    line-height: 1.15;
-}
-
-.ceet-users-admin-brand p {
-    margin: 4px 0 0;
-    color: #555f6d;
-    font-size: 14px;
-    line-height: 1.4;
-}
-
-.ceet-users-admin-nav {
-    display: grid;
-    gap: 4px;
-}
-
-.ceet-users-admin-nav-link {
-    min-height: 52px;
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    padding: 12px 18px;
-    border-radius: 4px;
-    color: #45464c;
-    font-size: 15px;
-    font-weight: 600;
-    transition: background-color 160ms ease, color 160ms ease;
-}
-
-.ceet-users-admin-nav-link:hover,
-.ceet-users-admin-nav-link.is-active {
-    background: #e1e2e4;
-    color: #000000;
-}
-
-.ceet-users-admin-nav-link.is-active {
-    font-weight: 800;
-}
-
-.ceet-users-admin-nav-link .material-symbols-outlined {
-    font-size: 23px;
-}
-
-.ceet-users-admin-sidebar-user {
-    display: grid;
-    gap: 14px;
-    margin-top: auto;
-    padding: 20px 8px 0;
-    border-top: 1px solid #c6c6cd;
-}
-
-.ceet-users-admin-sidebar-user-main {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.ceet-users-admin-sidebar-user strong {
-    display: block;
-    color: #191c1e;
-    font-size: 14px;
-    font-weight: 800;
-    line-height: 1.3;
-}
-
-.ceet-users-admin-sidebar-user span {
-    display: block;
-    margin-top: 2px;
-    color: #555f6d;
-    font-size: 12px;
-    line-height: 1.4;
-    text-transform: uppercase;
-}
-
-.ceet-users-admin-avatar {
-    width: 40px;
-    height: 40px;
-    display: grid;
-    place-items: center;
-    flex: 0 0 auto;
-    border-radius: 999px;
-    background: #191c1e;
-    color: #ffffff;
-    font-size: 12px;
-    font-weight: 800;
-}
-
-.ceet-users-admin-avatar.is-small {
-    width: 32px;
-    height: 32px;
-    background: #e1e2e4;
-    color: #191c1e;
-}
-
-.ceet-users-admin-logout-form {
-    margin: 0;
-}
-
-.ceet-users-admin-logout-button {
-    width: 100%;
-    min-height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    padding: 9px 12px;
-    border: 1px solid #c6c6cd;
-    border-radius: 4px;
-    background: #ffffff;
-    color: #191c1e;
-    cursor: pointer;
+    gap: 8px;
+    margin-top: 6px;
+    color: var(--ceet-text-muted);
     font-size: 13px;
-    font-weight: 800;
-    transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease;
 }
 
-.ceet-users-admin-logout-button:hover {
-    border-color: #ba1a1a;
-    background: #ffdad6;
-    color: #93000a;
+.users-page .page-subtitle strong {
+    color: var(--ceet-text);
 }
 
-.ceet-users-admin-logout-button .material-symbols-outlined {
-    font-size: 20px;
-}
-
-.ceet-users-admin-topbar {
-    position: fixed;
-    top: 0;
-    right: 0;
-    z-index: 40;
-    width: calc(100% - 320px);
-    height: 64px;
+.users-page .action-bar {
     display: flex;
     align-items: center;
-    gap: 24px;
-    padding: 0 24px;
-    border-bottom: 1px solid #c6c6cd;
-    background: #f8f9fb;
+    gap: 8px;
+    flex-wrap: wrap;
 }
 
-.ceet-users-admin-search {
-    position: relative;
-    width: min(100%, 520px);
+.users-page .filters-card,
+.users-page .content-card,
+.users-page .stat-card {
+    border: 1px solid var(--ceet-border);
+    border-radius: var(--ceet-radius-md);
+    background: var(--ceet-surface);
 }
 
-.ceet-users-admin-search .material-symbols-outlined {
-    position: absolute;
-    top: 50%;
-    left: 14px;
-    color: #76777d;
-    transform: translateY(-50%);
+.users-page .filters-card,
+.users-page .stat-card {
+    padding: var(--ceet-space-md);
 }
 
-.ceet-users-admin-search input {
-    width: 100%;
-    min-height: 40px;
-    padding: 8px 14px 8px 44px;
-    border: 1px solid #c6c6cd;
-    border-radius: 4px;
-    background: #ffffff;
-    color: #191c1e;
-    font-size: 14px;
-    outline: none;
+.users-page .content-card {
+    overflow: hidden;
 }
 
-.ceet-users-admin-search input:focus {
-    border-color: #000000;
-}
-
-.ceet-users-admin-top-actions {
-    display: flex;
-    align-items: center;
-    gap: 18px;
-    margin-left: auto;
-}
-
-.ceet-users-admin-icon-btn {
-    position: relative;
-    display: inline-flex;
-    color: #45464c;
-}
-
-.ceet-users-admin-icon-btn:hover {
-    color: #000000;
-}
-
-.ceet-users-admin-notification-dot {
-    position: absolute;
-    top: 1px;
-    right: -1px;
-    width: 8px;
-    height: 8px;
-    border: 1px solid #f8f9fb;
-    border-radius: 999px;
-    background: #ba1a1a;
-}
-
-.ceet-users-admin-top-divider {
-    width: 1px;
-    height: 32px;
-    background: #c6c6cd;
-}
-
-.ceet-users-admin-top-user {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    color: #191c1e;
-    font-size: 14px;
-    font-weight: 800;
-    white-space: nowrap;
-}
-
-.ceet-users-admin-primary-btn,
-.ceet-users-admin-secondary-btn {
-    min-height: 40px;
+.users-page .btn {
+    min-height: 38px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
-    padding: 9px 14px;
-    border-radius: 4px;
-    font-size: 14px;
-    font-weight: 800;
-    line-height: 1;
+    padding: 7px 14px;
+    border-radius: var(--ceet-radius-sm);
+    border: 1px solid transparent;
     cursor: pointer;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
 }
 
-.ceet-users-admin-primary-btn {
-    border: 1px solid #000000;
-    background: #000000;
-    color: #ffffff !important;
+.users-page .btn-primary {
+    border-color: var(--ceet-primary);
+    background: var(--ceet-primary);
+    color: var(--ceet-primary-fg) !important;
 }
 
-.ceet-users-admin-primary-btn:hover {
-    background: #2e3132;
-    border-color: #2e3132;
+.users-page .btn-outline {
+    border-color: var(--ceet-border);
+    background: var(--ceet-surface);
+    color: var(--ceet-text-muted) !important;
 }
 
-.ceet-users-admin-primary-btn.is-filter {
-    min-width: 110px;
+.users-page .btn:hover {
+    opacity: 0.86;
 }
 
-.ceet-users-admin-secondary-btn {
-    border: 1px solid #c6c6cd;
-    background: #ffffff;
-    color: #45464c !important;
+.users-page .empty-state {
+    padding: 40px 16px;
+    text-align: center;
+    color: var(--ceet-text-muted);
+    font-size: 13px;
+    font-weight: 600;
 }
 
-.ceet-users-admin-secondary-btn:hover {
-    background: #f3f4f6;
-    color: #191c1e !important;
-}
-
-.ceet-users-admin-main {
-    min-height: 100vh;
-    margin-left: 320px;
-    padding: 88px 24px 32px;
-}
-
+/* ── En-tête page ─────────────────────────────────────────── */
 .ceet-users-admin-page-header {
     display: flex;
     align-items: flex-end;
     justify-content: space-between;
-    gap: 18px;
-    margin-bottom: 24px;
+    gap: var(--ceet-space-lg);
+    margin-bottom: var(--ceet-space-lg);
+    flex-wrap: wrap;
 }
-
 .ceet-users-admin-page-header h2 {
     margin: 0;
-    color: #000000;
-    font-size: 34px;
+    color: var(--ceet-text);
+    font-size: 28px;
     font-weight: 800;
-    letter-spacing: -0.03em;
-    line-height: 1.12;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
 }
-
 .ceet-users-admin-breadcrumb {
     display: flex;
     align-items: center;
     gap: 8px;
-    margin-top: 8px;
-    color: #555f6d;
+    margin-top: 6px;
+    color: var(--ceet-text-muted);
     font-size: 13px;
-    line-height: 1.4;
+}
+.ceet-users-admin-breadcrumb strong { color: var(--ceet-text); }
+
+/* ── Boutons ──────────────────────────────────────────────── */
+.ceet-users-admin-primary-btn,
+.ceet-users-admin-secondary-btn {
+    min-height: 38px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 7px 14px;
+    border-radius: var(--ceet-radius-sm);
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    text-decoration: none;
+    transition: opacity var(--ceet-transition), border-color var(--ceet-transition), background-color var(--ceet-transition);
+}
+.ceet-users-admin-primary-btn {
+    border: 1px solid var(--ceet-primary);
+    background: var(--ceet-primary);
+    color: var(--ceet-primary-fg) !important;
+}
+.ceet-users-admin-primary-btn:hover { opacity: 0.86; }
+.ceet-users-admin-secondary-btn {
+    border: 1px solid var(--ceet-border);
+    background: var(--ceet-surface);
+    color: var(--ceet-text-muted) !important;
+}
+.ceet-users-admin-secondary-btn:hover {
+    border-color: var(--ceet-text);
+    color: var(--ceet-text) !important;
 }
 
-.ceet-users-admin-breadcrumb strong {
-    color: #191c1e;
-}
-
-.ceet-users-admin-alert {
-    margin-bottom: 16px;
-    padding: 12px 14px;
-    border: 1px solid #c6c6cd;
-    border-radius: 4px;
-    background: #ffffff;
-    color: #191c1e;
-    font-size: 14px;
+/* Bouton Bootstrap personnalisé (utilisé dans _form.blade.php) */
+.btn-ceet-primary {
+    background-color: var(--ceet-primary);
+    border-color: var(--ceet-primary);
+    color: var(--ceet-primary-fg);
     font-weight: 700;
 }
-
-.ceet-users-admin-alert.is-success {
-    border-color: #86a789;
-    background: #eff7ef;
-    color: #24522a;
+.btn-ceet-primary:hover {
+    background-color: var(--ceet-primary-hover);
+    border-color: var(--ceet-primary-hover);
+    color: var(--ceet-primary-fg);
 }
 
-.ceet-users-admin-alert.is-danger {
-    border-color: #ffb4ab;
-    background: #ffdad6;
-    color: #93000a;
-}
-
+/* ── Statistiques ─────────────────────────────────────────── */
 .ceet-users-admin-stats {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 16px;
-    margin-bottom: 20px;
+    gap: var(--ceet-space-md);
+    margin-bottom: var(--ceet-space-md);
 }
-
 .ceet-users-admin-stats article {
-    min-height: 92px;
-    padding: 18px;
-    border: 1px solid #c6c6cd;
-    border-radius: 4px;
-    background: #ffffff;
+    padding: var(--ceet-space-md) 18px;
+    border: 1px solid var(--ceet-border);
+    border-radius: var(--ceet-radius-md);
+    background: var(--ceet-surface);
 }
-
 .ceet-users-admin-stats span {
     display: block;
-    color: #45464c;
+    color: var(--ceet-text-muted);
     font-size: 11px;
-    font-weight: 800;
+    font-weight: 700;
     letter-spacing: 0.05em;
     text-transform: uppercase;
 }
-
 .ceet-users-admin-stats strong {
     display: block;
     margin-top: 10px;
-    color: #000000;
-    font-size: 30px;
+    color: var(--ceet-text);
+    font-size: 28px;
     font-weight: 800;
     line-height: 1;
 }
 
+/* ── Filtres ──────────────────────────────────────────────── */
 .ceet-users-admin-filter-panel {
-    margin-bottom: 20px;
-    border: 1px solid #c6c6cd;
-    border-radius: 8px;
-    background: #ffffff;
-    padding: 18px;
+    margin-bottom: var(--ceet-space-md);
+    padding: var(--ceet-space-md);
+    border: 1px solid var(--ceet-border);
+    border-radius: var(--ceet-radius-md);
+    background: var(--ceet-surface);
 }
-
 .ceet-users-admin-filters {
     display: grid;
-    grid-template-columns: minmax(260px, 2fr) minmax(180px, 1fr) minmax(160px, 1fr) auto;
-    gap: 16px;
+    grid-template-columns: minmax(240px, 2fr) minmax(160px, 1fr) minmax(160px, 1fr) auto;
+    gap: var(--ceet-space-md);
     align-items: end;
 }
-
+.ceet-users-admin-filters > div { display: grid; gap: 6px; }
 .ceet-users-admin-filters label {
-    display: block;
-    margin-bottom: 8px;
-    color: #45464c;
+    color: var(--ceet-text-muted);
     font-size: 11px;
-    font-weight: 800;
+    font-weight: 700;
     letter-spacing: 0.05em;
     text-transform: uppercase;
 }
-
 .ceet-users-admin-filters input,
 .ceet-users-admin-filters select {
     width: 100%;
-    min-height: 42px;
+    min-height: 40px;
     padding: 8px 12px;
-    border: 1px solid #c6c6cd;
-    border-radius: 4px;
-    background: #ffffff;
-    color: #191c1e;
+    border: 1px solid var(--ceet-border);
+    border-radius: var(--ceet-radius-sm);
+    background: var(--ceet-surface-low);
+    color: var(--ceet-text);
+    font: inherit;
     font-size: 14px;
     outline: none;
+    transition: border-color var(--ceet-transition);
 }
-
 .ceet-users-admin-filters input:focus,
 .ceet-users-admin-filters select:focus {
-    border-color: #000000;
+    border-color: var(--ceet-primary);
+    background: var(--ceet-surface);
 }
-
 .ceet-users-admin-filter-actions {
-    display: inline-flex;
+    display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
 }
 
+/* ── Tableau ──────────────────────────────────────────────── */
 .ceet-users-admin-table-card {
-    border: 1px solid #c6c6cd;
-    border-radius: 4px;
-    background: #ffffff;
+    border: 1px solid var(--ceet-border);
+    border-radius: var(--ceet-radius-md);
+    background: var(--ceet-surface);
     overflow: hidden;
 }
-
-.ceet-users-admin-table-wrap {
-    overflow-x: auto;
-}
-
+.ceet-users-admin-table-wrap { overflow-x: auto; }
 .ceet-users-admin-table {
     width: 100%;
-    min-width: 980px;
+    min-width: 900px;
     border-collapse: collapse;
     text-align: left;
 }
-
-.ceet-users-admin-table thead {
-    background: #f3f4f6;
-}
-
+.ceet-users-admin-table thead { background: var(--ceet-surface-low); }
 .ceet-users-admin-table th {
-    padding: 14px 16px;
-    border-bottom: 1px solid #c6c6cd;
-    color: #45464c;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--ceet-border);
+    color: var(--ceet-text-muted);
     font-size: 11px;
-    font-weight: 800;
+    font-weight: 700;
     letter-spacing: 0.05em;
     text-transform: uppercase;
     white-space: nowrap;
 }
-
 .ceet-users-admin-table td {
-    padding: 16px;
-    border-bottom: 1px solid #e1e2e4;
-    color: #191c1e;
-    font-size: 14px;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--ceet-border);
+    color: var(--ceet-text);
+    font-size: 13.5px;
     vertical-align: middle;
 }
+.ceet-users-admin-table tbody tr:last-child td { border-bottom: 0; }
+.ceet-users-admin-table tbody tr:hover td     { background: var(--ceet-surface-low); }
+.ceet-users-admin-table .is-muted   { color: var(--ceet-text-muted); }
+.ceet-users-admin-table .is-center  { text-align: center; }
+.ceet-users-admin-table .is-right   { text-align: right; }
 
-.ceet-users-admin-table tbody tr:hover {
-    background: #f8f9fb;
-}
-
-.ceet-users-admin-table .is-muted {
-    color: #555f6d;
-}
-
-.ceet-users-admin-table .is-center {
-    text-align: center;
-}
-
-.ceet-users-admin-table .is-right {
-    text-align: right;
-}
-
+/* Identité utilisateur */
 .ceet-users-admin-identity {
     display: flex;
     align-items: center;
     gap: 12px;
 }
-
+.ceet-users-admin-identity strong { font-size: 13.5px; font-weight: 700; }
 .ceet-users-admin-user-avatar {
-    width: 34px;
-    height: 34px;
+    width: 32px;
+    height: 32px;
     display: grid;
     place-items: center;
-    flex: 0 0 auto;
-    border-radius: 999px;
-    background: #dce2f7;
-    color: #141b2b;
-    font-size: 12px;
+    flex-shrink: 0;
+    border-radius: var(--ceet-radius-full);
+    background: var(--ceet-info-bg);
+    color: var(--ceet-info);
+    font-size: 11px;
     font-weight: 800;
 }
 
-.ceet-users-admin-role-badge,
+/* Badges rôle et statut */
+.ceet-users-admin-role-badge {
+    display: inline-flex;
+    align-items: center;
+    min-height: 22px;
+    padding: 3px 9px;
+    border: 1px solid var(--ceet-border);
+    border-radius: var(--ceet-radius-sm);
+    background: var(--ceet-surface-low);
+    color: var(--ceet-text-muted);
+    font-size: 11.5px;
+    font-weight: 700;
+    white-space: nowrap;
+}
 .ceet-users-admin-status-badge {
     display: inline-flex;
     align-items: center;
-    justify-content: center;
-    min-height: 24px;
-    padding: 4px 9px;
-    border: 1px solid #c6c6cd;
-    border-radius: 4px;
-    background: #f3f4f6;
-    color: #374151;
-    font-size: 12px;
-    font-weight: 800;
-    line-height: 1;
+    gap: 5px;
+    min-height: 22px;
+    padding: 3px 9px;
+    border-radius: var(--ceet-radius-full);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
     white-space: nowrap;
 }
+.ceet-users-admin-status-badge.is-active   { background: var(--ceet-success-bg);  color: var(--ceet-success); }
+.ceet-users-admin-status-badge.is-inactive { background: var(--ceet-danger-bg);   color: var(--ceet-danger); }
 
-.ceet-users-admin-status-badge.is-active {
-    background: #f3f4f6;
-    color: #374151;
-}
-
-.ceet-users-admin-status-badge.is-inactive {
-    background: #ffdad6;
-    border-color: #ffb4ab;
-    color: #93000a;
-}
-
+/* Actions de ligne */
 .ceet-users-admin-row-actions {
     display: inline-flex;
     align-items: center;
     justify-content: flex-end;
-    gap: 8px;
+    gap: 4px;
 }
-
-.ceet-users-admin-row-actions form {
-    margin: 0;
-}
-
+.ceet-users-admin-row-actions form { margin: 0; }
 .ceet-users-admin-action-btn {
-    width: 32px;
-    height: 32px;
+    width: 30px;
+    height: 30px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    border: 0;
-    border-radius: 4px;
-    background: transparent;
-    color: #555f6d;
+    border: 1px solid var(--ceet-border);
+    border-radius: var(--ceet-radius-sm);
+    background: var(--ceet-surface);
+    color: var(--ceet-text-muted);
     cursor: pointer;
-    transition: background-color 160ms ease, color 160ms ease;
+    transition: background-color var(--ceet-transition), border-color var(--ceet-transition), color var(--ceet-transition);
 }
-
 .ceet-users-admin-action-btn:hover {
-    background: #e1e2e4;
-    color: #000000;
+    border-color: var(--ceet-text);
+    background: var(--ceet-surface-low);
+    color: var(--ceet-text);
 }
-
 .ceet-users-admin-action-btn.is-danger:hover {
-    background: #ffdad6;
-    color: #93000a;
+    border-color: var(--ceet-danger);
+    background: var(--ceet-danger-bg);
+    color: var(--ceet-danger);
 }
+.ceet-users-admin-action-btn .material-symbols-outlined { font-size: 17px; }
 
-.ceet-users-admin-action-btn .material-symbols-outlined {
-    font-size: 19px;
-}
-
+/* Ligne vide */
 .ceet-users-admin-empty {
-    padding: 34px 16px;
-    color: #555f6d;
+    padding: 40px 16px;
     text-align: center;
-    font-weight: 700;
+    color: var(--ceet-text-muted);
+    font-size: 13px;
+    font-weight: 600;
 }
 
+/* Pied de tableau + pagination */
 .ceet-users-admin-table-footer {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 16px;
-    padding: 14px 16px;
-    background: #ffffff;
-    color: #555f6d;
+    gap: var(--ceet-space-md);
+    padding: 12px 16px;
+    border-top: 1px solid var(--ceet-border);
+    background: var(--ceet-surface-low);
+    color: var(--ceet-text-muted);
     font-size: 13px;
+    flex-wrap: wrap;
 }
-
 .ceet-users-admin-pagination {
     display: inline-flex;
     align-items: center;
-    gap: 10px;
+    gap: 6px;
 }
-
 .ceet-users-admin-pagination a,
 .ceet-users-admin-pagination span,
 .ceet-users-admin-pagination strong {
-    min-height: 32px;
+    min-height: 30px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 6px 10px;
-    border: 1px solid #c6c6cd;
-    border-radius: 4px;
-    background: #ffffff;
-    color: #191c1e;
+    padding: 5px 10px;
+    border: 1px solid var(--ceet-border);
+    border-radius: var(--ceet-radius-sm);
+    background: var(--ceet-surface);
+    color: var(--ceet-text);
     font-size: 13px;
-    font-weight: 800;
+    font-weight: 600;
+    transition: border-color var(--ceet-transition), background-color var(--ceet-transition);
 }
-
+.ceet-users-admin-pagination a:hover {
+    border-color: var(--ceet-text);
+    background: var(--ceet-surface-low);
+}
 .ceet-users-admin-pagination .is-disabled {
-    color: #76777d;
-    background: #f3f4f6;
+    color: var(--ceet-outline);
+    background: var(--ceet-surface-low);
+    cursor: default;
 }
 
-@media (max-width: 1180px) {
-    .ceet-users-admin-stats {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
+/* ── Formulaire create/edit ───────────────────────────────── */
+.ceet-user-form-page .ceet-page-shell { max-width: 860px; }
+.ceet-user-form-page .ceet-card       { margin-top: var(--ceet-space-md); }
+.ceet-page-actions { display: flex; gap: var(--ceet-space-sm); flex-wrap: wrap; }
 
-    .ceet-users-admin-filters {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
-    .ceet-users-admin-filter-actions {
-        grid-column: 1 / -1;
-        justify-content: flex-end;
-    }
+/* ── Responsive ───────────────────────────────────────────── */
+@media (max-width: 1199.98px) {
+    .ceet-users-admin-stats   { grid-template-columns: repeat(2, 1fr); }
+    .ceet-users-admin-filters { grid-template-columns: repeat(2, 1fr); }
 }
-
-@media (max-width: 900px) {
-    .ceet-users-admin-sidebar {
-        position: static;
-        width: 100%;
-        min-height: auto;
-    }
-
-    .ceet-users-admin-topbar,
-    .ceet-users-admin-main {
-        position: static;
-        width: 100%;
-        margin-left: 0;
-    }
-
-    .ceet-users-admin-topbar {
-        height: auto;
-        flex-wrap: wrap;
-        padding: 14px;
-    }
-
-    .ceet-users-admin-main {
-        padding: 24px 14px;
-    }
-
-    .ceet-users-admin-search {
-        width: 100%;
-    }
-
-    .ceet-users-admin-top-actions {
-        width: 100%;
-        flex-wrap: wrap;
-        justify-content: flex-end;
-    }
-}
-
-@media (max-width: 640px) {
-    .ceet-users-admin-stats,
-    .ceet-users-admin-filters {
-        grid-template-columns: 1fr;
-    }
-
-    .ceet-users-admin-page-header h2 {
-        font-size: 28px;
-    }
-
-    .ceet-users-admin-table-footer {
-        align-items: flex-start;
-        flex-direction: column;
-    }
+@media (max-width: 767.98px) {
+    .ceet-users-admin-stats   { grid-template-columns: 1fr; }
+    .ceet-users-admin-filters { grid-template-columns: 1fr; }
+    .ceet-users-admin-page-header { flex-direction: column; align-items: flex-start; }
+    .ceet-users-admin-table-footer { flex-direction: column; align-items: flex-start; }
 }

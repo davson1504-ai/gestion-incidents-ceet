@@ -1,0 +1,316 @@
+﻿/* ============================================================
+   CEET — system-status.css
+   Page état technique du système
+   ============================================================ */
+
+/* ── En-tête page ─────────────────────────────────────────── */
+.ceet-system-status-heading {
+    margin-bottom: var(--ceet-space-lg);
+}
+.ceet-system-status-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    color: var(--ceet-text-muted);
+    font-size: 13px;
+}
+.ceet-system-status-breadcrumb a    { color: var(--ceet-text-muted); transition: color var(--ceet-transition); }
+.ceet-system-status-breadcrumb a:hover { color: var(--ceet-text); }
+.ceet-system-status-breadcrumb strong { color: var(--ceet-text); font-weight: 600; }
+.ceet-system-status-breadcrumb .material-symbols-outlined { font-size: 16px; }
+.ceet-system-status-heading h2 {
+    margin: 0 0 6px;
+    color: var(--ceet-text);
+    font-size: 26px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+}
+.ceet-system-status-heading p {
+    margin: 0;
+    color: var(--ceet-text-muted);
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+/* ── Grille de cartes services ────────────────────────────── */
+.ceet-system-status-card-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--ceet-space-md);
+    margin-bottom: var(--ceet-space-md);
+}
+.ceet-system-status-service-card {
+    padding: var(--ceet-space-lg);
+    border: 1px solid var(--ceet-border);
+    border-radius: var(--ceet-radius-md);
+    background: var(--ceet-surface);
+}
+.ceet-system-status-service-card header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: var(--ceet-space-md);
+    padding-bottom: var(--ceet-space-md);
+    border-bottom: 1px solid var(--ceet-border);
+}
+.ceet-system-status-service-card header .material-symbols-outlined {
+    font-size: 22px;
+    color: var(--ceet-text-muted);
+}
+.ceet-system-status-service-card header strong {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+.ceet-system-status-service-card header strong.is-ok    { color: var(--ceet-success); }
+.ceet-system-status-service-card header strong.is-error { color: var(--ceet-danger); }
+.ceet-system-status-service-card h3 {
+    margin: 0 0 8px;
+    color: var(--ceet-text);
+    font-size: 15px;
+    font-weight: 700;
+}
+.ceet-system-status-service-card p {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    color: var(--ceet-text-muted);
+    font-size: 13px;
+    line-height: 1.5;
+}
+/* Point indicateur */
+.ceet-system-status-service-card p i {
+    width: 8px;
+    height: 8px;
+    border-radius: var(--ceet-radius-full);
+    flex-shrink: 0;
+    font-style: normal;
+}
+.ceet-system-status-service-card p i.is-green { background: var(--ceet-success); }
+.ceet-system-status-service-card p i.is-red   { background: var(--ceet-danger); }
+
+/* ── Grille milieu (stockage + mail) ──────────────────────── */
+.ceet-system-status-middle-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--ceet-space-md);
+    margin-bottom: var(--ceet-space-md);
+}
+
+/* Carte stockage */
+.ceet-system-status-storage-card {
+    padding: var(--ceet-space-lg);
+    border: 1px solid var(--ceet-border);
+    border-radius: var(--ceet-radius-md);
+    background: var(--ceet-surface);
+}
+.ceet-system-status-storage-card header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: var(--ceet-space-md);
+}
+.ceet-system-status-storage-card header div {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.ceet-system-status-storage-card header .material-symbols-outlined { font-size: 20px; color: var(--ceet-text-muted); }
+.ceet-system-status-storage-card header h3 { margin: 0; font-size: 15px; font-weight: 700; }
+.ceet-system-status-storage-card header strong { font-size: 13px; font-weight: 700; color: var(--ceet-text-muted); }
+
+.ceet-system-status-progress {
+    height: 8px;
+    border-radius: var(--ceet-radius-full);
+    background: var(--ceet-surface-mid);
+    overflow: hidden;
+    margin-bottom: var(--ceet-space-md);
+}
+.ceet-system-status-progress span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--ceet-primary);
+    transition: width var(--ceet-transition);
+}
+
+.ceet-system-status-storage-values {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--ceet-space-sm);
+}
+.ceet-system-status-storage-values > div { display: grid; gap: 4px; }
+.ceet-system-status-storage-values span { color: var(--ceet-text-muted); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
+.ceet-system-status-storage-values strong { color: var(--ceet-text); font-size: 15px; font-weight: 700; }
+
+/* Carte mail */
+.ceet-system-status-mail-card {
+    padding: var(--ceet-space-lg);
+    border: 1px solid var(--ceet-border);
+    border-radius: var(--ceet-radius-md);
+    background: var(--ceet-surface);
+}
+.ceet-system-status-mail-card header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: var(--ceet-space-md);
+    padding-bottom: var(--ceet-space-md);
+    border-bottom: 1px solid var(--ceet-border);
+}
+.ceet-system-status-mail-card header div { display: flex; align-items: center; gap: 10px; }
+.ceet-system-status-mail-card header .material-symbols-outlined { font-size: 20px; color: var(--ceet-text-muted); }
+.ceet-system-status-mail-card header h3 { margin: 0; font-size: 15px; font-weight: 700; }
+.ceet-system-status-mail-card header strong { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
+.ceet-system-status-mail-card header strong.is-ok    { color: var(--ceet-success); }
+.ceet-system-status-mail-card header strong.is-error { color: var(--ceet-danger); }
+
+.ceet-system-status-lines { display: grid; gap: 12px; }
+.ceet-system-status-lines > div {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    font-size: 13.5px;
+}
+.ceet-system-status-lines span { color: var(--ceet-text-muted); }
+.ceet-system-status-lines strong { font-weight: 700; color: var(--ceet-text); }
+
+/* ── Journal des erreurs ──────────────────────────────────── */
+.ceet-system-status-log-card {
+    border: 1px solid var(--ceet-border);
+    border-radius: var(--ceet-radius-md);
+    background: var(--ceet-surface);
+    overflow: hidden;
+    margin-bottom: var(--ceet-space-md);
+}
+.ceet-system-status-log-card > header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    min-height: 52px;
+    padding: 12px var(--ceet-space-lg);
+    border-bottom: 1px solid var(--ceet-border);
+    background: var(--ceet-surface-low);
+}
+.ceet-system-status-log-card > header h3 { margin: 0; font-size: 15px; font-weight: 700; color: var(--ceet-text); }
+.ceet-system-status-log-card > header a { color: var(--ceet-text-muted); font-size: 13px; display: inline-flex; align-items: center; gap: 6px; }
+.ceet-system-status-log-card > footer {
+    padding: 12px var(--ceet-space-lg);
+    border-top: 1px solid var(--ceet-border);
+    background: var(--ceet-surface-low);
+}
+.ceet-system-status-log-card > footer a { color: var(--ceet-text-muted); font-size: 13px; font-weight: 600; }
+.ceet-system-status-log-card > footer a:hover { color: var(--ceet-text); }
+
+.ceet-system-status-table-wrap { overflow-x: auto; }
+.ceet-system-status-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+.ceet-system-status-table th {
+    padding: 11px var(--ceet-space-lg);
+    border-bottom: 1px solid var(--ceet-border);
+    background: var(--ceet-surface-low);
+    color: var(--ceet-text-muted);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+.ceet-system-status-table td {
+    padding: 13px var(--ceet-space-lg);
+    border-bottom: 1px solid var(--ceet-border);
+    color: var(--ceet-text);
+    font-size: 13px;
+    vertical-align: middle;
+}
+.ceet-system-status-table tbody tr:last-child td { border-bottom: 0; }
+.ceet-system-status-table .is-mono { font-family: var(--ceet-font-mono); font-size: 12px; }
+.ceet-system-status-table .is-right { text-align: right; }
+.ceet-system-status-table button {
+    border: 0;
+    background: transparent;
+    color: var(--ceet-info);
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 700;
+}
+.ceet-system-status-table button:hover { text-decoration: underline; }
+
+/* Badge sévérité */
+.ceet-system-status-severity {
+    display: inline-flex;
+    align-items: center;
+    min-height: 20px;
+    padding: 2px 8px;
+    border-radius: var(--ceet-radius-sm);
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+.ceet-system-status-severity.is-critical { background: var(--ceet-danger-bg);   color: var(--ceet-danger); }
+.ceet-system-status-severity.is-error    { background: var(--ceet-warning-bg);  color: var(--ceet-warning); }
+.ceet-system-status-severity.is-warning  { background: var(--ceet-warning-bg);  color: var(--ceet-warning); }
+.ceet-system-status-severity.is-info     { background: var(--ceet-info-bg);     color: var(--ceet-info); }
+
+/* Ligne détail */
+.ceet-system-status-detail-row td {
+    background: var(--ceet-surface-low);
+    padding: var(--ceet-space-md) var(--ceet-space-lg) !important;
+    color: var(--ceet-text-muted);
+    font-size: 13px;
+    line-height: 1.6;
+}
+.ceet-system-status-detail-row strong { color: var(--ceet-text); font-weight: 700; }
+
+.ceet-system-status-empty {
+    padding: 36px var(--ceet-space-lg) !important;
+    text-align: center;
+    color: var(--ceet-text-muted) !important;
+    font-size: 13px;
+}
+
+/* ── Analyse intégrité ────────────────────────────────────── */
+.ceet-system-status-analysis {
+    padding: var(--ceet-space-md) var(--ceet-space-lg);
+    border: 1px solid var(--ceet-border);
+    border-radius: var(--ceet-radius-md);
+    background: var(--ceet-surface-low);
+    display: flex;
+    align-items: center;
+    gap: var(--ceet-space-md);
+    flex-wrap: wrap;
+}
+.ceet-system-status-analysis span {
+    color: var(--ceet-text-muted);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+.ceet-system-status-analysis strong {
+    color: var(--ceet-text);
+    font-size: 13.5px;
+    font-weight: 600;
+}
+
+/* ── Responsive ───────────────────────────────────────────── */
+@media (max-width: 1199.98px) {
+    .ceet-system-status-card-grid   { grid-template-columns: 1fr 1fr; }
+    .ceet-system-status-middle-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 767.98px) {
+    .ceet-system-status-card-grid    { grid-template-columns: 1fr; }
+    .ceet-system-status-storage-values { grid-template-columns: 1fr 1fr; }
+}

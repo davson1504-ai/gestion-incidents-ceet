@@ -41,12 +41,12 @@
         </div>
     @else
         <div class="ceet-topbar-actions">
-            <a href="{{ Route::has('notifications.index') ? route('notifications.index') : '#' }}" class="ceet-topbar-icon-btn" aria-label="Notifications" data-ceet-notification-trigger>
+            <a href="{{ Route::has('notifications.index') ? route('notifications.index') : '#' }}" class="ceet-topbar-icon-btn" aria-label="Notifications">
                 <span class="material-symbols-outlined" aria-hidden="true">notifications</span>
                 <span class="ceet-topbar-notification-dot"></span>
             </a>
 
-            <a href="{{ Route::has('profile.edit') ? route('profile.edit') : '#' }}" class="ceet-topbar-icon-btn" aria-label="Profil" data-ceet-link>
+            <a href="{{ Route::has('profile.edit') ? route('profile.edit') : '#' }}" class="ceet-topbar-icon-btn" aria-label="Profil">
                 <span class="material-symbols-outlined" aria-hidden="true">help_outline</span>
             </a>
 

@@ -1,0 +1,507 @@
+﻿/* ============================================================
+   CEET — incidents-show.css
+   Page de détail d'un incident + workflow actions opérateur
+   ============================================================ */
+
+/* ── Notice d'erreur ──────────────────────────────────────── */
+.ceet-incident-notice {
+    margin-bottom: var(--ceet-space-md);
+    padding: 12px 16px;
+    border: 1px solid var(--ceet-border);
+    border-radius: var(--ceet-radius-sm);
+    background: var(--ceet-surface-low);
+    color: var(--ceet-text);
+    font-size: 13.5px;
+    line-height: 1.5;
+}
+.ceet-incident-notice.is-danger {
+    border-color: var(--ceet-danger-border);
+    background: var(--ceet-danger-bg);
+    color: var(--ceet-danger);
+}
+.ceet-incident-notice ul { margin: 4px 0 0; padding-left: 18px; }
+
+/* ── Header de page ───────────────────────────────────────── */
+.ceet-incident-show-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--ceet-space-lg);
+    margin-bottom: var(--ceet-space-lg);
+    flex-wrap: wrap;
+}
+
+.ceet-incident-title-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.ceet-incident-title-row a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border: 1px solid var(--ceet-border);
+    border-radius: var(--ceet-radius-sm);
+    color: var(--ceet-text-subtle);
+    transition: color var(--ceet-transition), border-color var(--ceet-transition);
+}
+.ceet-incident-title-row a:hover { color: var(--ceet-text); border-color: var(--ceet-text); }
+.ceet-incident-title-row h2 {
+    margin: 0;
+    color: var(--ceet-text);
+    font-size: 26px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+}
+
+.ceet-incident-meta-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin: 8px 0 0 46px;
+    color: var(--ceet-text-subtle);
+    font-size: 13px;
+}
+.ceet-incident-meta-row strong { color: var(--ceet-text); font-weight: 700; }
+
+/* Badges inline */
+.ceet-incident-badge {
+    display: inline-flex;
+    align-items: center;
+    min-height: 22px;
+    padding: 3px 9px;
+    border-radius: var(--ceet-radius-sm);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+}
+.ceet-incident-badge.is-critical { background: var(--ceet-danger-bg); color: #93000a; }
+.ceet-incident-badge.is-muted    { background: var(--ceet-surface-mid); color: var(--ceet-text-muted); }
+.ceet-incident-badge.is-closed   { background: var(--ceet-text); color: var(--ceet-surface); }
+
+/* Actions boutons */
+.ceet-incident-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.ceet-incident-btn {
+    min-height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 8px 18px;
+    border: 1px solid var(--ceet-border);
+    border-radius: var(--ceet-radius-sm);
+    cursor: pointer;
+    font-size: 13.5px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: opacity var(--ceet-transition), background-color var(--ceet-transition);
+}
+.ceet-incident-btn.is-dark { border-color: var(--ceet-primary); background: var(--ceet-primary); color: var(--ceet-primary-fg); }
+.ceet-incident-btn.is-light { background: var(--ceet-surface); color: var(--ceet-text); }
+.ceet-incident-btn:hover { opacity: 0.86; }
+.ceet-incident-btn .material-symbols-outlined { font-size: 17px; }
+
+/* ── Carte action opérateur ───────────────────────────────── */
+.ceet-incident-action-card {
+    border: 1px solid var(--ceet-border);
+    border-radius: var(--ceet-radius-md);
+    background: var(--ceet-surface);
+    margin-bottom: var(--ceet-space-md);
+    overflow: hidden;
+}
+.ceet-incident-action-title {
+    padding: 16px var(--ceet-space-lg);
+    border-bottom: 1px solid var(--ceet-border);
+    background: var(--ceet-surface-low);
+}
+.ceet-incident-action-title h3 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+    color: var(--ceet-text);
+    font-size: 15px;
+    font-weight: 700;
+}
+.ceet-incident-action-title p {
+    margin: 4px 0 0;
+    color: var(--ceet-text-muted);
+    font-size: 13px;
+}
+
+/* Formulaire action rapide */
+.ceet-quick-intervention-form {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--ceet-space-md);
+    padding: var(--ceet-space-lg);
+    border-top: 1px solid var(--ceet-border);
+}
+.ceet-quick-intervention-form + .ceet-quick-intervention-form {
+    border-top: 1px solid var(--ceet-border);
+}
+
+.ceet-action-field {
+    display: grid;
+    gap: 6px;
+}
+.ceet-action-field.is-wide { grid-column: 1 / -1; }
+.ceet-action-field label {
+    color: var(--ceet-text-muted);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+.ceet-action-field label span { color: var(--ceet-danger); }
+.ceet-action-field input,
+.ceet-action-field textarea {
+    width: 100%;
+    border: 1px solid var(--ceet-border);
+    border-radius: var(--ceet-radius-sm);
+    background: var(--ceet-surface);
+    color: var(--ceet-text);
+    font: inherit;
+    font-size: 14px;
+    padding: 9px 12px;
+    outline: none;
+    transition: border-color var(--ceet-transition);
+}
+.ceet-action-field input { min-height: 40px; }
+.ceet-action-field textarea { min-height: 90px; resize: vertical; }
+.ceet-action-field input:focus,
+.ceet-action-field textarea:focus { border-color: var(--ceet-primary); }
+
+/* Info box validation */
+.ceet-action-info {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px;
+    border: 1px solid var(--ceet-border);
+    border-radius: var(--ceet-radius-sm);
+    background: var(--ceet-surface-low);
+}
+.ceet-action-info.is-wide { grid-column: 1 / -1; }
+.ceet-action-info .material-symbols-outlined { color: var(--ceet-success); font-size: 22px; flex-shrink: 0; }
+.ceet-action-info strong { display: block; font-size: 14px; font-weight: 700; margin-bottom: 3px; }
+.ceet-action-info p { color: var(--ceet-text-muted); font-size: 13px; line-height: 1.5; }
+
+.ceet-action-submit {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: flex-end;
+}
+
+/* ── Layout détail 2 colonnes ─────────────────────────────── */
+.ceet-incident-detail-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr);
+    gap: var(--ceet-space-md);
+    align-items: start;
+}
+.ceet-incident-left-column,
+.ceet-incident-right-column { display: grid; gap: var(--ceet-space-md); }
+
+/* Carte générique */
+.ceet-incident-card {
+    border: 1px solid var(--ceet-border);
+    border-radius: var(--ceet-radius-md);
+    background: var(--ceet-surface);
+    overflow: hidden;
+}
+.ceet-incident-card:not(.is-table-card) { padding: var(--ceet-space-lg) var(--ceet-space-lg) var(--ceet-space-xl); }
+
+.ceet-incident-card-title {
+    margin-bottom: var(--ceet-space-lg);
+    padding-bottom: var(--ceet-space-md);
+    border-bottom: 1px solid var(--ceet-border);
+}
+.ceet-incident-card-title h3 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+    color: var(--ceet-text);
+    font-size: 17px;
+    font-weight: 700;
+}
+
+/* Grille détails */
+.ceet-incident-detail-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--ceet-space-lg) var(--ceet-space-xl);
+}
+.ceet-incident-detail-grid > div { display: grid; gap: 6px; align-content: start; }
+.ceet-incident-detail-grid .is-wide { grid-column: 1 / -1; }
+.ceet-incident-detail-grid > div > span {
+    color: var(--ceet-text-muted);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+.ceet-incident-detail-grid > div > strong {
+    color: var(--ceet-text);
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.4;
+}
+.ceet-incident-detail-grid > div > small { color: var(--ceet-text-muted); font-size: 12px; }
+.ceet-incident-detail-grid > div > p {
+    margin: 0;
+    padding: 14px 16px;
+    border: 1px solid var(--ceet-border);
+    border-radius: var(--ceet-radius-sm);
+    background: var(--ceet-surface-low);
+    color: var(--ceet-text);
+    font-size: 14px;
+    line-height: 1.65;
+}
+.with-icon { display: flex !important; align-items: flex-start; gap: 6px; }
+.with-icon .material-symbols-outlined { color: var(--ceet-text-muted); font-size: 18px; margin-top: 1px; }
+
+/* Tableau interventions */
+.ceet-incident-table-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--ceet-space-md);
+    min-height: 58px;
+    padding: 14px var(--ceet-space-lg);
+    border-bottom: 1px solid var(--ceet-border);
+    background: var(--ceet-surface-low);
+}
+.ceet-incident-table-title h3 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    font-size: 15px;
+    font-weight: 700;
+}
+.ceet-incident-table-wrap { overflow-x: auto; }
+.ceet-incident-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+.ceet-incident-table thead { background: var(--ceet-surface-low); }
+.ceet-incident-table th {
+    padding: 11px var(--ceet-space-lg);
+    color: var(--ceet-text-muted);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+.ceet-incident-table td {
+    padding: 14px var(--ceet-space-lg);
+    border-top: 1px solid var(--ceet-border);
+    color: var(--ceet-text);
+    font-size: 13.5px;
+    vertical-align: middle;
+}
+.ceet-incident-table .is-right { text-align: right; }
+.ceet-incident-table button {
+    border: 0;
+    background: transparent;
+    color: var(--ceet-info);
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 700;
+}
+.ceet-incident-table button:hover { text-decoration: underline; }
+
+/* Chips personne */
+.ceet-person-chip { display: inline-flex; align-items: center; gap: 8px; }
+.ceet-person-chip b {
+    width: 26px;
+    height: 26px;
+    display: inline-grid;
+    place-items: center;
+    border-radius: var(--ceet-radius-full);
+    background: var(--ceet-surface-mid);
+    color: var(--ceet-text);
+    font-size: 11px;
+    font-weight: 700;
+}
+
+/* Ligne statut */
+.ceet-status-line {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--ceet-text-muted);
+    font-size: 13px;
+}
+.ceet-status-line::before {
+    content: "";
+    width: 7px;
+    height: 7px;
+    border-radius: var(--ceet-radius-full);
+    background: var(--ceet-border);
+    flex-shrink: 0;
+}
+.ceet-status-line.is-done { color: var(--ceet-success); }
+.ceet-status-line.is-done::before { background: var(--ceet-success); }
+
+/* Ligne détail intervention */
+.ceet-intervention-detail-row td {
+    background: var(--ceet-surface-low);
+    padding: var(--ceet-space-md) var(--ceet-space-lg) !important;
+}
+.ceet-intervention-detail-row strong { display: block; font-weight: 700; margin-bottom: 4px; }
+.ceet-intervention-detail-row p { color: var(--ceet-text); font-size: 13.5px; line-height: 1.5; margin-bottom: 6px; }
+.ceet-intervention-detail-row small { display: block; color: var(--ceet-text-muted); font-size: 12px; }
+
+.ceet-empty-cell {
+    padding: 36px var(--ceet-space-lg) !important;
+    text-align: center;
+    color: var(--ceet-text-muted) !important;
+    font-size: 13px;
+}
+
+/* ── Historique timeline ──────────────────────────────────── */
+.ceet-history-card {
+    padding: var(--ceet-space-lg) !important;
+}
+.ceet-history-card h3 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 var(--ceet-space-lg);
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.ceet-timeline {
+    position: relative;
+    display: grid;
+    gap: var(--ceet-space-lg);
+}
+.ceet-timeline::before {
+    content: "";
+    position: absolute;
+    top: 8px;
+    bottom: 8px;
+    left: 8px;
+    width: 2px;
+    background: var(--ceet-border);
+}
+.ceet-timeline-item {
+    position: relative;
+    display: grid;
+    grid-template-columns: 20px 1fr;
+    gap: var(--ceet-space-md);
+}
+.ceet-timeline-item i {
+    position: relative;
+    z-index: 1;
+    width: 18px;
+    height: 18px;
+    margin-top: 3px;
+    border: 3px solid var(--ceet-surface);
+    border-radius: var(--ceet-radius-full);
+    background: var(--ceet-border);
+    flex-shrink: 0;
+}
+.ceet-timeline-item:first-child i { background: var(--ceet-primary); }
+.ceet-timeline-item.is-alert i   { background: var(--ceet-danger); }
+
+.ceet-timeline-item header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--ceet-space-sm);
+    margin-bottom: 4px;
+}
+.ceet-timeline-item strong {
+    color: var(--ceet-text);
+    font-size: 13.5px;
+    font-weight: 700;
+}
+.ceet-timeline-item time {
+    color: var(--ceet-text-muted);
+    font-size: 11px;
+}
+.ceet-timeline-item p {
+    margin: 0;
+    color: var(--ceet-text-muted);
+    font-size: 13px;
+    line-height: 1.45;
+}
+.ceet-timeline-item small {
+    display: block;
+    margin-top: 3px;
+    color: var(--ceet-outline);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+}
+
+.ceet-history-export {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: var(--ceet-space-lg);
+    padding-top: var(--ceet-space-md);
+    border-top: 1px solid var(--ceet-border);
+    color: var(--ceet-text-muted);
+    font-size: 13px;
+    font-weight: 600;
+}
+.ceet-history-export:hover { color: var(--ceet-text); }
+
+/* ── Carte site ───────────────────────────────────────────── */
+.ceet-site-card { padding: var(--ceet-space-lg) !important; }
+.ceet-site-card > label {
+    display: block;
+    margin-bottom: var(--ceet-space-sm);
+    color: var(--ceet-text-muted);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+.ceet-site-preview {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: var(--ceet-space-md);
+    border: 1px solid var(--ceet-border);
+    border-radius: var(--ceet-radius-sm);
+    background: var(--ceet-surface-low);
+    margin-bottom: var(--ceet-space-md);
+}
+.ceet-site-preview .material-symbols-outlined { color: var(--ceet-text-muted); font-size: 24px; }
+.ceet-site-preview strong { font-size: 14px; font-weight: 700; }
+
+.ceet-site-lines { display: grid; gap: 10px; }
+.ceet-site-lines > div { display: flex; justify-content: space-between; gap: 8px; font-size: 13px; }
+.ceet-site-lines span { color: var(--ceet-text-muted); }
+.ceet-site-lines strong { font-weight: 700; text-align: right; }
+
+/* ── Responsive ───────────────────────────────────────────── */
+@media (max-width: 1199.98px) {
+    .ceet-incident-detail-layout {
+        grid-template-columns: 1fr;
+    }
+}
+@media (max-width: 767.98px) {
+    .ceet-quick-intervention-form {
+        grid-template-columns: 1fr;
+    }
+    .ceet-incident-detail-grid {
+        grid-template-columns: 1fr;
+    }
+    .ceet-incident-show-header {
+        flex-direction: column;
+    }
+}

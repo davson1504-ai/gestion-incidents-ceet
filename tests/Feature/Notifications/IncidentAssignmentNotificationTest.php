@@ -46,9 +46,16 @@ class IncidentAssignmentNotificationTest extends TestCase
 
         $listResponse->assertOk();
         $listResponse->assertJsonPath('unread_count', 1);
+        $listResponse->assertJsonPath('notifications.0.title', 'Incident affecté');
+        $listResponse->assertJsonPath('notifications.0.type', 'incident_assigned');
         $listResponse->assertJsonPath('notifications.0.data.kind', 'incident_assigned');
         $listResponse->assertJsonPath('notifications.0.data.incident_id', $incident->id);
         $listResponse->assertJsonPath('notifications.0.data.assigned_by_id', $supervisor->id);
+
+        $this->actingAs($operator)
+            ->getJson(route('notifications.count'))
+            ->assertOk()
+            ->assertJsonPath('unread_count', 1);
     }
 
     public function test_operator_can_mark_assignment_notification_as_read(): void
@@ -74,5 +81,57 @@ class IncidentAssignmentNotificationTest extends TestCase
             ->assertJsonPath('unread_count', 0);
 
         $this->assertNotNull(DB::table('notifications')->where('id', $notificationId)->value('read_at'));
+    }
+
+    public function test_user_cannot_mark_another_users_notification_as_read(): void
+    {
+        $this->seedRolesAndPermissions();
+        $context = $this->createCatalogContext();
+
+        $supervisor = $this->makeUserWithRole('supervisor');
+        $assignedOperator = $this->makeUserWithRole('operator');
+        $otherOperator = $this->makeUserWithRole('operator');
+        $incident = $this->makeIncident($context, ['superviseur_id' => $supervisor->id]);
+
+        $this->actingAs($supervisor)->postJson("/api/v1/incidents/{$incident->id}/assign", [
+            'responsable_id' => $assignedOperator->id,
+        ])->assertOk();
+
+        $notificationId = DB::table('notifications')
+            ->where('notifiable_id', $assignedOperator->id)
+            ->value('id');
+
+        $this->actingAs($otherOperator)
+            ->postJson(route('notifications.read', $notificationId))
+            ->assertNotFound();
+
+        $this->assertNull(DB::table('notifications')->where('id', $notificationId)->value('read_at'));
+    }
+
+    public function test_operator_can_mark_all_notifications_as_read(): void
+    {
+        $this->seedRolesAndPermissions();
+        $context = $this->createCatalogContext();
+
+        $supervisor = $this->makeUserWithRole('supervisor');
+        $operator = $this->makeUserWithRole('operator');
+        $incident = $this->makeIncident($context, ['superviseur_id' => $supervisor->id]);
+
+        $this->actingAs($supervisor)->postJson("/api/v1/incidents/{$incident->id}/assign", [
+            'responsable_id' => $operator->id,
+        ])->assertOk();
+
+        $this->actingAs($operator)
+            ->postJson(route('notifications.read-all'))
+            ->assertOk()
+            ->assertJsonPath('unread_count', 0);
+
+        $this->assertSame(
+            0,
+            DB::table('notifications')
+                ->where('notifiable_id', $operator->id)
+                ->whereNull('read_at')
+                ->count()
+        );
     }
 }

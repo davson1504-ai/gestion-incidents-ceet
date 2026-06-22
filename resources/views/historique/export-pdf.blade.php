@@ -1,5 +1,31 @@
 @php
-    $actions = collect($actions ?? []);
+    
+    $actionLabel = function ($action) {
+        $key = mb_strtolower(trim((string) $action));
+
+        $labels = [
+            'create' => 'Création',
+            'creation' => 'Création',
+            'create_incident' => 'Création',
+            'update' => 'Modification',
+            'modification' => 'Modification',
+            'update_incident' => 'Modification',
+            'assign' => 'Affectation',
+            'assignation' => 'Affectation',
+            'affectation' => 'Affectation',
+            'prise_en_charge' => 'Prise en charge',
+            'resolution' => 'Résolution',
+            'rapport' => 'Rapport d’intervention',
+            'validation' => 'Validation',
+            'close' => 'Clôture',
+            'cloture' => 'Clôture',
+            'delete' => 'Suppression',
+        ];
+
+        return $labels[$key] ?? str($action ?: '-')->replace('_', ' ')->title();
+    };
+
+$actions = collect($actions ?? []);
     $filters = $filters ?? [];
     $formatDate = function ($date) {
         if (! $date) return '-';
@@ -110,7 +136,7 @@
                 <tr>
                     <td>{{ $formatDate($action->action_date ?? null) }}</td>
                     <td>{{ $action->user?->name ?? '-' }}<br><span class="muted">{{ $action->user?->email ?? '' }}</span></td>
-                    <td><span class="badge">{{ $action->action_type ?? '-' }}</span></td>
+                    <td><span class="badge">{{ $actionLabel($action->action_type ?? null) }}</span></td>
                     <td>{{ $action->incident?->code_incident ?? '-' }}<br><span class="muted">{{ $action->incident?->titre ?? '' }}</span></td>
                     <td>{{ $action->description ?? '-' }}</td>
                 </tr>

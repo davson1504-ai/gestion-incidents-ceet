@@ -1,0 +1,118 @@
+/* ============================================================
+   CEET — Alertes et messages flash
+   ============================================================ */
+
+/* Base */
+.ceet-alert {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 16px;
+    border-radius: var(--ceet-radius-md);
+    border: 1px solid transparent;
+    font-size: 13.5px;
+    line-height: 1.5;
+}
+
+.ceet-alert .material-symbols-outlined {
+    font-size: 20px;
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
+.ceet-alert-content {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.ceet-alert-title {
+    display: block;
+    font-weight: 700;
+    margin-bottom: 2px;
+}
+
+/* Variantes */
+.ceet-alert-success {
+    background: var(--ceet-success-bg);
+    border-color: var(--ceet-success-border);
+    color: var(--ceet-success);
+}
+
+.ceet-alert-danger {
+    background: var(--ceet-danger-bg);
+    border-color: var(--ceet-danger-border);
+    color: var(--ceet-danger);
+}
+
+.ceet-alert-warning {
+    background: var(--ceet-warning-bg);
+    border-color: #f0d47a;
+    color: var(--ceet-warning);
+}
+
+.ceet-alert-info {
+    background: var(--ceet-info-bg);
+    border-color: #b0cef3;
+    color: var(--ceet-info);
+}
+
+.ceet-alert-neutral {
+    background: var(--ceet-surface-low);
+    border-color: var(--ceet-border);
+    color: var(--ceet-text);
+}
+
+/* Toast notifications */
+.ceet-toast-container {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 380px;
+    width: calc(100% - 48px);
+    pointer-events: none;
+}
+
+.ceet-toast {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 16px;
+    border-radius: var(--ceet-radius-md);
+    background: var(--ceet-text);
+    color: var(--ceet-surface);
+    box-shadow: var(--ceet-shadow-md);
+    pointer-events: all;
+    animation: ceet-toast-in 200ms ease;
+}
+
+.ceet-toast.is-success {
+    background: var(--ceet-success);
+}
+
+.ceet-toast.is-danger {
+    background: var(--ceet-danger);
+}
+
+.ceet-toast.is-warning {
+    background: #7c5800;
+}
+
+.ceet-toast .material-symbols-outlined {
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.ceet-toast-message {
+    flex: 1;
+    font-size: 13.5px;
+    line-height: 1.4;
+}
+
+@keyframes ceet-toast-in {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}

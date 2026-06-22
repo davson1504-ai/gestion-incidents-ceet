@@ -1,0 +1,153 @@
+/* ============================================================
+   CEET — Boutons (composants communs)
+   ============================================================ */
+
+/* Base commune */
+.ceet-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 38px;
+    padding: 8px 18px;
+    border-radius: var(--ceet-radius-sm);
+    border: 1px solid transparent;
+    cursor: pointer;
+    font-size: 13.5px;
+    font-weight: 600;
+    line-height: 1.4;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background-color var(--ceet-transition), border-color var(--ceet-transition), color var(--ceet-transition), opacity var(--ceet-transition);
+}
+
+.ceet-btn:disabled,
+.ceet-btn.is-disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+}
+
+.ceet-btn .material-symbols-outlined {
+    font-size: 17px;
+}
+
+/* Variantes */
+.ceet-btn-primary {
+    border-color: var(--ceet-primary);
+    background: var(--ceet-primary);
+    color: var(--ceet-primary-fg);
+}
+
+.ceet-btn-primary:hover:not(:disabled) {
+    border-color: var(--ceet-primary-hover);
+    background: var(--ceet-primary-hover);
+}
+
+.ceet-btn-secondary {
+    border-color: var(--ceet-border);
+    background: var(--ceet-surface);
+    color: var(--ceet-text);
+}
+
+.ceet-btn-secondary:hover:not(:disabled) {
+    border-color: var(--ceet-text);
+    background: var(--ceet-surface-low);
+}
+
+.ceet-btn-ghost {
+    border-color: transparent;
+    background: transparent;
+    color: var(--ceet-text-subtle);
+}
+
+.ceet-btn-ghost:hover:not(:disabled) {
+    background: var(--ceet-surface-low);
+    color: var(--ceet-text);
+}
+
+.ceet-btn-danger {
+    border-color: var(--ceet-danger);
+    background: var(--ceet-danger);
+    color: #ffffff;
+}
+
+.ceet-btn-danger:hover:not(:disabled) {
+    background: #93000a;
+    border-color: #93000a;
+}
+
+.ceet-btn-danger-outline {
+    border-color: var(--ceet-danger);
+    background: transparent;
+    color: var(--ceet-danger);
+}
+
+.ceet-btn-danger-outline:hover:not(:disabled) {
+    background: var(--ceet-danger-bg);
+}
+
+/* Tailles */
+.ceet-btn-sm {
+    min-height: 30px;
+    padding: 5px 12px;
+    font-size: 12px;
+}
+
+.ceet-btn-lg {
+    min-height: 46px;
+    padding: 11px 28px;
+    font-size: 15px;
+}
+
+.ceet-btn-full {
+    width: 100%;
+}
+
+/* Bouton icône carré */
+.ceet-btn-icon {
+    width: 34px;
+    height: 34px;
+    min-height: auto;
+    padding: 0;
+    flex-shrink: 0;
+}
+
+.ceet-btn-icon .material-symbols-outlined {
+    font-size: 18px;
+}
+
+.ceet-btn-icon.ceet-btn-sm {
+    width: 28px;
+    height: 28px;
+}
+
+/* FAB (floating action button) */
+.ceet-fab {
+    position: fixed;
+    bottom: 28px;
+    right: 28px;
+    z-index: 70;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 22px;
+    border-radius: 100px;
+    border: 0;
+    background: var(--ceet-primary);
+    color: var(--ceet-primary-fg);
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 700;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+    text-decoration: none;
+    transition: transform var(--ceet-transition), box-shadow var(--ceet-transition);
+}
+
+.ceet-fab:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.22);
+}
+
+.ceet-fab .material-symbols-outlined {
+    font-size: 20px;
+}

@@ -40,6 +40,15 @@ class IncidentService
                 : $this->statusId('OUVERT');
             $payload['priorite_id'] = $payload['priorite_id'] ?? $this->defaultPrioriteId();
 
+            // CEET: à la création, le superviseur associé est toujours le superviseur connecté.
+            // Le champ n'est pas affiché dans le formulaire pour éviter qu'un superviseur déclare
+            // un incident au nom d'un autre superviseur.
+            if (method_exists($actor, 'isSuperviseur') && $actor->isSuperviseur()) {
+                $payload['superviseur_id'] = $actor->id;
+            } else {
+                unset($payload['superviseur_id']);
+            }
+
             if (array_key_exists('resume_resolution', $payload) && ! array_key_exists('resolution_summary', $payload)) {
                 $payload['resolution_summary'] = $payload['resume_resolution'];
             }
@@ -97,6 +106,24 @@ class IncidentService
             if (array_key_exists('resume_resolution', $payload) && ! array_key_exists('resolution_summary', $payload)) {
                 $payload['resolution_summary'] = $payload['resume_resolution'];
             }
+
+            // CEET: la modification standard ne doit pas changer le superviseur vers un autre compte
+            // quand l'utilisateur connecté est superviseur.
+            if (method_exists($actor, 'isSuperviseur') && $actor->isSuperviseur()) {
+                $payload['superviseur_id'] = $actor->id;
+            } else {
+                unset($payload['superviseur_id']);
+            }
+
+            // CEET: les champs de traitement sont gérés par les workflows dédiés
+            // prise en charge / rapport / résolution, pas par le formulaire de modification générale.
+            unset(
+                $payload['actions_menees'],
+                $payload['resolution_summary'],
+                $payload['resume_resolution'],
+                $payload['actions_realisees'],
+                $payload['resultat_obtenu']
+            );
 
             $incident->fill($payload);
             $incident->save();

@@ -947,3 +947,253 @@
         flex-direction: column;
     }
 }
+
+/* === CEET INCIDENTS INDEX DESIGN FIX === */
+
+body:has(.ceet-incidents-index-layout) .ceet-app-content {
+    padding: 24px 26px 32px !important;
+    overflow-x: hidden !important;
+}
+
+body:has(.ceet-incidents-index-layout) .ceet-app-content-inner {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+}
+
+#ceet-main-content .ceet-incidents-shell,
+#ceet-main-content .ceet-incidents-main {
+    width: 100% !important;
+    max-width: none !important;
+    min-height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+#ceet-main-content .ceet-incidents-sidebar,
+#ceet-main-content .ceet-incidents-topbar,
+#ceet-main-content .ceet-incidents-overlay {
+    display: none !important;
+}
+
+.ceet-incidents-index-layout {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 18px;
+}
+
+.ceet-incidents-index-layout .ceet-page-header {
+    width: 100%;
+    margin: 0 0 8px !important;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.ceet-incidents-index-layout .ceet-page-header-info {
+    max-width: 760px;
+}
+
+.ceet-incidents-index-layout .ceet-page-title {
+    margin: 0;
+    color: #000000;
+    font-size: 30px;
+    font-weight: 800;
+    line-height: 1.15;
+    letter-spacing: -0.03em;
+}
+
+.ceet-incidents-index-layout .ceet-page-subtitle {
+    margin: 8px 0 0;
+    color: #555f6d;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.ceet-incidents-index-layout .ceet-incidents-filter-panel {
+    width: 100%;
+    margin: 0 !important;
+    padding: 18px 20px !important;
+    border: 1px solid #c6c6cd;
+    border-radius: 8px;
+    background: #ffffff;
+}
+
+.ceet-incidents-index-layout .ceet-incidents-filters {
+    width: 100%;
+    display: grid;
+    grid-template-columns:
+        minmax(240px, 2fr)
+        minmax(150px, 1fr)
+        minmax(150px, 1fr)
+        minmax(180px, 1.2fr);
+    gap: 18px 18px;
+    align-items: end;
+}
+
+.ceet-incidents-index-layout .ceet-incidents-field {
+    min-width: 0;
+}
+
+.ceet-incidents-index-layout .ceet-incidents-field label {
+    margin-bottom: 8px;
+    color: #45464c;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.ceet-incidents-index-layout .ceet-incidents-field input,
+.ceet-incidents-index-layout .ceet-incidents-field select {
+    width: 100%;
+    min-height: 44px;
+    border-radius: 4px;
+    background: #f8f9fb;
+}
+
+.ceet-incidents-index-layout .ceet-incidents-filter-actions {
+    display: flex;
+    align-items: end;
+    gap: 10px;
+}
+
+.ceet-incidents-index-layout .ceet-incidents-square-btn {
+    width: 52px;
+    height: 44px;
+    display: grid;
+    place-items: center;
+}
+
+.ceet-incidents-index-layout .ceet-incidents-summary-grid {
+    width: 100%;
+    margin: 4px 0 4px !important;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.ceet-incidents-index-layout .ceet-incidents-summary-grid article {
+    min-height: 92px;
+    padding: 18px 20px;
+    border: 1px solid #c6c6cd;
+    border-radius: 8px;
+    background: #ffffff;
+}
+
+.ceet-incidents-index-layout .ceet-incidents-summary-grid span {
+    color: #45464c;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.ceet-incidents-index-layout .ceet-incidents-summary-grid strong {
+    display: block;
+    margin-top: 8px;
+    color: #000000;
+    font-size: 28px;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.ceet-incidents-index-layout .ceet-incidents-table-panel {
+    width: 100%;
+    margin: 0 !important;
+    border: 1px solid #c6c6cd;
+    border-radius: 8px;
+    background: #ffffff;
+    overflow: hidden;
+}
+
+.ceet-incidents-index-layout .ceet-incidents-table-wrap {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+}
+
+.ceet-incidents-index-layout .ceet-incidents-table {
+    width: 100%;
+    min-width: 1120px;
+    border-collapse: collapse;
+    table-layout: auto;
+}
+
+.ceet-incidents-index-layout .ceet-incidents-table th {
+    padding: 14px 18px;
+    white-space: nowrap;
+}
+
+.ceet-incidents-index-layout .ceet-incidents-table td {
+    padding: 16px 18px;
+    vertical-align: top;
+}
+
+.ceet-incidents-index-layout .ceet-incidents-table td:first-child,
+.ceet-incidents-index-layout .ceet-incidents-table th:first-child {
+    padding-left: 22px;
+}
+
+.ceet-incidents-index-layout .ceet-incidents-table td:last-child,
+.ceet-incidents-index-layout .ceet-incidents-table th:last-child {
+    padding-right: 22px;
+}
+
+.ceet-incidents-index-layout .ceet-incidents-row-actions {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    white-space: nowrap;
+}
+
+.ceet-incidents-index-layout .ceet-incidents-table-footer {
+    width: 100%;
+    padding: 14px 18px;
+}
+
+@media (max-width: 1200px) {
+    .ceet-incidents-index-layout .ceet-incidents-filters {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .ceet-incidents-index-layout .ceet-incidents-summary-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    body:has(.ceet-incidents-index-layout) .ceet-app-content {
+        padding: 18px 14px 24px !important;
+    }
+
+    .ceet-incidents-index-layout .ceet-page-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .ceet-incidents-index-layout .ceet-page-title {
+        font-size: 26px;
+    }
+
+    .ceet-incidents-index-layout .ceet-incidents-filters,
+    .ceet-incidents-index-layout .ceet-incidents-summary-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .ceet-incidents-index-layout .ceet-incidents-filter-actions {
+        width: 100%;
+    }
+
+    .ceet-incidents-index-layout .ceet-incidents-square-btn {
+        flex: 1;
+        width: auto;
+    }
+}
+
+/* === END CEET INCIDENTS INDEX DESIGN FIX === */

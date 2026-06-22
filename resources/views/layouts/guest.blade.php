@@ -28,6 +28,5 @@
                 </div>
             </section>
         </main>
-        <x-ceet-toasts />
-</body>
+    </body>
 </html>

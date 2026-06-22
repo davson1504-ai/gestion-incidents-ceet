@@ -1,0 +1,64 @@
+﻿/* ============================================================
+   CEET — incidents-edit.css
+   Page de modification d'un incident
+   Hérite de incidents-create.css pour les champs communs
+   ============================================================ */
+
+/* Carte résumé en haut */
+.ceet-incident-summary-card {
+    margin-bottom: var(--ceet-space-md);
+    padding: var(--ceet-space-lg);
+    border: 1px solid var(--ceet-border);
+    border-radius: var(--ceet-radius-md);
+    background: var(--ceet-surface-low);
+}
+
+/* Code incident */
+.incident-code {
+    font-family: var(--ceet-font-mono);
+    font-weight: 700;
+    color: var(--ceet-text);
+    letter-spacing: 0.03em;
+}
+
+/* Badges statut / priorité héritent des classes communes */
+.ceet-status-badge,
+.ceet-priority-badge {
+    display: inline-flex;
+    align-items: center;
+    min-height: 22px;
+    padding: 3px 10px;
+    border-radius: var(--ceet-radius-full);
+    font-size: 11.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+/* Statuts */
+.ceet-status-badge.status-ouvert    { background: var(--ceet-status-ouvert-bg);   color: var(--ceet-status-ouvert); }
+.ceet-status-badge.status-affecte   { background: var(--ceet-status-affecte-bg);  color: var(--ceet-status-affecte); }
+.ceet-status-badge.status-en-cours  { background: var(--ceet-status-en-cours-bg); color: var(--ceet-status-en-cours); }
+.ceet-status-badge.status-resolu    { background: var(--ceet-status-resolu-bg);   color: var(--ceet-status-resolu); }
+.ceet-status-badge.status-rapporte  { background: var(--ceet-status-rapporte-bg); color: var(--ceet-status-rapporte); }
+.ceet-status-badge.status-valide    { background: var(--ceet-status-valide-bg);   color: var(--ceet-status-valide); }
+.ceet-status-badge.status-cloture   { background: var(--ceet-status-cloture-bg);  color: var(--ceet-status-cloture); }
+
+/* Priorités */
+.ceet-priority-badge.priority-critique { background: var(--ceet-priority-critique-bg); color: var(--ceet-priority-critique); }
+.ceet-priority-badge.priority-haute    { background: var(--ceet-priority-haute-bg);    color: var(--ceet-priority-haute); }
+.ceet-priority-badge.priority-moyenne  { background: var(--ceet-priority-medium-bg);   color: var(--ceet-priority-medium); }
+.ceet-priority-badge.priority-basse    { background: var(--ceet-priority-basse-bg);    color: var(--ceet-priority-basse); }
+
+/* Carte formulaire edit */
+.ceet-incident-form-card {
+    margin-bottom: var(--ceet-space-md);
+}
+
+/* Wrapper page edit */
+.ceet-incident-edit-page .ceet-page-shell {
+    max-width: 1040px;
+}
+
+/* Actions page */
+.ceet-page-actions { display: flex; gap: var(--ceet-space-sm); flex-wrap: wrap; }

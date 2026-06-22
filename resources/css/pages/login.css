@@ -1,29 +1,221 @@
-@import "../app.css";
+/* ============================================================
+   CEET — Page de connexion (layout guest)
+   ============================================================ */
 
-.ceet-login-page,
-.ceet-reset-page {
-    background: #f8f9fb;
+.ceet-login-page {
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    padding: var(--ceet-space-lg);
+    background: var(--ceet-background);
 }
 
-.ceet-login-panel,
-.ceet-reset-panel {
-    box-shadow: 0 20px 60px rgba(15, 23, 42, .08);
+.ceet-login-main {
+    width: min(100%, 440px);
 }
 
-.ceet-login-logo,
-.ceet-reset-logo {
-    border-radius: 6px;
+.ceet-login-brand {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: var(--ceet-space-md);
+    text-align: center;
 }
 
-.ceet-reset-main {
-    width: min(100%, 460px);
-    margin: auto;
-    padding: 24px;
+.ceet-login-logo {
+    width: 60px;
+    height: 60px;
+    display: grid;
+    place-items: center;
+    margin-bottom: var(--ceet-space-md);
+    border: 1px solid var(--ceet-border);
+    border-radius: var(--ceet-radius-sm);
+    background: var(--ceet-surface);
 }
 
-.ceet-reset-panel {
-    padding: 36px;
-    border: 1px solid #d8dce2;
-    border-radius: 6px;
-    background: #ffffff;
+.ceet-login-logo img {
+    width: 44px;
+    height: 44px;
+    object-fit: contain;
+}
+
+.ceet-login-brand h1 {
+    margin: 0 0 4px;
+    color: var(--ceet-text);
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+}
+
+.ceet-login-brand p {
+    margin: 0;
+    color: var(--ceet-text-muted);
+    font-size: 13.5px;
+}
+
+.ceet-login-panel {
+    padding: 36px 40px;
+    border: 1px solid var(--ceet-border);
+    border-radius: var(--ceet-radius-sm);
+    background: var(--ceet-surface);
+}
+
+.ceet-login-heading {
+    margin-bottom: var(--ceet-space-xl);
+}
+
+.ceet-login-heading h2 {
+    margin: 0;
+    color: var(--ceet-text);
+    font-size: 17px;
+    font-weight: 700;
+}
+
+.ceet-login-heading span {
+    display: block;
+    width: 28px;
+    height: 3px;
+    margin-top: 8px;
+    background: var(--ceet-primary);
+    border-radius: 2px;
+}
+
+.ceet-login-form {
+    display: grid;
+    gap: var(--ceet-space-lg);
+}
+
+.ceet-login-submit {
+    width: 100%;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 8px;
+    border: 1px solid var(--ceet-primary);
+    border-radius: var(--ceet-radius-sm);
+    background: var(--ceet-primary);
+    color: var(--ceet-primary-fg);
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 700;
+    transition: opacity var(--ceet-transition);
+}
+
+.ceet-login-submit:hover { opacity: 0.88; }
+.ceet-login-submit:disabled { cursor: wait; opacity: 0.6; }
+
+.ceet-login-secondary {
+    display: flex;
+    justify-content: center;
+    padding-top: 8px;
+}
+
+.ceet-login-secondary a {
+    color: var(--ceet-text-subtle);
+    font-size: 13px;
+    text-decoration: underline;
+    text-decoration-color: var(--ceet-border);
+    text-underline-offset: 3px;
+    transition: color var(--ceet-transition);
+}
+
+.ceet-login-secondary a:hover { color: var(--ceet-primary); }
+
+.ceet-login-footer {
+    margin-top: var(--ceet-space-xl);
+    text-align: center;
+}
+
+.ceet-login-footer p {
+    color: var(--ceet-outline);
+    font-size: 12px;
+}
+
+@media (max-width: 575.98px) {
+    .ceet-login-page { padding: var(--ceet-space-md); }
+    .ceet-login-panel { padding: 28px 22px; }
+}
+.auth-page,
+.login-page {
+    min-height: 100vh;
+    width: 100%;
+    overflow-x: hidden;
+    background: #f5f7fb;
+}
+
+.auth-container,
+.login-container {
+    width: min(100%, 560px);
+    margin: 0 auto;
+    padding: 32px 20px;
+}
+
+.auth-card,
+.login-card,
+.ceet-login-card {
+    width: 100%;
+    max-width: 520px;
+    margin: 0 auto;
+    padding: 40px;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+.auth-card form,
+.login-card form,
+.ceet-login-card form {
+    width: 100%;
+}
+
+.auth-field,
+.form-group,
+.input-group,
+.ceet-input-group {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+.auth-input,
+.form-control,
+.input-group input,
+.ceet-input-group input,
+input[type="email"],
+input[type="password"],
+input[type="text"] {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+.auth-input-wrapper,
+.input-wrapper,
+.ceet-input-wrapper {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+.auth-submit,
+.login-submit,
+button[type="submit"] {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+@media (max-width: 640px) {
+    .auth-container,
+    .login-container {
+        padding: 24px 16px;
+    }
+
+    .auth-card,
+    .login-card,
+    .ceet-login-card {
+        padding: 28px 20px;
+        max-width: 100%;
+    }
 }

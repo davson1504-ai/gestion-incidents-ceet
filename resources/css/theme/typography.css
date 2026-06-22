@@ -1,0 +1,73 @@
+/* ============================================================
+   CEET — Système typographique
+   ============================================================ */
+
+/* Material Symbols */
+.material-symbols-outlined {
+    direction: ltr;
+    display: inline-block;
+    font-family: "Material Symbols Outlined";
+    font-feature-settings: "liga";
+    font-size: 20px;
+    font-style: normal;
+    font-weight: normal;
+    letter-spacing: normal;
+    line-height: 1;
+    text-transform: none;
+    white-space: nowrap;
+    word-wrap: normal;
+    -webkit-font-feature-settings: "liga";
+    -webkit-font-smoothing: antialiased;
+    font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+}
+
+/* Hiérarchie de titres */
+.ceet-page-kicker {
+    display: inline-block;
+    margin-bottom: 6px;
+    color: var(--ceet-text-muted);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.ceet-page-title {
+    margin: 0;
+    color: var(--ceet-text);
+    font-size: clamp(24px, 3vw, 34px);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+}
+
+.ceet-page-subtitle {
+    margin: 8px 0 0;
+    color: var(--ceet-text-subtle);
+    font-size: 15px;
+    line-height: 1.55;
+}
+
+/* Label de section */
+.ceet-section-label {
+    color: var(--ceet-text-muted);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+/* Texte monospace */
+.ceet-mono {
+    font-family: var(--ceet-font-mono);
+    font-size: 13px;
+}
+
+/* Animation de chargement */
+.ceet-spin {
+    animation: ceet-spin 0.9s linear infinite;
+}
+
+@keyframes ceet-spin {
+    to { transform: rotate(360deg); }
+}
