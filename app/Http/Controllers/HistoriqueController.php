@@ -227,4 +227,15 @@ class HistoriqueController extends Controller
 
         return '--';
     }
+    public function clear(Request $request)
+    {
+        $deleted = IncidentAction::query()->delete();
+
+        return redirect()
+            ->route('historique.index')
+            ->with('success', $deleted > 0
+                ? "{$deleted} entrée(s) d’historique ont été vidées logiquement."
+                : "Aucune entrée d’historique à vider.");
+    }
+
 }

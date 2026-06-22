@@ -48,3 +48,59 @@
     height: 48px;
     font-size: 18px;
 }
+
+/* CEET - bouton vider les anciennes notifications */
+.ceet-global-notification-clear-old {
+    margin-left: 8px;
+    border: 0;
+    background: transparent;
+    color: #7b1f1f;
+    font-size: .76rem;
+    font-weight: 800;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.ceet-global-notification-clear-old:hover,
+.ceet-global-notification-clear-old:focus-visible {
+    color: #b42318;
+    text-decoration: underline;
+    outline: none;
+}
+
+.ceet-global-notification-clear-old:disabled {
+    color: #9ca3af;
+    cursor: wait;
+    text-decoration: none;
+}
+
+/* CEET - historique suppression logique */
+.ceet-history-clear-form {
+    display: inline-flex;
+    margin: 0;
+}
+
+.ceet-history-btn.is-danger,
+.ceet-history-page .ceet-history-btn.is-danger {
+    background: #b42318;
+    border-color: #b42318;
+    color: #ffffff;
+}
+
+.ceet-history-btn.is-danger:hover,
+.ceet-history-page .ceet-history-btn.is-danger:hover {
+    background: #8f1c14;
+    border-color: #8f1c14;
+    color: #ffffff;
+}
+
+.ceet-history-flash {
+    margin: 0 0 18px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1px solid #b7e4c7;
+    background: #ecfdf3;
+    color: #05603a;
+    font-weight: 800;
+}
+

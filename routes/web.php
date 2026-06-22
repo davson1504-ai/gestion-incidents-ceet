@@ -25,6 +25,7 @@ Route::middleware(['auth', 'verified'])->group(function (): void {
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
     Route::get('/notifications/count', [NotificationController::class, 'count'])->name('notifications.count');
     Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
+    Route::post('/notifications/clear-old', [NotificationController::class, 'clearOldNotifications'])->name('notifications.clear-old');
     Route::post('/notifications/{notification}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -100,6 +101,7 @@ Route::middleware(['auth', 'verified'])->group(function (): void {
     Route::middleware('role:Administrateur|Superviseur')->group(function (): void {
         Route::get('historique', [HistoriqueController::class, 'index'])->name('historique.index');
         Route::get('historique/export', [HistoriqueController::class, 'export'])->name('historique.export');
+        Route::post('historique/clear', [HistoriqueController::class, 'clear'])->name('historique.clear');
         Route::get('system/status', SystemStatusController::class)->name('system.status');
     });
 

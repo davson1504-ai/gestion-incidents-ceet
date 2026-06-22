@@ -395,7 +395,7 @@ $userName = $currentUser?->name ?? 'Utilisateur';
                                         </span>
                                     </td>
                                     <td><span class="ceet-status-line {{ $done ? 'is-done' : '' }}">{{ $interventionStatus }}</span></td>
-                                    <td class="is-right"><button type="button" data-intervention-detail="intervention-{{ $intervention->id }}">Consulter</button></td>
+                                    <td class="is-right"><button type="button" class="ceet-detail-toggle-btn" data-intervention-detail="intervention-{{ $intervention->id }}">Consulter</button></td>
                                 </tr>
                                 <tr id="intervention-{{ $intervention->id }}" class="ceet-intervention-detail-row" hidden>
                                     <td colspan="4">
@@ -418,7 +418,7 @@ $userName = $currentUser?->name ?? 'Utilisateur';
                                         </span>
                                     </td>
                                     <td><span class="ceet-status-line is-done">Rapport soumis</span></td>
-                                    <td class="is-right"><button type="button" data-intervention-detail="report-{{ $report->id }}">Consulter</button></td>
+                                    <td class="is-right"><button type="button" class="ceet-detail-toggle-btn" data-intervention-detail="report-{{ $report->id }}">Consulter</button></td>
                                 </tr>
                                 <tr id="report-{{ $report->id }}" class="ceet-intervention-detail-row" hidden>
                                     <td colspan="4">

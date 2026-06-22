@@ -112,6 +112,15 @@
                 Exporter CSV
             </a>
 
+                    <form method="POST" action="{{ route('historique.clear') }}" class="ceet-history-clear-form" onsubmit="return confirm('Vider logiquement tout l’historique ? Les lignes seront masquées mais récupérables en base.');">
+                        @csrf
+                        <button type="submit" class="ceet-history-btn is-danger">
+                            <span class="material-symbols-outlined" aria-hidden="true">delete_sweep</span>
+                            Vider l’historique
+                        </button>
+                    </form>
+
+
             <a href="{{ route('historique.index') }}" class="ceet-history-btn is-dark">
                 <span class="material-symbols-outlined">refresh</span>
                 Actualiser

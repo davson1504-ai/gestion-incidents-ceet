@@ -69,4 +69,30 @@ class NotificationController extends Controller
             'unread_count' => 0,
         ]);
     }
+    public function clearOldNotifications(Request $request)
+    {
+        $user = $request->user();
+
+        if (! $user) {
+            return response()->json([
+                'message' => 'Utilisateur non authentifié.',
+                'deleted' => 0,
+            ], 401);
+        }
+
+        $deleted = $user->notifications()
+            ->where(function ($query) {
+                $query->whereNotNull('read_at')
+                    ->orWhere('created_at', '<=', now()->subDays(30));
+            })
+            ->delete();
+
+        return response()->json([
+            'message' => $deleted > 0
+                ? 'Notifications anciennes supprimées.'
+                : 'Aucune ancienne notification à supprimer.',
+            'deleted' => $deleted,
+        ]);
+    }
+
 }

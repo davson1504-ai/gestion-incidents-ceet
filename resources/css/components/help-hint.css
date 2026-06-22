@@ -94,3 +94,99 @@
     font-size: .84rem;
     line-height: 1.5;
 }
+
+/* CEET - évite que le panneau Help soit coupé sur les cartes proches de la sidebar */
+.ceet-helpable.ceet-help-align-left > .ceet-help-panel {
+    left: 10px !important;
+    right: auto !important;
+}
+
+.ceet-helpable.ceet-help-align-left.ceet-help-offset-right > .ceet-help-panel {
+    left: 10px !important;
+    right: auto !important;
+}
+
+.ceet-helpable.ceet-help-align-left > .ceet-help-panel::before {
+    left: 18px;
+    right: auto;
+}
+
+.ceet-helpable > .ceet-help-panel {
+    max-width: min(340px, calc(100vw - 32px));
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+
+/* CEET - KPI help panels below card v1 */
+.ceet-current-stat-card.ceet-helpable > .ceet-help-panel,
+.ceet-incident-kpi-card.ceet-helpable > .ceet-help-panel,
+.ceet-incidents-kpi-card.ceet-helpable > .ceet-help-panel,
+.incident-stat-card.ceet-helpable > .ceet-help-panel,
+.stat-card.ceet-helpable > .ceet-help-panel,
+.ceet-admin-kpi-card.ceet-helpable > .ceet-help-panel,
+.ceet-dashboard-kpi.ceet-helpable > .ceet-help-panel,
+.ceet-dashboard-kpi-card.ceet-helpable > .ceet-help-panel,
+.ceet-supervisor-kpi-card.ceet-helpable > .ceet-help-panel,
+.ceet-reports-admin-kpi-card.ceet-helpable > .ceet-help-panel,
+.ceet-users-stat-card.ceet-helpable > .ceet-help-panel,
+.users-stat-card.ceet-helpable > .ceet-help-panel {
+    top: calc(100% + 10px) !important;
+    left: 0 !important;
+    right: auto !important;
+    width: min(360px, calc(100vw - 360px)) !important;
+    min-width: 280px;
+    z-index: 99999 !important;
+    background: #ffffff !important;
+    text-transform: none !important;
+    letter-spacing: normal !important;
+}
+
+.ceet-current-stat-card.ceet-helpable > .ceet-help-panel::before,
+.ceet-incident-kpi-card.ceet-helpable > .ceet-help-panel::before,
+.ceet-incidents-kpi-card.ceet-helpable > .ceet-help-panel::before,
+.incident-stat-card.ceet-helpable > .ceet-help-panel::before,
+.stat-card.ceet-helpable > .ceet-help-panel::before,
+.ceet-admin-kpi-card.ceet-helpable > .ceet-help-panel::before,
+.ceet-dashboard-kpi.ceet-helpable > .ceet-help-panel::before,
+.ceet-dashboard-kpi-card.ceet-helpable > .ceet-help-panel::before,
+.ceet-supervisor-kpi-card.ceet-helpable > .ceet-help-panel::before,
+.ceet-reports-admin-kpi-card.ceet-helpable > .ceet-help-panel::before,
+.ceet-users-stat-card.ceet-helpable > .ceet-help-panel::before,
+.users-stat-card.ceet-helpable > .ceet-help-panel::before {
+    top: -7px !important;
+    left: auto !important;
+    right: 18px !important;
+}
+
+.ceet-helpable > .ceet-help-panel .ceet-help-title,
+.ceet-helpable > .ceet-help-panel .ceet-help-text {
+    text-transform: none !important;
+    letter-spacing: normal !important;
+}
+
+.ceet-helpable > .ceet-help-panel .ceet-help-title {
+    font-weight: 900 !important;
+}
+
+.ceet-helpable > .ceet-help-panel .ceet-help-text {
+    font-weight: 500 !important;
+}
+
+@media (max-width: 900px) {
+    .ceet-current-stat-card.ceet-helpable > .ceet-help-panel,
+    .ceet-incident-kpi-card.ceet-helpable > .ceet-help-panel,
+    .ceet-incidents-kpi-card.ceet-helpable > .ceet-help-panel,
+    .incident-stat-card.ceet-helpable > .ceet-help-panel,
+    .stat-card.ceet-helpable > .ceet-help-panel,
+    .ceet-admin-kpi-card.ceet-helpable > .ceet-help-panel,
+    .ceet-dashboard-kpi.ceet-helpable > .ceet-help-panel,
+    .ceet-dashboard-kpi-card.ceet-helpable > .ceet-help-panel,
+    .ceet-supervisor-kpi-card.ceet-helpable > .ceet-help-panel,
+    .ceet-reports-admin-kpi-card.ceet-helpable > .ceet-help-panel,
+    .ceet-users-stat-card.ceet-helpable > .ceet-help-panel,
+    .users-stat-card.ceet-helpable > .ceet-help-panel {
+        width: min(320px, calc(100vw - 32px)) !important;
+        min-width: 240px;
+    }
+}
+

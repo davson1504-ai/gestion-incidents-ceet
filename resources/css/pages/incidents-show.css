@@ -505,3 +505,23 @@
         flex-direction: column;
     }
 }
+
+.ceet-detail-toggle-btn {
+    border: 0;
+    background: transparent;
+    color: #0057b8;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.ceet-detail-toggle-btn:hover,
+.ceet-detail-toggle-btn:focus-visible {
+    color: #000000;
+    text-decoration: underline;
+    outline: none;
+}
+
+.ceet-intervention-detail-row.is-open td {
+    background: #f8fafc;
+}
+

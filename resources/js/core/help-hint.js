@@ -51,7 +51,14 @@ function helpFor(element, title) {
 
     const text = normalize(`${title} ${cleanText(element.textContent)}`);
 
-    if (text.includes('total en cours')) return "Nombre total d’incidents actuellement ouverts ou suivis en temps réel.";
+    if (text.includes('total en cours')) {
+        const delta = cleanText(element.textContent).match(/[+-]\s*\d+/);
+        const deltaInfo = delta
+            ? ` La flèche et l’écart ${delta[0].replace(/\s+/g, '')} indiquent l’évolution récente par rapport à la période de référence.`
+            : ' La flèche indique l’évolution récente par rapport à la période de référence.';
+
+        return `Nombre total d’incidents actuellement ouverts ou suivis.${deltaInfo}`;
+    }
     if (text.includes('priorite critique')) return "Nombre d’incidents critiques nécessitant une attention prioritaire.";
     if (text.includes('moyenne resolution') || text.includes('duree moyenne')) return "Temps moyen observé pour le traitement ou le rétablissement.";
     if (text.includes('equipes mobilisees')) return "Nombre d’équipes ou opérateurs mobilisés pour le traitement.";
@@ -122,6 +129,7 @@ function isExcluded(element) {
 
     return (
         text.includes('rechercher un incident') ||
+        text.includes("voir tout l'historique") ||
         text.includes('filtres avances') ||
         text.includes('periode du rapport') ||
         text.includes('synchronisation scada') ||
@@ -220,6 +228,21 @@ const AUTO_SELECTORS = [
     '.users-table-card',
 ];
 
+
+function hasActionColumn(element) {
+    if (!element) {
+        return false;
+    }
+
+    const headers = Array.from(element.querySelectorAll('th, [role="columnheader"]'));
+    return headers.some((header) => {
+        const label = normalize(header.textContent);
+        return label === 'action'
+            || label === 'actions'
+            || label.includes('actions');
+    });
+}
+
 function candidates(root = document) {
     const found = new Set();
 
@@ -229,6 +252,11 @@ function candidates(root = document) {
 
     return Array.from(found).filter((element) => {
         if (isExcluded(element)) {
+            return false;
+        }
+
+        // CEET: pas de rond d'aide en haut à droite des tableaux avec colonne Actions.
+        if (hasActionColumn(element)) {
             return false;
         }
 
@@ -254,6 +282,14 @@ function mount(element) {
 
     if (hasTopRightControl(element)) {
         element.classList.add('ceet-help-offset-right');
+    }
+
+    const rect = element.getBoundingClientRect();
+
+    // CEET: sur les cartes proches du bord gauche, le panneau s'ouvre vers la droite
+    // pour éviter qu'il soit coupé par la sidebar ou le bord du contenu.
+    if (rect.left < 380) {
+        element.classList.add('ceet-help-align-left');
     }
 
     const title = titleFor(element);
@@ -285,6 +321,14 @@ function mount(element) {
 }
 
 function cleanupFloatingNodes() {
+    document.querySelectorAll('.ceet-helpable').forEach((element) => {
+        if (hasActionColumn(element)) {
+            element.querySelectorAll(':scope > .ceet-help-trigger, :scope > .ceet-help-panel').forEach((node) => node.remove());
+            element.classList.remove('ceet-helpable', 'ceet-help-offset-right', 'ceet-help-align-left');
+            delete element.dataset.ceetHelpReady;
+        }
+    });
+
     document.querySelectorAll('.ceet-help-trigger, .ceet-help-panel').forEach((node) => {
         if (!node.parentElement?.classList.contains('ceet-helpable')) {
             node.remove();
