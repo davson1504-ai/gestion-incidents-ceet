@@ -1,0 +1,96 @@
+.ceet-helpable {
+    position: relative !important;
+    overflow: visible !important;
+}
+
+.ceet-helpable > .ceet-help-trigger {
+    position: absolute !important;
+    top: 10px !important;
+    right: 10px !important;
+    left: auto !important;
+    bottom: auto !important;
+    z-index: 60;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #000000;
+    border-radius: 999px;
+    background: #ffffff;
+    color: #000000;
+    font-size: .78rem;
+    font-weight: 950;
+    line-height: 1;
+    font-family: inherit;
+    cursor: help;
+    box-shadow: 0 5px 14px rgba(15, 23, 42, .14);
+    transition: background-color .16s ease, color .16s ease, transform .16s ease, box-shadow .16s ease;
+}
+
+.ceet-helpable.ceet-help-offset-right > .ceet-help-trigger {
+    right: 44px !important;
+}
+
+.ceet-helpable.ceet-help-offset-right-lg > .ceet-help-trigger {
+    right: 76px !important;
+}
+
+.ceet-helpable > .ceet-help-trigger:hover,
+.ceet-helpable > .ceet-help-trigger:focus-visible {
+    background: #000000;
+    color: #ffffff;
+    transform: translateY(-1px);
+    outline: none;
+    box-shadow: 0 10px 24px rgba(15, 23, 42, .18);
+}
+
+.ceet-helpable > .ceet-help-panel {
+    position: absolute !important;
+    top: 42px !important;
+    right: 10px !important;
+    left: auto !important;
+    bottom: auto !important;
+    z-index: 9999;
+    width: min(320px, calc(100vw - 40px));
+    padding: 13px 14px;
+    border: 1px solid #d9dde3;
+    border-radius: 10px;
+    background: #ffffff;
+    color: #191c1d;
+    box-shadow: 0 18px 45px rgba(15, 23, 42, .18);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-6px);
+    pointer-events: none;
+    transition: opacity .16s ease, visibility .16s ease, transform .16s ease;
+}
+
+.ceet-helpable.ceet-help-offset-right > .ceet-help-panel {
+    right: 44px !important;
+}
+
+.ceet-helpable > .ceet-help-trigger:hover + .ceet-help-panel,
+.ceet-helpable > .ceet-help-trigger:focus-visible + .ceet-help-panel,
+.ceet-helpable > .ceet-help-panel:hover {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+.ceet-help-title {
+    margin: 0 0 6px;
+    color: #111315;
+    font-size: .86rem;
+    font-weight: 900;
+    line-height: 1.25;
+}
+
+.ceet-help-text {
+    margin: 0;
+    color: #5f656c;
+    font-size: .84rem;
+    line-height: 1.5;
+}

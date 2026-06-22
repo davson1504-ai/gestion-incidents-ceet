@@ -1,13 +1,13 @@
 @import "bootstrap/dist/css/bootstrap.min.css";
-
 @import "./theme/variables.css";
 @import "./theme/reset.css";
 @import "./theme/typography.css";
-
+@import "./theme/ceet-theme.css";
+@import "./pages/login.css";
+@import "./pages/incidents.css";
 @import "./layouts/app-shell.css";
 @import "./layouts/sidebar.css";
 @import "./layouts/topbar.css";
-
 @import "./components/buttons.css";
 @import "./components/cards.css";
 @import "./components/forms.css";
@@ -15,13 +15,36 @@
 @import "./components/badges.css";
 @import "./components/alerts.css";
 @import "./components/modals.css";
+@import "./components/notifications.css";
+@import "./pages/reports.css";
+@import "./pages/users.css";
+@import "./pages/catalogues.css";
+@import "./pages/profile.css";
+@import "./pages/system-status.css";
+@import "./mobile.css";
+@import "./components/help-hint.css";
 
-@import "./pages/login.css";
-
-.ceet-spin {
-    animation: ceet-spin 800ms linear infinite;
+.ceet-user-avatar {
+    width: 34px;
+    height: 34px;
+    display: grid;
+    place-items: center;
+    border-radius: var(--ceet-radius-md);
+    background: var(--ceet-text);
+    color: var(--ceet-surface);
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.02em;
 }
 
-@keyframes ceet-spin {
-    to { transform: rotate(360deg); }
+.ceet-user-avatar.is-sm {
+    width: 26px;
+    height: 26px;
+    font-size: 10px;
+}
+
+.ceet-user-avatar.is-lg {
+    width: 48px;
+    height: 48px;
+    font-size: 18px;
 }
