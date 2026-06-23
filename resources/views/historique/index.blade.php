@@ -197,11 +197,12 @@
                                 ->implode('');
 
                             $displayInitials = mb_strtoupper($displayInitials ?: 'SYS');
-                            $isError = str_contains(mb_strtolower($log->action), 'error') || str_contains(mb_strtolower($log->action), 'fail');
+                            $actionType = (string) $log->action_type;
+                            $isError = str_contains(mb_strtolower($actionType), 'error') || str_contains(mb_strtolower($actionType), 'fail');
                         @endphp
 
                         <tr>
-                            <td class="is-mono">{{ $log->created_at?->format('Y-m-d H:i:s') ?? '--' }}</td>
+                            <td class="is-mono">{{ $log->action_date?->format('Y-m-d H:i:s') ?? '--' }}</td>
 
                             <td>
                                 <div class="ceet-history-user-cell">
@@ -212,11 +213,11 @@
 
                             <td>
                                 <span class="ceet-history-action-chip {{ $isError ? 'is-error' : '' }}">
-                                    {{ $actionLabel($log->action) }}
+                                    {{ $actionLabel($actionType) }}
                                 </span>
                             </td>
 
-                            <td>{{ $moduleLabel($log->module) }}</td>
+                            <td>{{ $moduleLabel('incidents') }}</td>
 
                             <td class="{{ $isError ? 'is-error-text' : '' }}">{{ $targetLabel($log) }}</td>
 
@@ -238,11 +239,11 @@
                             <td colspan="7">
                                 <div>
                                     <strong>Détails techniques</strong>
-                                    <pre>{{ $detailsLabel($log->details) }}</pre>
-                                    <small>
-                                        Agent utilisateur :
-                                        {{ $log->user_agent ?: 'Non renseigné' }}
-                                    </small>
+                                    <p>{{ $log->description ?: 'Aucune description.' }}</p>
+                                    <pre>{{ $detailsLabel([
+                                        'anciennes_valeurs' => $log->old_values,
+                                        'nouvelles_valeurs' => $log->new_values,
+                                    ]) }}</pre>
                                 </div>
                             </td>
                         </tr>

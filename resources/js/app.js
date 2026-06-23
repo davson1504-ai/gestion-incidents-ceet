@@ -170,4 +170,3 @@ initHelpHints();
         exists: !!document.getElementById(button.getAttribute('data-intervention-detail')),
     }));
 })();
-

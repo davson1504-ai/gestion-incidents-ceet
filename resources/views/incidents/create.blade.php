@@ -181,6 +181,12 @@ $defaultStart = old('date_debut', now()->format('Y-m-d\\TH:i'));
 <section class="ceet-incident-form-card is-wide">
                     <div class="ceet-incident-card-title">Affectation</div>
 
+                    <div class="ceet-incident-field">
+                        <span class="ceet-incident-help">
+                            <strong>Statut initial :</strong> OUVERT, ou AFFECTE si un opérateur est affecté.
+                        </span>
+                    </div>
+
                     <div class=\"ceet-incident-two-columns ceet-incident-affectation-single\">
                         <div class="ceet-incident-field">
                             <label for="responsable_id">Responsable terrain</label>
