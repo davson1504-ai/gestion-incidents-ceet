@@ -6,12 +6,18 @@ use App\Models\Departement;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class OperatorUserSeeder extends Seeder
 {
     public function run(): void
     {
+        if (app()->isProduction()) {
+            throw new \RuntimeException('OperatorUserSeeder is disabled in production.');
+        }
+
         $departementIds = Departement::pluck('id')->all();
+        $password = env('DEMO_USER_PASSWORD') ?: Str::random(32);
 
         $users = [
             ['name' => 'Superviseur Lomé',     'email' => 'superviseur.lome@ceet.tg',     'role' => 'Superviseur', 'tel' => '90000001'],
@@ -27,7 +33,7 @@ class OperatorUserSeeder extends Seeder
                 ['email' => $row['email']],
                 [
                     'name' => $row['name'],
-                    'password' => Hash::make('password'),
+                    'password' => Hash::make($password),
                     // ✅ CORRECTION #5: Numéros de téléphone uniques et valides (8 chiffres Togo)
                     'telephone' => $row['tel'],
                     'departement_id' => ! empty($departementIds)

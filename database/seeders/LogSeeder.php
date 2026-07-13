@@ -12,6 +12,10 @@ class LogSeeder extends Seeder
 {
     public function run(): void
     {
+        if (app()->isProduction()) {
+            throw new \RuntimeException('LogSeeder is disabled in production.');
+        }
+
         $userIds = User::query()->pluck('id')->all();
         $incidentIds = Incident::query()->pluck('id')->all();
 

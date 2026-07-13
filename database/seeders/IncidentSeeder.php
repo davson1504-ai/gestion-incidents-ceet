@@ -16,6 +16,10 @@ class IncidentSeeder extends Seeder
 {
     public function run(): void
     {
+        if (app()->isProduction()) {
+            throw new \RuntimeException('IncidentSeeder is disabled in production.');
+        }
+
         $departementIds = Departement::query()->pluck('id')->all();
         $typeIds = TypeIncident::query()->pluck('id')->all();
         $causesByType = Cause::query()->get(['id', 'type_incident_id'])->groupBy('type_incident_id');

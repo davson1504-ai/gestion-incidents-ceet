@@ -33,7 +33,8 @@ cp .env.example .env
 composer install
 npm install
 php artisan key:generate
-php artisan migrate --seed
+php artisan migrate
+php artisan db:seed
 php artisan reverb:start
 npm run dev
 ```
@@ -44,14 +45,25 @@ cp .env.example .env
 composer install
 ./vendor/bin/sail up -d
 ./vendor/bin/sail artisan key:generate
-./vendor/bin/sail artisan migrate --seed
+./vendor/bin/sail artisan migrate
+./vendor/bin/sail artisan db:seed
 ./vendor/bin/sail artisan reverb:start
 ./vendor/bin/sail npm run dev
 ```
 
+## Production
+Utiliser `.env.production.example`, puis executer uniquement les seeders de reference avec:
+
+```bash
+php artisan db:seed --class=ProductionSeeder --force
+php artisan app:create-first-admin
+```
+
+Ne pas utiliser `migrate --seed` en production. La procedure complete est dans [Deploiement production](docs/deployment-production.md).
+
 ## Documentation
-- [Guide utilisateur](docs/guide-utilisateur.md)
-- [Guide d'installation](docs/guide-installation.md)
+- [Deploiement production](docs/deployment-production.md)
+- [Rapport de readiness](DEPLOYMENT_READINESS.md)
 
 ## Variables d’environnement critiques
 - `APP_URL`
@@ -63,6 +75,7 @@ composer install
 - `REVERB_APP_SECRET`
 - `REVERB_HOST`
 - `REVERB_PORT`
+- `REVERB_ALLOWED_ORIGINS`
 - `MAIL_MAILER`
 - `MAIL_HOST`
 - `MAIL_FROM_ADDRESS`
