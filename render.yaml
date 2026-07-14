@@ -1,0 +1,71 @@
+services:
+  - type: web
+    name: gestion-incidents-ceet-demo
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile.render
+    healthCheckPath: /up
+    autoDeploy: false
+    envVars:
+      - key: APP_NAME
+        value: CEET - Gestion des Incidents
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: "false"
+      - key: APP_URL
+        sync: false
+      - key: APP_KEY
+        generateValue: true
+      - key: AUTH_ALLOW_PUBLIC_REGISTRATION
+        value: "false"
+      - key: LOG_CHANNEL
+        value: stderr
+      - key: LOG_LEVEL
+        value: warning
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: DB_HOST
+        fromDatabase:
+          name: gestion-incidents-ceet-demo-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: gestion-incidents-ceet-demo-db
+          property: port
+      - key: DB_DATABASE
+        fromDatabase:
+          name: gestion-incidents-ceet-demo-db
+          property: database
+      - key: DB_USERNAME
+        fromDatabase:
+          name: gestion-incidents-ceet-demo-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: gestion-incidents-ceet-demo-db
+          property: password
+      - key: SESSION_DRIVER
+        value: database
+      - key: CACHE_STORE
+        value: database
+      - key: QUEUE_CONNECTION
+        value: sync
+      - key: BROADCAST_CONNECTION
+        value: log
+      - key: FILESYSTEM_DISK
+        value: local
+      - key: MAIL_MAILER
+        value: log
+      - key: REVERB_ENABLED
+        value: "false"
+      - key: REVERB_ALLOWED_ORIGINS
+        sync: false
+      - key: VITE_APP_NAME
+        value: CEET - Gestion des Incidents
+
+databases:
+  - name: gestion-incidents-ceet-demo-db
+    plan: free
+    databaseName: gestion_incidents_ceet_demo
+    user: ceet_demo
