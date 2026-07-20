@@ -191,6 +191,7 @@
                         <th>Code</th>
                         <th>Priorité</th>
                         <th>Statut</th>
+                        <th>Rapport</th>
                         <th>Départ / Secteur</th>
                         <th class="is-right">Actions</th>
                     </tr>
@@ -230,6 +231,22 @@
                                             ? 'is-resolved'
                                             : 'is-new')));
 
+                            $report = $incident->report;
+                            $reportStatusCode = mb_strtoupper((string) ($report?->statut_rapport ?? ''));
+                            $reportLabel = match ($reportStatusCode) {
+                                'SOUMIS' => 'Soumis',
+                                'VALIDE' => 'Validé',
+                                'REFUSE' => 'Refusé',
+                                'BROUILLON' => 'Brouillon',
+                                default => 'Non soumis',
+                            };
+                            $reportClass = match ($reportStatusCode) {
+                                'SOUMIS' => 'is-pending',
+                                'VALIDE' => 'is-resolved',
+                                'REFUSE' => 'is-rejected',
+                                default => 'is-new',
+                            };
+
                             $incidentUrl = Route::has('incidents.show') ? route('incidents.show', $incident) : '#';
                         @endphp
 
@@ -258,6 +275,17 @@
                             </td>
 
                             <td>
+                                <span class="ceet-mine-status {{ $reportClass }}">
+                                    {{ $reportLabel }}
+                                </span>
+                                @if ($reportStatusCode === 'REFUSE')
+                                    <span class="ceet-mine-report-reason">Motif : {{ $report->motif_refus ?: 'Non renseigné' }}</span>
+                                @elseif ($report?->date_soumission)
+                                    <span class="ceet-mine-report-reason">Soumis {{ $report->date_soumission->diffForHumans() }}</span>
+                                @endif
+                            </td>
+
+                            <td>
                                 <strong>{{ $sector }}</strong>
                                 <span>{{ $depart }}</span>
                             </td>
@@ -272,7 +300,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="ceet-mine-empty-row">
+                            <td colspan="6" class="ceet-mine-empty-row">
                                 Aucun incident assigné.
                             </td>
                         </tr>

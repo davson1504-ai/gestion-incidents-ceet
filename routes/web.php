@@ -68,12 +68,32 @@ Route::middleware(['auth', 'verified'])->group(function (): void {
         ->middleware('permission:incidents.resolve')
         ->name('incidents.resolve');
 
-    Route::post('incidents/{incident}/report', [IncidentController::class, 'report'])
-        ->middleware('permission:incidents.report')
+    Route::get('incidents/{incident}/report', [IncidentController::class, 'show'])
+        ->middleware('permission:reports.view|incidents.view|incidents.view.assigned')
+        ->name('incidents.report.show');
+
+    Route::get('incidents/{incident}/report/edit', [IncidentController::class, 'editRejectedReport'])
+        ->middleware('permission:reports.update|incidents.report')
+        ->name('incidents.report.edit');
+
+    Route::post('incidents/{incident}/report', [IncidentController::class, 'submitReport'])
+        ->middleware('permission:reports.submit|incidents.report')
         ->name('incidents.report');
 
+    Route::patch('incidents/{incident}/report', [IncidentController::class, 'updateReport'])
+        ->middleware('permission:reports.update|incidents.report')
+        ->name('incidents.report.update');
+
+    Route::post('incidents/{incident}/report/validate', [IncidentController::class, 'validateReport'])
+        ->middleware('permission:reports.validate|incidents.validate')
+        ->name('incidents.report.validate');
+
+    Route::post('incidents/{incident}/report/reject', [IncidentController::class, 'rejectReport'])
+        ->middleware('permission:reports.reject|incidents.validate')
+        ->name('incidents.report.reject');
+
     Route::post('incidents/{incident}/validate', [IncidentController::class, 'validateResolution'])
-        ->middleware('permission:incidents.validate')
+        ->middleware('permission:reports.validate|incidents.validate')
         ->name('incidents.validate');
 
     Route::post('incidents/{incident}/close', [IncidentController::class, 'close'])

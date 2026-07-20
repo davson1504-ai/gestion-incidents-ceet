@@ -219,9 +219,16 @@ class IncidentService
 
             $this->ensureStatus($incident, 'VALIDE', 'Seul un incident valide peut etre cloture.');
             $incident->loadMissing('report');
+
             if (! $incident->report) {
                 throw ValidationException::withMessages([
                     'rapport' => 'La cloture est impossible sans rapport d intervention.',
+                ]);
+            }
+
+            if ($incident->report->statut_rapport !== IncidentReport::STATUS_VALIDATED) {
+                throw ValidationException::withMessages([
+                    'rapport' => 'La cloture est impossible tant que le rapport d intervention n est pas valide.',
                 ]);
             }
 
@@ -241,7 +248,7 @@ class IncidentService
                 incident: $incident,
                 userId: $actor->id,
                 type: 'cloture',
-                description: "Cloture de l'incident",
+                description: "Cloture de l'incident apres validation du rapport",
                 old: $oldValues,
                 new: $incident->only([
                     'status_id',
@@ -254,6 +261,8 @@ class IncidentService
 
             $this->logAudit($incident, $actor->id, 'close', [
                 'duree_minutes' => $incident->duree_minutes,
+                'report_id' => $incident->report->id,
+                'report_status' => $incident->report->statut_rapport,
             ]);
 
             $incident = $incident->refresh();
@@ -262,7 +271,7 @@ class IncidentService
                 incident: $incident,
                 kind: 'incident_closed',
                 title: 'Incident clôturé',
-                message: "L'incident {$incident->code_incident} a été clôturé.",
+                message: "L'incident {$incident->code_incident} a été clôturé après validation du rapport d'intervention.",
                 actor: $actor,
                 recipients: $this->incidentParticipants($incident)
             );
@@ -372,32 +381,84 @@ class IncidentService
     public function submitReport(Incident $incident, array $payload, User $actor): IncidentReport
     {
         return DB::transaction(function () use ($incident, $payload, $actor) {
-            $this->ensureStatus($incident, 'RESOLU', 'Le rapport ne peut etre redige qu apres resolution.');
+            $incident->loadMissing(['status', 'report']);
+            $this->ensureAssignedOperator($incident, $actor);
+            $this->ensureStatus($incident, 'RESOLU', 'Le rapport ne peut etre soumis qu apres resolution de l incident.');
+            $this->ensureIncidentNotClosed($incident);
+
+            $existingReport = $incident->report;
+            $wasRejected = $existingReport?->statut_rapport === IncidentReport::STATUS_REJECTED;
+
+            if ($existingReport && ! in_array($existingReport->statut_rapport, [IncidentReport::STATUS_DRAFT, IncidentReport::STATUS_REJECTED], true)) {
+                throw ValidationException::withMessages([
+                    'rapport' => 'Ce rapport est deja soumis ou valide et ne peut pas etre modifie par l operateur.',
+                ]);
+            }
+
+            $submittedAt = isset($payload['submitted_at']) ? Carbon::parse($payload['submitted_at']) : now();
 
             $report = IncidentReport::updateOrCreate([
                 'incident_id' => $incident->id,
             ], [
                 'user_id' => $actor->id,
+                'operateur_id' => $actor->id,
                 'actions_realisees' => $payload['actions_realisees'],
                 'resultat' => $payload['resultat'],
                 'observations' => $payload['observations'] ?? null,
-                'submitted_at' => isset($payload['submitted_at']) ? Carbon::parse($payload['submitted_at']) : now(),
+                'statut_rapport' => IncidentReport::STATUS_SUBMITTED,
+                'submitted_at' => $submittedAt,
+                'date_soumission' => $submittedAt,
+                'date_validation' => null,
+                'valide_par' => null,
             ]);
 
             $oldStatusId = $incident->status_id;
             $incident->status_id = $this->statusId('RAPPORTE');
             $incident->save();
 
-            $this->logAction($incident, $actor->id, 'rapport', 'Rapport d intervention redige', ['status_id' => $oldStatusId], ['status_id' => $incident->status_id, 'report_id' => $report->id]);
-            $this->logAudit($incident, $actor->id, 'report', ['report_id' => $report->id]);
+            if ($wasRejected) {
+                $this->logAction(
+                    incident: $incident,
+                    userId: $actor->id,
+                    type: 'rapport_correction',
+                    description: 'Rapport refuse corrige par l operateur',
+                    old: [
+                        'status_id' => $oldStatusId,
+                        'report_status' => IncidentReport::STATUS_REJECTED,
+                        'motif_refus' => $existingReport->motif_refus,
+                    ],
+                    new: [
+                        'report_id' => $report->id,
+                        'report_status' => $report->statut_rapport,
+                    ]
+                );
+
+                $this->logAudit($incident, $actor->id, 'report_corrected', [
+                    'report_id' => $report->id,
+                    'previous_refusal_reason' => $existingReport->motif_refus,
+                ]);
+            }
+
+            $this->logAction(
+                incident: $incident,
+                userId: $actor->id,
+                type: 'rapport_soumission',
+                description: $wasRejected ? 'Rapport corrige soumis a nouveau' : 'Rapport d intervention soumis',
+                old: ['status_id' => $oldStatusId],
+                new: ['status_id' => $incident->status_id, 'report_id' => $report->id, 'report_status' => $report->statut_rapport]
+            );
+            $this->logAudit($incident, $actor->id, $wasRejected ? 'report_resubmitted' : 'report_submitted', [
+                'report_id' => $report->id,
+                'report_status' => $report->statut_rapport,
+            ]);
 
             $incident = $incident->refresh();
 
             $this->notifyIncidentEvent(
                 incident: $incident,
-                kind: 'incident_reported',
-                title: 'Rapport soumis',
-                message: "Le rapport de l'incident {$incident->code_incident} attend validation.",
+                kind: $wasRejected ? 'incident_report_resubmitted' : 'incident_reported',
+                title: $wasRejected ? 'Rapport resoumis' : 'Rapport soumis',
+                message: "Le rapport de l'incident {$incident->code_incident} attend controle.",
                 actor: $actor,
                 recipients: $this->incidentParticipants($incident)
                     ->merge($this->supervisorsForIncidentValidation())
@@ -407,27 +468,139 @@ class IncidentService
         });
     }
 
-    public function validateResolution(Incident $incident, User $actor): Incident
+    public function updateRejectedReport(Incident $incident, array $payload, User $actor): IncidentReport
+    {
+        $incident->loadMissing('report');
+
+        if (! $incident->report || $incident->report->statut_rapport !== IncidentReport::STATUS_REJECTED) {
+            throw ValidationException::withMessages([
+                'rapport' => 'Seul un rapport refuse peut etre corrige par cette action.',
+            ]);
+        }
+
+        return $this->submitReport($incident, $payload, $actor);
+    }
+
+    public function validateReport(Incident $incident, User $actor): Incident
     {
         return DB::transaction(function () use ($incident, $actor) {
-            $this->ensureStatus($incident, 'RAPPORTE', 'Seul un incident rapporte peut etre valide.');
+            $this->ensureStatus($incident, 'RAPPORTE', 'Seul un incident dont le rapport est soumis peut etre valide.');
+            $incident->loadMissing('report');
+
+            if (! $incident->report || $incident->report->statut_rapport !== IncidentReport::STATUS_SUBMITTED) {
+                throw ValidationException::withMessages([
+                    'rapport' => 'Aucun rapport soumis n est disponible pour validation.',
+                ]);
+            }
 
             $oldStatusId = $incident->status_id;
+            $incident->report->forceFill([
+                'statut_rapport' => IncidentReport::STATUS_VALIDATED,
+                'date_validation' => now(),
+                'valide_par' => $actor->id,
+            ])->save();
+
             $incident->status_id = $this->statusId('VALIDE');
             $incident->save();
 
-            $this->logAction($incident, $actor->id, 'validation', 'Resolution validee par le superviseur', ['status_id' => $oldStatusId], ['status_id' => $incident->status_id]);
-            $this->logAudit($incident, $actor->id, 'validate', ['message' => 'Resolution validee']);
+            $this->logAction(
+                incident: $incident,
+                userId: $actor->id,
+                type: 'rapport_validation',
+                description: 'Rapport d intervention valide par le superviseur',
+                old: ['status_id' => $oldStatusId, 'report_status' => IncidentReport::STATUS_SUBMITTED],
+                new: ['status_id' => $incident->status_id, 'report_status' => IncidentReport::STATUS_VALIDATED]
+            );
+            $this->logAudit($incident, $actor->id, 'report_validated', [
+                'report_id' => $incident->report->id,
+                'report_status' => IncidentReport::STATUS_VALIDATED,
+            ]);
 
             $incident = $incident->refresh();
 
             $this->notifyIncidentEvent(
                 incident: $incident,
-                kind: 'incident_validated',
-                title: 'Résolution validée',
-                message: "La résolution de l'incident {$incident->code_incident} a été validée.",
+                kind: 'incident_report_validated',
+                title: 'Rapport validé',
+                message: "Le rapport de l'incident {$incident->code_incident} a été validé. L'incident peut maintenant être clôturé.",
                 actor: $actor,
                 recipients: $this->incidentParticipants($incident)
+            );
+
+            return $incident;
+        });
+    }
+
+    public function validateResolution(Incident $incident, User $actor): Incident
+    {
+        return $this->validateReport($incident, $actor);
+    }
+
+    public function rejectReport(Incident $incident, string $motifRefus, User $actor): Incident
+    {
+        return DB::transaction(function () use ($incident, $motifRefus, $actor) {
+            $motifRefus = trim($motifRefus);
+
+            if ($motifRefus === '') {
+                throw ValidationException::withMessages([
+                    'motif_refus' => 'Le motif de refus est obligatoire.',
+                ]);
+            }
+
+            $this->ensureStatus($incident, 'RAPPORTE', 'Seul un rapport soumis peut etre refuse.');
+            $incident->loadMissing('report');
+
+            if (! $incident->report || $incident->report->statut_rapport !== IncidentReport::STATUS_SUBMITTED) {
+                throw ValidationException::withMessages([
+                    'rapport' => 'Aucun rapport soumis n est disponible pour refus.',
+                ]);
+            }
+
+            $oldStatusId = $incident->status_id;
+            $incident->report->forceFill([
+                'statut_rapport' => IncidentReport::STATUS_REJECTED,
+                'motif_refus' => $motifRefus,
+                'date_refus' => now(),
+                'refuse_par' => $actor->id,
+            ])->save();
+
+            // Compatibilite avec le workflow existant : l'incident revient a RESOLU
+            // afin que l'operateur puisse corriger et soumettre a nouveau le rapport.
+            $incident->status_id = $this->statusId('RESOLU');
+            $incident->save();
+
+            $this->logAction(
+                incident: $incident,
+                userId: $actor->id,
+                type: 'rapport_refus',
+                description: 'Rapport d intervention refuse avec motif',
+                old: ['status_id' => $oldStatusId, 'report_status' => IncidentReport::STATUS_SUBMITTED],
+                new: [
+                    'status_id' => $incident->status_id,
+                    'report_status' => IncidentReport::STATUS_REJECTED,
+                    'motif_refus' => $motifRefus,
+                ]
+            );
+            $this->logAudit($incident, $actor->id, 'report_rejected', [
+                'report_id' => $incident->report->id,
+                'motif_refus' => $motifRefus,
+                'report_status' => IncidentReport::STATUS_REJECTED,
+            ]);
+
+            $incident = $incident->refresh();
+
+            $operatorId = $incident->responsable_id ?: $incident->report?->operateur_id ?: $incident->report?->user_id;
+            $recipients = $operatorId
+                ? User::query()->active()->where('id', $operatorId)->get()
+                : collect();
+
+            $this->notifyIncidentEvent(
+                incident: $incident,
+                kind: 'incident_report_rejected',
+                title: 'Rapport refusé',
+                message: "Le rapport de l'incident {$incident->code_incident} a été refusé. Motif : {$motifRefus}",
+                actor: $actor,
+                recipients: $recipients
             );
 
             return $incident;
@@ -569,6 +742,26 @@ class IncidentService
         if ($incident->status?->code !== $code) {
             throw ValidationException::withMessages([
                 'status' => $message,
+            ]);
+        }
+    }
+
+    private function ensureIncidentNotClosed(Incident $incident): void
+    {
+        $incident->loadMissing('status');
+
+        if ($incident->status?->is_final || $incident->status?->code === 'CLOTURE') {
+            throw ValidationException::withMessages([
+                'status' => 'Un incident cloture ne peut plus recevoir de modification de rapport.',
+            ]);
+        }
+    }
+
+    private function ensureAssignedOperator(Incident $incident, User $actor): void
+    {
+        if ((int) $incident->responsable_id !== (int) $actor->id) {
+            throw ValidationException::withMessages([
+                'responsable_id' => 'Vous ne pouvez soumettre un rapport que pour un incident qui vous est affecte.',
             ]);
         }
     }

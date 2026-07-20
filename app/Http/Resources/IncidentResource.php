@@ -49,6 +49,7 @@ class IncidentResource extends JsonResource
             'responsable' => UserResource::make($this->whenLoaded('responsable')),
             'superviseur' => UserResource::make($this->whenLoaded('superviseur')),
             'interventions' => InterventionResource::collection($this->whenLoaded('interventions')),
+            'report' => IncidentReportResource::make($this->whenLoaded('report')),
             'created_at' => $this->created_at?->toIso8601String(),
             'updated_at' => $this->updated_at?->toIso8601String(),
         ];

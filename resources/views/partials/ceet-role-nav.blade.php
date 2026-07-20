@@ -25,20 +25,20 @@
     if ($ceetIsOperator) {
         $ceetAddNavItem('Tableau de bord', 'dashboard', 'dashboard', ['dashboard']);
         $ceetAddNavItem('Mes incidents', 'assignment_ind', 'incidents.mine', ['incidents.mine']);
-        $ceetAddNavItem('Incidents en cours', 'schedule', 'incidents.en-cours', ['incidents.en-cours']);
+        $ceetAddNavItem('Suivi en cours', 'schedule', 'incidents.en-cours', ['incidents.en-cours']);
     } elseif ($ceetIsSupervisor && ! $ceetIsAdmin) {
         $ceetAddNavItem('Tableau de bord', 'dashboard', 'dashboard', ['dashboard']);
         $ceetAddNavItem('Incidents', 'bolt', 'incidents.index', ['incidents.index', 'incidents.show', 'incidents.edit']);
-        $ceetAddNavItem('Incidents en cours', 'schedule', 'incidents.en-cours', ['incidents.en-cours']);
-        $ceetAddNavItem('Créer un incident', 'add_circle', 'incidents.create', ['incidents.create']);
-        $ceetAddNavItem('Reports', 'assessment', 'reports.index', ['reports.*']);
+        $ceetAddNavItem('Suivi en cours', 'schedule', 'incidents.en-cours', ['incidents.en-cours']);
+        $ceetAddNavItem('Déclarer un incident', 'add_circle', 'incidents.create', ['incidents.create']);
+        $ceetAddNavItem('Rapports', 'assessment', 'reports.index', ['reports.*']);
     } else {
         $ceetAddNavItem('Tableau de bord', 'dashboard', 'dashboard', ['dashboard']);
         $ceetAddNavItem('Incidents', 'bolt', 'incidents.index', ['incidents.index', 'incidents.show', 'incidents.edit']);
-        $ceetAddNavItem('Users', 'group', 'users.index', ['users.*']);
-        $ceetAddNavItem('System Status', 'settings_input_component', 'system.status', ['system.*']);
-        $ceetAddNavItem('Catalogs', 'menu_book', 'catalogues.index', ['catalogues.*']);
-        $ceetAddNavItem('Reports', 'assessment', 'reports.index', ['reports.*']);
+        $ceetAddNavItem('Utilisateurs', 'group', 'users.index', ['users.*']);
+        $ceetAddNavItem('Statut du système', 'settings_input_component', 'system.status', ['system.*']);
+        $ceetAddNavItem('Catalogues', 'menu_book', 'catalogues.index', ['catalogues.*']);
+        $ceetAddNavItem('Rapports', 'assessment', 'reports.index', ['reports.*']);
         $ceetAddNavItem('Logs système', 'history', 'historique.index', ['historique.*']);
     }
 
@@ -49,11 +49,11 @@
                 && ! request()->routeIs('incidents.create', 'incidents.en-cours', 'incidents.mine');
         }
 
-        if (($ceetNavItem['label'] ?? null) === 'Créer un incident') {
+        if (($ceetNavItem['label'] ?? null) === 'Déclarer un incident') {
             $ceetNavItem['active'] = request()->routeIs('incidents.create');
         }
 
-        if (($ceetNavItem['label'] ?? null) === 'Incidents en cours') {
+        if (($ceetNavItem['label'] ?? null) === 'Suivi en cours') {
             $ceetNavItem['active'] = request()->routeIs('incidents.en-cours');
         }
 

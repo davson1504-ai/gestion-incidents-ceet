@@ -92,6 +92,10 @@ class IncidentServiceTest extends TestCase
             'actions_realisees' => 'Verification disjoncteur',
             'resultat' => 'Remise en service confirmee',
             'submitted_at' => now(),
+            'date_soumission' => now(),
+            'statut_rapport' => \App\Models\IncidentReport::STATUS_VALIDATED,
+            'date_validation' => now(),
+            'valide_par' => $supervisor->id,
         ]);
 
         $service->closeIncident($incident, [

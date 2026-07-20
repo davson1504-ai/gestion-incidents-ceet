@@ -41,25 +41,25 @@
 
     if ($isOperator) {
         $navItems[] = ['label' => 'Mes incidents', 'icon' => 'groups', 'route' => route('incidents.mine'), 'active' => request()->routeIs('incidents.mine')];
-        $navItems[] = ['label' => 'Incidents en cours', 'icon' => 'schedule', 'route' => route('incidents.en-cours'), 'active' => request()->routeIs('incidents.en-cours')];
+        $navItems[] = ['label' => 'Suivi en cours', 'icon' => 'schedule', 'route' => route('incidents.en-cours'), 'active' => request()->routeIs('incidents.en-cours')];
     } else {
-        $navItems[] = ['label' => 'Incidents', 'icon' => 'bolt', 'route' => route('incidents.index'), 'active' => request()->routeIs('incidents.*')];
+        $navItems[] = ['label' => 'Tous les incidents', 'icon' => 'bolt', 'route' => route('incidents.index'), 'active' => request()->routeIs('incidents.*')];
     }
 
     if ($canViewUsers) {
-        $navItems[] = ['label' => 'Users', 'icon' => 'group', 'route' => Route::has('users.index') ? route('users.index') : '#', 'active' => request()->routeIs('users.*')];
+        $navItems[] = ['label' => 'Utilisateurs', 'icon' => 'group', 'route' => Route::has('users.index') ? route('users.index') : '#', 'active' => request()->routeIs('users.*')];
     }
 
     if (($isAdmin ?? false) && ($canViewSystem ?? false)) {
-        $navItems[] = ['label' => 'System Status', 'icon' => 'tune', 'route' => Route::has('system.status') ? route('system.status') : '#', 'active' => request()->routeIs('system.*')];
+        $navItems[] = ['label' => 'Statut du système', 'icon' => 'tune', 'route' => Route::has('system.status') ? route('system.status') : '#', 'active' => request()->routeIs('system.*')];
     }
 
     if (($isAdmin ?? false) && ($canViewCatalogues ?? false)) {
-        $navItems[] = ['label' => 'Catalogs', 'icon' => 'menu_book', 'route' => Route::has('catalogues.index') ? route('catalogues.index') : '#', 'active' => request()->routeIs('catalogues.*')];
+        $navItems[] = ['label' => 'Catalogues', 'icon' => 'menu_book', 'route' => Route::has('catalogues.index') ? route('catalogues.index') : '#', 'active' => request()->routeIs('catalogues.*')];
     }
 
     if ($canViewReports) {
-        $navItems[] = ['label' => 'Reports', 'icon' => 'insert_chart', 'route' => Route::has('reports.index') ? route('reports.index') : '#', 'active' => request()->routeIs('reports.*')];
+        $navItems[] = ['label' => 'Rapports', 'icon' => 'insert_chart', 'route' => Route::has('reports.index') ? route('reports.index') : '#', 'active' => request()->routeIs('reports.*')];
     }
 
 // CEET profile supervisor nav override
@@ -69,10 +69,10 @@
     if (($isSupervisor ?? false) && !($isAdmin ?? false)) {
         $navItems = [
             ['label' => 'Tableau de bord', 'icon' => 'dashboard', 'route' => Route::has('dashboard') ? route('dashboard') : '/dashboard', 'active' => request()->routeIs('dashboard')],
-            ['label' => 'Incidents', 'icon' => 'bolt', 'route' => Route::has('incidents.index') ? route('incidents.index') : '/incidents', 'active' => request()->routeIs('incidents.index') || request()->routeIs('incidents.show') || request()->routeIs('incidents.edit')],
-            ['label' => 'Incidents en cours', 'icon' => 'schedule', 'route' => Route::has('incidents.en-cours') ? route('incidents.en-cours') : '/incidents/en-cours', 'active' => request()->routeIs('incidents.en-cours')],
-            ['label' => 'Créer un incident', 'icon' => 'add_circle', 'route' => Route::has('incidents.create') ? route('incidents.create') : '/incidents/create', 'active' => request()->routeIs('incidents.create')],
-            ['label' => 'Reports', 'icon' => 'insert_chart', 'route' => Route::has('reports.index') ? route('reports.index') : '/reports', 'active' => request()->routeIs('reports.*')],
+            ['label' => 'Tous les incidents', 'icon' => 'bolt', 'route' => Route::has('incidents.index') ? route('incidents.index') : '/incidents', 'active' => request()->routeIs('incidents.index') || request()->routeIs('incidents.show') || request()->routeIs('incidents.edit')],
+            ['label' => 'Suivi en cours', 'icon' => 'schedule', 'route' => Route::has('incidents.en-cours') ? route('incidents.en-cours') : '/incidents/en-cours', 'active' => request()->routeIs('incidents.en-cours')],
+            ['label' => 'Déclarer un incident', 'icon' => 'add_circle', 'route' => Route::has('incidents.create') ? route('incidents.create') : '/incidents/create', 'active' => request()->routeIs('incidents.create')],
+            ['label' => 'Rapports', 'icon' => 'insert_chart', 'route' => Route::has('reports.index') ? route('reports.index') : '/reports', 'active' => request()->routeIs('reports.*')],
         ];
     }
     // END CEET profile supervisor nav override
@@ -81,10 +81,10 @@
     if (($isSupervisor ?? false) && !($isAdmin ?? false)) {
         $navItems = [
             ['label' => 'Tableau de bord', 'icon' => 'dashboard', 'route' => Route::has('dashboard') ? route('dashboard') : '/dashboard', 'active' => request()->routeIs('dashboard')],
-            ['label' => 'Incidents', 'icon' => 'bolt', 'route' => Route::has('incidents.index') ? route('incidents.index') : '/incidents', 'active' => request()->routeIs('incidents.index') || request()->routeIs('incidents.show') || request()->routeIs('incidents.edit')],
-            ['label' => 'Incidents en cours', 'icon' => 'schedule', 'route' => Route::has('incidents.en-cours') ? route('incidents.en-cours') : '/incidents/en-cours', 'active' => request()->routeIs('incidents.en-cours')],
-            ['label' => 'Créer un incident', 'icon' => 'add_circle', 'route' => Route::has('incidents.create') ? route('incidents.create') : '/incidents/create', 'active' => request()->routeIs('incidents.create')],
-            ['label' => 'Reports', 'icon' => 'insert_chart', 'route' => Route::has('reports.index') ? route('reports.index') : '/reports', 'active' => request()->routeIs('reports.*')],
+            ['label' => 'Tous les incidents', 'icon' => 'bolt', 'route' => Route::has('incidents.index') ? route('incidents.index') : '/incidents', 'active' => request()->routeIs('incidents.index') || request()->routeIs('incidents.show') || request()->routeIs('incidents.edit')],
+            ['label' => 'Suivi en cours', 'icon' => 'schedule', 'route' => Route::has('incidents.en-cours') ? route('incidents.en-cours') : '/incidents/en-cours', 'active' => request()->routeIs('incidents.en-cours')],
+            ['label' => 'Déclarer un incident', 'icon' => 'add_circle', 'route' => Route::has('incidents.create') ? route('incidents.create') : '/incidents/create', 'active' => request()->routeIs('incidents.create')],
+            ['label' => 'Rapports', 'icon' => 'insert_chart', 'route' => Route::has('reports.index') ? route('reports.index') : '/reports', 'active' => request()->routeIs('reports.*')],
         ];
     }
     // END CEET profile supervisor nav override

@@ -37,13 +37,9 @@ export default defineConfig({
 
                 // ── JS pages dashboards ───────────────────────────────────
                 'resources/js/pages/admin-dashboard.js',
-                'resources/js/pages/supervisor-dashboard.js',
-                'resources/js/pages/operator-dashboard.js',
 
                 // ── JS pages incidents ────────────────────────────────────
                 'resources/js/pages/incidents-index.js',
-                'resources/js/pages/incidents-show.js',
-                'resources/js/pages/incidents-create.js',
                 'resources/js/pages/incidents-mine.js',
                 'resources/js/pages/incidents-en-cours.js',
 

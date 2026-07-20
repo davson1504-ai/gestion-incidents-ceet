@@ -46,7 +46,7 @@ class IncidentQueryService
         $baseQuery = $this->globalIncidentQuery($filters, $currentUser);
 
         $incidents = (clone $baseQuery)
-            ->with(['departement', 'typeIncident', 'cause', 'status', 'priorite', 'operateur', 'responsable', 'superviseur'])
+            ->with(['departement', 'typeIncident', 'cause', 'status', 'priorite', 'operateur', 'responsable', 'superviseur', 'report'])
             ->latest('date_debut')
             ->paginate($perPage)
             ->withQueryString();
@@ -62,7 +62,7 @@ class IncidentQueryService
         $baseQuery = $this->handledIncidentQuery($filters, $currentUser);
 
         $incidents = (clone $baseQuery)
-            ->with(['departement', 'typeIncident', 'cause', 'status', 'priorite', 'operateur', 'responsable', 'superviseur'])
+            ->with(['departement', 'typeIncident', 'cause', 'status', 'priorite', 'operateur', 'responsable', 'superviseur', 'report'])
             ->latest('date_debut')
             ->paginate($perPage)
             ->withQueryString();
@@ -78,7 +78,7 @@ class IncidentQueryService
         $baseQuery = $this->openIncidentQuery($filters, $currentUser);
 
         $paginatedIncidents = (clone $baseQuery)
-            ->with(['departement', 'typeIncident', 'priorite', 'status', 'responsable', 'operateur'])
+            ->with(['departement', 'typeIncident', 'priorite', 'status', 'responsable', 'operateur', 'report'])
             ->paginate($perPage)
             ->withQueryString();
 
@@ -89,7 +89,7 @@ class IncidentQueryService
         $totalEnCours = $paginatedIncidents->total();
 
         $plusAncien = (clone $baseQuery)
-            ->with(['departement', 'priorite', 'status', 'responsable', 'operateur'])
+            ->with(['departement', 'priorite', 'status', 'responsable', 'operateur', 'report'])
             ->first();
 
         if ($plusAncien) {

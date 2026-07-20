@@ -219,10 +219,6 @@ $defaultStart = old('date_debut', now()->format('Y-m-d\\TH:i'));
 @endsection
 
 @section('page_js')
-    @vite([
-        'resources/js/pages/incidents-create.js'
-    ])
-
 <script>
         document.addEventListener('DOMContentLoaded', function () {
             const typeSelect = document.querySelector('[data-type-select]');

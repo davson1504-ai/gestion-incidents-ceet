@@ -25,7 +25,11 @@ services:
         depends_on:
             - mysql
     mysql:
-        image: 'mysql:8.4'
+        build:
+            context: './docker/mysql'
+            dockerfile: Dockerfile
+        image: 'gestion-incidents-ceet-mysql:8.4'
+        restart: unless-stopped
         ports:
             - '${FORWARD_DB_PORT:-3306}:3306'
         environment:
@@ -38,7 +42,6 @@ services:
             MYSQL_EXTRA_OPTIONS: '${MYSQL_EXTRA_OPTIONS:-}'
         volumes:
             - 'sail-mysql:/var/lib/mysql'
-            - './vendor/laravel/sail/database/mysql/create-testing-database.sh:/docker-entrypoint-initdb.d/10-create-testing-database.sh'
         networks:
             - sail
         healthcheck:

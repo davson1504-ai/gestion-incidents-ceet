@@ -43,7 +43,7 @@
         >
         <div class="ceet-sidebar-brand-text">
             <strong>CEET Incidents</strong>
-            <span>Electrical Management</span>
+            <span>Gestion des incidents électriques</span>
         </div>
     </div>
 
@@ -65,7 +65,7 @@
                class="ceet-sidebar-link {{ $isActive('incidents.*') ? 'is-active' : '' }}"
                @if($isActive('incidents.*')) aria-current="page" @endif>
                 <span class="material-symbols-outlined" aria-hidden="true">bolt</span>
-                <span class="ceet-sidebar-link-label">Incidents</span>
+                <span class="ceet-sidebar-link-label">Tous les incidents</span>
             </a>
 
             <a href="{{ $safeRoute('users.index') }}"
@@ -110,21 +110,21 @@
                class="ceet-sidebar-link {{ $isActive('incidents.index') || $isActive('incidents.show') || $isActive('incidents.edit') ? 'is-active' : '' }}"
                @if($isActive('incidents.index')) aria-current="page" @endif>
                 <span class="material-symbols-outlined" aria-hidden="true">bolt</span>
-                <span class="ceet-sidebar-link-label">Incidents</span>
+                <span class="ceet-sidebar-link-label">Tous les incidents</span>
             </a>
 
             <a href="{{ $safeRoute('incidents.en-cours') }}"
                class="ceet-sidebar-link {{ $isActive('incidents.en-cours') ? 'is-active' : '' }}"
                @if($isActive('incidents.en-cours')) aria-current="page" @endif>
                 <span class="material-symbols-outlined" aria-hidden="true">work_history</span>
-                <span class="ceet-sidebar-link-label">Incidents en cours</span>
+                <span class="ceet-sidebar-link-label">Suivi en cours</span>
             </a>
 
             <a href="{{ $safeRoute('incidents.create') }}"
                class="ceet-sidebar-link {{ $isActive('incidents.create') ? 'is-active' : '' }}"
                @if($isActive('incidents.create')) aria-current="page" @endif>
                 <span class="material-symbols-outlined" aria-hidden="true">add_circle</span>
-                <span class="ceet-sidebar-link-label">Créer un incident</span>
+                <span class="ceet-sidebar-link-label">Déclarer un incident</span>
             </a>
 
             <a href="{{ $safeRoute('reports.index') }}"
@@ -148,7 +148,7 @@
                class="ceet-sidebar-link {{ $isActive('incidents.en-cours') ? 'is-active' : '' }}"
                @if($isActive('incidents.en-cours')) aria-current="page" @endif>
                 <span class="material-symbols-outlined" aria-hidden="true">work_history</span>
-                <span class="ceet-sidebar-link-label">Incidents en cours</span>
+                <span class="ceet-sidebar-link-label">Suivi en cours</span>
             </a>
 
         @endif

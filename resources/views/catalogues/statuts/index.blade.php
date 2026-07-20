@@ -28,11 +28,11 @@
 
     $navItems = [
         ['label' => 'Dashboard', 'icon' => 'dashboard', 'route' => Route::has('dashboard') ? route('dashboard') : '#', 'active' => request()->routeIs('dashboard')],
-        ['label' => 'Incidents', 'icon' => 'bolt', 'route' => Route::has('incidents.index') ? route('incidents.index') : '#', 'active' => request()->routeIs('incidents.*')],
-        ['label' => 'Users', 'icon' => 'group', 'route' => Route::has('users.index') ? route('users.index') : '#', 'active' => request()->routeIs('users.*')],
-        ['label' => 'System Status', 'icon' => 'tune', 'route' => Route::has('system.status') ? route('system.status') : '#', 'active' => request()->routeIs('system.*')],
-        ['label' => 'Catalogs', 'icon' => 'menu_book', 'route' => Route::has('catalogues.index') ? route('catalogues.index') : '#', 'active' => request()->routeIs('catalogues.*')],
-        ['label' => 'Reports', 'icon' => 'insert_chart', 'route' => Route::has('reports.index') ? route('reports.index') : '#', 'active' => request()->routeIs('reports.*')],
+        ['label' => 'Tous les incidents', 'icon' => 'bolt', 'route' => Route::has('incidents.index') ? route('incidents.index') : '#', 'active' => request()->routeIs('incidents.*')],
+        ['label' => 'Utilisateurs', 'icon' => 'group', 'route' => Route::has('users.index') ? route('users.index') : '#', 'active' => request()->routeIs('users.*')],
+        ['label' => 'Statut du système', 'icon' => 'tune', 'route' => Route::has('system.status') ? route('system.status') : '#', 'active' => request()->routeIs('system.*')],
+        ['label' => 'Catalogues', 'icon' => 'menu_book', 'route' => Route::has('catalogues.index') ? route('catalogues.index') : '#', 'active' => request()->routeIs('catalogues.*')],
+        ['label' => 'Rapports', 'icon' => 'insert_chart', 'route' => Route::has('reports.index') ? route('reports.index') : '#', 'active' => request()->routeIs('reports.*')],
     ];
 @endphp
 
@@ -205,7 +205,7 @@
 
 <section class="ceet-statuses-insights">
     <figure>
-        <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuDoFhVWmqyUSEeQhytsQ10Kz1De8ervDRMr1VI0kVaxlI4M-VN76gv-y8AIiTsVhgQnsaYaK45ID772LNLcu4v8Hs0sWO8KuvpF4Hrx01UXugqpE9ZT5GMHGBlkyoizCZNtWS4xarJ0nUiZYtElMMP2hpn2GDLzxb4N98QbVUGvAmb8YaxEaGEIyOyva7bYwmWGyQezkLeM6lThVQwF6SOg512q7jY9Jb5xOQJLPktKhizTd5j9_2yu8kDWRGkhx9dRdXpfYlQ5k8W4" alt="Architecture réseau">
+        <img src="{{ asset('images/logo-ceet.png') }}" alt="Logo CEET">
         <figcaption>
             <small>Architecture R&eacute;seau</small>
             <strong>Optimisation des flux de donn&eacute;es</strong>

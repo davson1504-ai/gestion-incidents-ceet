@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Détail incident')))
+@section('title', 'Détail incident')
 
 @section('page_css')
     @vite([
@@ -38,6 +38,11 @@ $userName = $currentUser?->name ?? 'Utilisateur';
     $status = $incident->status?->libelle ?? 'Non défini';
     $statusCode = mb_strtoupper((string) ($incident->status?->code ?? ''));
     $statusToken = mb_strtolower($status . ' ' . $statusCode);
+    $report = $incident->report;
+    $reportStatusCode = mb_strtoupper((string) ($report?->statut_rapport ?? ''));
+    $isReportSubmitted = $reportStatusCode === 'SOUMIS';
+    $isReportValidated = $reportStatusCode === 'VALIDE';
+    $isReportRejected = $reportStatusCode === 'REFUSE';
 
     $isAffected = $statusCode === 'AFFECTE' || str_contains($statusToken, 'affect');
     $isInProgress = $statusCode === 'EN_COURS' || str_contains($statusToken, 'cours');
@@ -46,11 +51,12 @@ $userName = $currentUser?->name ?? 'Utilisateur';
     $isValidated = $statusCode === 'VALIDE' || str_contains($statusToken, 'valid');
     $isClosed = (bool) ($incident->status?->is_final ?? false) || $statusCode === 'CLOTURE' || str_contains($statusToken, 'clos') || str_contains($statusToken, 'clot') || str_contains($statusToken, 'termin');
 
-    $canTakeIncident = ($currentUser?->can('take', $incident) ?? false) && $isAffected;
-    $canResolveIncident = ($currentUser?->can('resolve', $incident) ?? false) && $isInProgress;
-    $canReportIncident = ($currentUser?->can('report', $incident) ?? false) && $isResolved;
-    $canValidateIncident = ($currentUser?->can('validateResolution', $incident) ?? false) && $isReported;
-    $canCloseIncident = ($currentUser?->can('close', $incident) ?? false) && $isValidated;
+    $canTakeIncident = $isOperator && ($currentUser?->can('take', $incident) ?? false) && $isAffected;
+    $canResolveIncident = $isOperator && ($currentUser?->can('resolve', $incident) ?? false) && $isInProgress;
+    $canReportIncident = $isOperator && ($currentUser?->can('report', $incident) ?? false) && $isResolved;
+    $canValidateIncident = ($isSupervisor || $isAdmin) && ($currentUser?->can('validateResolution', $incident) ?? false) && $isReported && $isReportSubmitted;
+    $canRejectIncident = ($isSupervisor || $isAdmin) && ($currentUser?->can('rejectReport', $incident) ?? false) && $isReported && $isReportSubmitted;
+    $canCloseIncident = ($isSupervisor || $isAdmin) && ($currentUser?->can('close', $incident) ?? false) && $isValidated && $isReportValidated;
 
     $backRoute = $isOperator ? $safeRoute('incidents.mine', [], '/mes-incidents') : $safeRoute('incidents.index', [], '/incidents');
     $searchRoute = $isOperator ? $safeRoute('incidents.mine', [], '/mes-incidents') : $safeRoute('incidents.index', [], '/incidents');
@@ -77,6 +83,10 @@ $userName = $currentUser?->name ?? 'Utilisateur';
             'resolution' => 'Résolution',
             'resolu' => 'Résolution',
             'rapport' => 'Rapport d’intervention',
+            'rapport_soumission' => 'Soumission du rapport',
+            'rapport_correction' => 'Correction du rapport',
+            'rapport_refus' => 'Refus du rapport',
+            'rapport_validation' => 'Validation du rapport',
             'validation' => 'Validation',
             'close' => 'Clôture',
             'cloture' => 'Clôture',
@@ -102,6 +112,11 @@ $userName = $currentUser?->name ?? 'Utilisateur';
             "Prise en charge de l incident" => "Prise en charge de l'incident",
             "Incident marque comme resolu" => "Incident marqué comme résolu",
             "Rapport d intervention redige" => "Rapport d’intervention rédigé",
+            "Rapport d intervention soumis" => "Rapport d’intervention soumis",
+            "Rapport corrige soumis a nouveau" => "Rapport corrigé soumis à nouveau",
+            "Rapport refuse corrige par l operateur" => "Rapport refusé corrigé par l’opérateur",
+            "Rapport d intervention refuse avec motif" => "Rapport d’intervention refusé avec motif",
+            "Rapport d intervention valide par le superviseur" => "Rapport d’intervention validé par le superviseur",
             "Resolution validee par le superviseur" => "Résolution validée par le superviseur",
             "Cloture de l'incident" => "Clôture de l'incident",
             "Suppression de l'incident" => "Suppression de l'incident",
@@ -109,8 +124,6 @@ $userName = $currentUser?->name ?? 'Utilisateur';
 
         return $descriptions[$value] ?? ($value ?: 'Action enregistrée sur cet incident.');
     };
-
-    $report = $incident->report;
 
     $formatMinutes = function ($minutes) {
         if ($minutes === null || $minutes === '') return 'Non calculée';
@@ -175,7 +188,19 @@ $userName = $currentUser?->name ?? 'Utilisateur';
         </div>
     </section>
 
-    @if ($canTakeIncident || $canResolveIncident || $canReportIncident || $canValidateIncident || $canCloseIncident)
+    @if ($isReportRejected)
+        <section class="ceet-incident-card ceet-report-refusal-card">
+            <header class="ceet-incident-card-title">
+                <h3><span class="material-symbols-outlined">report</span>Rapport refusé</h3>
+            </header>
+            <p><strong>Motif :</strong> {{ $report->motif_refus ?: 'Motif non renseigné.' }}</p>
+            @if ($report->date_refus)
+                <small>Refus enregistré le {{ $report->date_refus->format('d/m/Y H:i') }}@if($report->refuser) par {{ $report->refuser->name }}@endif.</small>
+            @endif
+        </section>
+    @endif
+
+    @if ($canTakeIncident || $canResolveIncident || $canReportIncident || $canValidateIncident || $canRejectIncident || $canCloseIncident)
         <section class="ceet-incident-card ceet-incident-action-card">
             <header class="ceet-incident-card-title ceet-incident-action-title">
                 <div>
@@ -233,59 +258,93 @@ $userName = $currentUser?->name ?? 'Utilisateur';
             @endif
 
             @if ($canReportIncident)
-                <form action="{{ $safeRoute('incidents.report', $incident) }}" method="POST" class="ceet-quick-intervention-form is-report">
+                @php
+                    $isCorrection = $isReportRejected && $report;
+                    $reportAction = $isCorrection ? $safeRoute('incidents.report.update', $incident) : $safeRoute('incidents.report', $incident);
+                @endphp
+                <form action="{{ $reportAction }}" method="POST" class="ceet-quick-intervention-form is-report">
                     @csrf
+                    @if ($isCorrection)
+                        @method('PATCH')
+                    @endif
                     <input type="hidden" name="submitted_at" value="{{ now()->format('Y-m-d H:i:s') }}">
 
                     <div class="ceet-action-info is-wide ceet-report-intro">
                         <span class="material-symbols-outlined">description</span>
                         <div>
-                            <strong>Rapport d'intervention</strong>
-                            <p>Soumettre le rapport au superviseur</p>
+                            <strong>
+                                @if ($isCorrection)
+                                    Correction du rapport refusé
+                                @else
+                                    Rapport d'intervention
+                                @endif
+                            </strong>
+                            <p>{{ $isCorrection ? 'Corriger les informations puis soumettre à nouveau au superviseur.' : 'Soumettre le rapport au superviseur.' }}</p>
                         </div>
                     </div>
 
                     <div class="ceet-action-field">
                         <label for="report-actions-{{ $incident->id }}">Actions réalisées <span>*</span></label>
-                        <textarea id="report-actions-{{ $incident->id }}" name="actions_realisees" required placeholder="Détail des travaux réalisés par l’équipe terrain...">{{ old('actions_realisees', $incident->actions_menees) }}</textarea>
+                        <textarea id="report-actions-{{ $incident->id }}" name="actions_realisees" required placeholder="Détail des travaux réalisés par l’équipe terrain...">{{ old('actions_realisees', $report?->actions_realisees ?? $incident->actions_menees) }}</textarea>
                     </div>
 
                     <div class="ceet-action-field">
                         <label for="report-result-{{ $incident->id }}">Résultat final <span>*</span></label>
-                        <textarea id="report-result-{{ $incident->id }}" name="resultat" required placeholder="Résultat final constaté après intervention...">{{ old('resultat', $incident->resolution_summary) }}</textarea>
+                        <textarea id="report-result-{{ $incident->id }}" name="resultat" required placeholder="Résultat final constaté après intervention...">{{ old('resultat', $report?->resultat ?? $incident->resolution_summary) }}</textarea>
                     </div>
 
                     <div class="ceet-action-field is-wide">
                         <label for="report-observations-{{ $incident->id }}">Observations complémentaires</label>
-                        <textarea id="report-observations-{{ $incident->id }}" name="observations" placeholder="Contraintes, risques résiduels, recommandations...">{{ old('observations') }}</textarea>
+                        <textarea id="report-observations-{{ $incident->id }}" name="observations" placeholder="Contraintes, risques résiduels, recommandations...">{{ old('observations', $report?->observations) }}</textarea>
                     </div>
 
                     <div class="ceet-action-submit">
                         <button type="submit" class="ceet-incident-btn is-dark">
-                            <span class="material-symbols-outlined">description</span>Soumettre le rapport au superviseur
+                            <span class="material-symbols-outlined">description</span>{{ $isCorrection ? 'Corriger et soumettre à nouveau' : 'Soumettre le rapport au superviseur' }}
                         </button>
                     </div>
                 </form>
             @endif
 
-            @if ($canValidateIncident)
-                <form action="{{ $safeRoute('incidents.validate', $incident) }}" method="POST" class="ceet-quick-intervention-form is-validate">
-                    @csrf
+            @if ($canValidateIncident || $canRejectIncident)
+                <div class="ceet-report-control-grid">
+                    @if ($canValidateIncident)
+                        <form action="{{ $safeRoute('incidents.report.validate', $incident) }}" method="POST" class="ceet-quick-intervention-form is-validate">
+                            @csrf
 
-                    <div class="ceet-action-info is-wide">
-                        <span class="material-symbols-outlined">verified</span>
-                        <div>
-                            <strong>Validation superviseur</strong>
-                            <p>Le rapport d’intervention a été soumis. Cette action valide la résolution avant clôture.</p>
-                        </div>
-                    </div>
+                            <div class="ceet-action-info is-wide">
+                                <span class="material-symbols-outlined">verified</span>
+                                <div>
+                                    <strong>Validation du rapport</strong>
+                                    <p>Le rapport d’intervention a été soumis. Cette action autorise ensuite la clôture.</p>
+                                </div>
+                            </div>
 
-                    <div class="ceet-action-submit">
-                        <button type="submit" class="ceet-incident-btn is-dark">
-                            <span class="material-symbols-outlined">verified</span>Valider la résolution
-                        </button>
-                    </div>
-                </form>
+                            <div class="ceet-action-submit">
+                                <button type="submit" class="ceet-incident-btn is-dark">
+                                    <span class="material-symbols-outlined">verified</span>Valider le rapport
+                                </button>
+                            </div>
+                        </form>
+                    @endif
+
+                    @if ($canRejectIncident)
+                        <form action="{{ $safeRoute('incidents.report.reject', $incident) }}" method="POST" class="ceet-quick-intervention-form is-reject">
+                            @csrf
+
+                            <div class="ceet-action-field is-wide">
+                                <label for="reject-reason-{{ $incident->id }}">Motif du refus <span>*</span></label>
+                                <textarea id="reject-reason-{{ $incident->id }}" name="motif_refus" required minlength="3" placeholder="Expliquez les informations à corriger ou compléter...">{{ old('motif_refus') }}</textarea>
+                            </div>
+
+                            <div class="ceet-action-submit">
+                                <button type="submit" class="ceet-incident-btn is-danger">
+                                    <span class="material-symbols-outlined">report</span>Refuser le rapport
+                                </button>
+                            </div>
+                        </form>
+                    @endif
+                </div>
             @endif
 
             @if ($canCloseIncident)
@@ -417,7 +476,11 @@ $userName = $currentUser?->name ?? 'Utilisateur';
                                             {{ $report->user?->name ?? 'Non renseigné' }}
                                         </span>
                                     </td>
-                                    <td><span class="ceet-status-line is-done">Rapport soumis</span></td>
+                                    <td>
+                                        <span class="ceet-status-line {{ $isReportValidated ? 'is-done' : ($isReportRejected ? 'is-rejected' : '') }}">
+                                            {{ $report->statut_rapport === 'REFUSE' ? 'Rapport refusé' : ($report->statut_rapport === 'VALIDE' ? 'Rapport validé' : 'Rapport soumis') }}
+                                        </span>
+                                    </td>
                                     <td class="is-right"><button type="button" class="ceet-detail-toggle-btn" data-intervention-detail="report-{{ $report->id }}">Consulter</button></td>
                                 </tr>
                                 <tr id="report-{{ $report->id }}" class="ceet-intervention-detail-row" hidden>
@@ -426,6 +489,11 @@ $userName = $currentUser?->name ?? 'Utilisateur';
                                         <p>{{ $report->actions_realisees }}</p>
                                         <small>Résultat : {{ $report->resultat }}</small>
                                         @if ($report->observations)<small>Observations : {{ $report->observations }}</small>@endif
+                                        @if ($report->date_soumission)<small>Soumis le {{ $report->date_soumission->format('d/m/Y H:i') }}</small>@endif
+                                        @if ($report->date_validation)<small>Validé le {{ $report->date_validation->format('d/m/Y H:i') }}@if($report->validator) par {{ $report->validator->name }}@endif</small>@endif
+                                        @if ($report->statut_rapport === 'REFUSE')
+                                            <small class="ceet-report-rejection-text">Motif du refus : {{ $report->motif_refus ?: 'Non renseigné' }}</small>
+                                        @endif
                                     </td>
                                 </tr>
                             @endif
@@ -486,10 +554,4 @@ $userName = $currentUser?->name ?? 'Utilisateur';
     </section>
 </main>
 </div>
-@endsection
-
-@section('page_js')
-    @vite([
-        'resources/js/pages/incidents-show.js'
-    ])
 @endsection

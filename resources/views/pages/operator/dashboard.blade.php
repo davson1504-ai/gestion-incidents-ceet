@@ -247,10 +247,3 @@
 @endif
 </div>
 @endsection
-
-@section('page_js')
-    @vite([
-        'resources/js/app.js',
-        'resources/js/pages/operator-dashboard.js'
-    ])
-@endsection

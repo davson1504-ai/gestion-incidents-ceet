@@ -105,6 +105,10 @@ class IncidentApiTest extends TestCase
             'actions_realisees' => 'Manoeuvre cellule + verification protections',
             'resultat' => 'Defaut localise et alimentation retablie',
             'submitted_at' => now(),
+            'date_soumission' => now(),
+            'statut_rapport' => \App\Models\IncidentReport::STATUS_VALIDATED,
+            'date_validation' => now(),
+            'valide_par' => $supervisor->id,
         ]);
         $incident->forceFill(['status_id' => $context['statusValidated']->id])->save();
 

@@ -1,3 +1,5 @@
+@import "../fonts.css";
+
 /* ============================================================
    CEET — Page de connexion (layout guest)
    ============================================================ */
@@ -217,5 +219,235 @@ button[type="submit"] {
     .ceet-login-card {
         padding: 28px 20px;
         max-width: 100%;
+    }
+}
+
+/* Présentation finale de la page de connexion (ancien style inline). */
+:root {
+    --ceet-login-bg: #f8f9fb;
+    --ceet-login-surface: #ffffff;
+    --ceet-login-border: #cfd5dd;
+    --ceet-login-text: #111827;
+    --ceet-login-muted: #59677a;
+    --ceet-login-ink: #050506;
+}
+
+html,
+body {
+    min-height: 100%;
+}
+
+body.ceet-login-page {
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    padding: 24px;
+    margin: 0;
+    overflow-x: hidden;
+    background: var(--ceet-login-bg);
+    color: var(--ceet-login-text);
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+}
+
+.ceet-login-main {
+    width: min(100%, 448px);
+}
+
+.ceet-login-brand {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 18px;
+    text-align: center;
+}
+
+.ceet-login-logo {
+    width: 72px;
+    height: 72px;
+    display: grid;
+    place-items: center;
+    margin-bottom: 16px;
+    border: 1px solid var(--ceet-login-border);
+    border-radius: 8px;
+    background: var(--ceet-login-surface);
+    box-shadow: 0 14px 34px rgba(15, 23, 42, 0.08);
+}
+
+.ceet-login-logo img {
+    width: 56px;
+    height: 56px;
+    object-fit: contain;
+}
+
+.ceet-login-brand h1 {
+    margin: 0 0 4px;
+    color: var(--ceet-login-ink);
+    font-size: 28px;
+    font-weight: 900;
+    line-height: 1.1;
+}
+
+.ceet-login-brand p {
+    margin: 0;
+    color: var(--ceet-login-muted);
+    font-size: 14px;
+}
+
+.ceet-login-panel {
+    padding: 38px;
+    border: 1px solid var(--ceet-login-border);
+    border-radius: 8px;
+    background: var(--ceet-login-surface);
+    box-shadow: 0 22px 60px rgba(15, 23, 42, 0.1);
+}
+
+.ceet-login-heading {
+    margin-bottom: 28px;
+}
+
+.ceet-login-heading h2 {
+    margin: 0;
+    color: var(--ceet-login-ink);
+    font-size: 22px;
+    font-weight: 900;
+    line-height: 1.2;
+}
+
+.ceet-login-heading > span {
+    display: block;
+    width: 34px;
+    height: 4px;
+    margin-top: 10px;
+    background: var(--ceet-login-ink);
+}
+
+.ceet-login-form {
+    display: grid;
+    gap: 20px;
+}
+
+.ceet-field {
+    display: grid;
+    gap: 8px;
+}
+
+.ceet-field label {
+    color: var(--ceet-login-muted);
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+}
+
+.ceet-input-wrap {
+    position: relative;
+}
+
+.ceet-input-wrap .material-symbols-outlined {
+    position: absolute;
+    top: 50%;
+    left: 14px;
+    color: #8a96a8;
+    transform: translateY(-50%);
+}
+
+.ceet-input-wrap input {
+    width: 100%;
+    min-height: 50px;
+    padding: 12px 15px 12px 44px;
+    border: 1px solid var(--ceet-login-border);
+    border-radius: 7px;
+    background: #fff;
+    color: var(--ceet-login-text);
+    box-shadow: none;
+    font: inherit;
+    font-size: 15px;
+}
+
+.ceet-input-wrap input:focus {
+    outline: none;
+    border-color: #111827;
+    box-shadow: 0 0 0 3px rgba(17, 24, 39, 0.1);
+}
+
+.ceet-login-submit {
+    width: 100%;
+    min-height: 50px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 4px;
+    border: 1px solid #000;
+    border-radius: 7px;
+    background: #000;
+    color: #fff;
+    font: inherit;
+    font-size: 15px;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.ceet-login-secondary {
+    display: flex;
+    justify-content: center;
+    padding-top: 4px;
+}
+
+.ceet-login-secondary a {
+    color: #4b5563;
+    font-size: 13px;
+    text-decoration: underline;
+    text-underline-offset: 4px;
+}
+
+.ceet-login-footer {
+    margin-top: 26px;
+    text-align: center;
+}
+
+.ceet-login-meta {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    margin-bottom: 12px;
+}
+
+.ceet-login-meta span {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: #667085;
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.ceet-login-meta i {
+    width: 4px;
+    height: 4px;
+    border-radius: 999px;
+    background: #cfd5dd;
+}
+
+.ceet-login-footer p {
+    margin: 0;
+    color: #667085;
+    font-size: 13px;
+}
+
+@media (max-width: 575.98px) {
+    body.ceet-login-page {
+        padding: 16px;
+    }
+
+    .ceet-login-panel {
+        padding: 28px 22px;
+    }
+
+    .ceet-login-meta {
+        flex-wrap: wrap;
     }
 }

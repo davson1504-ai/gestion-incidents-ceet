@@ -225,6 +225,9 @@ class IncidentController extends Controller
             'actions.user',
             'interventions.user',
             'report.user',
+            'report.operateur',
+            'report.validator',
+            'report.refuser',
         ]);
 
         return view('incidents.show', array_merge(
@@ -306,6 +309,11 @@ class IncidentController extends Controller
 
     public function report(Request $request, Incident $incident): RedirectResponse
     {
+        return $this->submitReport($request, $incident);
+    }
+
+    public function submitReport(Request $request, Incident $incident): RedirectResponse
+    {
         $this->authorize('report', $incident);
 
         $payload = $request->validate([
@@ -320,22 +328,76 @@ class IncidentController extends Controller
 
         return redirect()
             ->route('incidents.show', $incident)
-            ->with('success', 'Rapport d intervention enregistre.');
+            ->with('success', 'Rapport d intervention soumis au controle.');
+    }
+
+    public function editRejectedReport(Incident $incident): RedirectResponse
+    {
+        $this->authorize('report', $incident);
+
+        return redirect()
+            ->route('incidents.show', $incident)
+            ->with('success', 'Corrigez le rapport refuse puis soumettez-le a nouveau.');
+    }
+
+    public function updateReport(Request $request, Incident $incident): RedirectResponse
+    {
+        $this->authorize('report', $incident);
+
+        $payload = $request->validate([
+            'actions_realisees' => ['required', 'string'],
+            'resultat' => ['required', 'string'],
+            'observations' => ['nullable', 'string'],
+            'submitted_at' => ['nullable', 'date'],
+        ]);
+
+        $report = $this->incidentService->updateRejectedReport($incident, $payload, $request->user());
+        $this->broadcastIncidentChanged('reported', $report->incident);
+
+        return redirect()
+            ->route('incidents.show', $incident)
+            ->with('success', 'Rapport corrige et soumis a nouveau.');
     }
 
     public function validateResolution(Request $request, Incident $incident): RedirectResponse
     {
+        return $this->validateReport($request, $incident);
+    }
+
+    public function validateReport(Request $request, Incident $incident): RedirectResponse
+    {
         $this->authorize('validateResolution', $incident);
 
-        $updated = $this->incidentService->validateResolution($incident, $request->user());
+        $updated = $this->incidentService->validateReport($incident, $request->user());
         $this->broadcastIncidentChanged('validated', $updated);
 
         return redirect()
             ->route('incidents.show', $updated)
-            ->with('success', 'Resolution validee.');
+            ->with('success', 'Rapport d intervention valide. L incident peut etre cloture.');
+    }
+
+    public function rejectReport(Request $request, Incident $incident): RedirectResponse
+    {
+        $this->authorize('rejectReport', $incident);
+
+        $payload = $request->validate([
+            'motif_refus' => ['required', 'string', 'min:3'],
+        ]);
+
+        $updated = $this->incidentService->rejectReport($incident, $payload['motif_refus'], $request->user());
+        $this->broadcastIncidentChanged('report_rejected', $updated);
+
+        return redirect()
+            ->route('incidents.show', $updated)
+            ->with('success', 'Rapport refuse. L operateur a ete notifie.');
     }
 
     public function close(CloseIncidentRequest $request, Incident $incident): RedirectResponse
+    {
+        return $this->closeIncident($request, $incident);
+    }
+
+    public function closeIncident(CloseIncidentRequest $request, Incident $incident): RedirectResponse
     {
         $closed = $this->incidentService->closeIncident($incident, $request->validated(), $request->user());
 

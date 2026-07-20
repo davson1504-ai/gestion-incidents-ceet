@@ -21,14 +21,14 @@
     $topbarTitle = match (true) {
         request()->routeIs('dashboard') => 'Tableau de bord',
         request()->routeIs('incidents.mine') => 'Mes incidents',
-        request()->routeIs('incidents.en-cours') => 'Incidents en cours',
-        request()->routeIs('incidents.create') => 'Créer incident',
-        request()->routeIs('incidents.*') => 'Incidents',
+        request()->routeIs('incidents.en-cours') => 'Suivi en cours',
+        request()->routeIs('incidents.create') => 'Déclarer un incident',
+        request()->routeIs('incidents.*') => 'Tous les incidents',
         request()->routeIs('reports.*') => 'Rapports',
         request()->routeIs('historique.*') => 'Historique',
         request()->routeIs('users.*') => 'Administration',
         request()->routeIs('catalogues.*') => 'Catalogues',
-        request()->routeIs('system.*') => 'System Status',
+        request()->routeIs('system.*') => 'Statut du système',
         request()->routeIs('profile.*') => 'Paramètres',
         default => 'Espace CEET',
     };
@@ -51,7 +51,7 @@
         ]);
 
         $navItems->push([
-            'label' => 'Incidents en cours',
+            'label' => 'Suivi en cours',
             'route' => Route::has('incidents.en-cours') ? route('incidents.en-cours') : '#',
             'active' => request()->routeIs('incidents.en-cours'),
             'icon' => 'clock',
@@ -59,14 +59,14 @@
     } else {
         if ($canViewIncidents) {
             $navItems->push([
-                'label' => 'Incidents',
+                'label' => 'Tous les incidents',
                 'route' => Route::has('incidents.index') ? route('incidents.index') : '#',
                 'active' => request()->routeIs('incidents.index', 'incidents.show', 'incidents.edit'),
                 'icon' => 'alert',
             ]);
 
             $navItems->push([
-                'label' => 'Incidents en cours',
+                'label' => 'Suivi en cours',
                 'route' => Route::has('incidents.en-cours') ? route('incidents.en-cours') : '#',
                 'active' => request()->routeIs('incidents.en-cours'),
                 'icon' => 'clock',
@@ -75,7 +75,7 @@
 
         if ($canCreateIncident) {
             $navItems->push([
-                'label' => 'Créer un incident',
+                'label' => 'Déclarer un incident',
                 'route' => Route::has('incidents.create') ? route('incidents.create') : '#',
                 'active' => request()->routeIs('incidents.create'),
                 'icon' => 'plus',
@@ -84,7 +84,7 @@
 
         if ($canViewUsers) {
             $navItems->push([
-                'label' => 'Users',
+                'label' => 'Utilisateurs',
                 'route' => Route::has('users.index') ? route('users.index') : '#',
                 'active' => request()->routeIs('users.*'),
                 'icon' => 'admin',
@@ -93,7 +93,7 @@
 
         if (($isAdmin ?? false) && ($canViewSystem ?? false)) {
             $navItems->push([
-                'label' => 'System Status',
+                'label' => 'Statut du système',
                 'route' => route('system.status'),
                 'active' => request()->routeIs('system.*'),
                 'icon' => 'system',
@@ -102,7 +102,7 @@
 
         if (($isAdmin ?? false) && ($canViewCatalogues ?? false)) {
             $navItems->push([
-                'label' => 'Catalogs',
+                'label' => 'Catalogues',
                 'route' => Route::has('catalogues.index') ? route('catalogues.index') : '#',
                 'active' => request()->routeIs('catalogues.*'),
                 'icon' => 'catalogue',
@@ -111,7 +111,7 @@
 
         if ($canViewReports) {
             $navItems->push([
-                'label' => 'Reports',
+                'label' => 'Rapports',
                 'route' => Route::has('reports.index') ? route('reports.index') : '#',
                 'active' => request()->routeIs('reports.*'),
                 'icon' => 'report',
@@ -140,13 +140,13 @@
                 'icon' => 'grid',
             ],
             [
-                'label' => 'Incidents',
+                'label' => 'Tous les incidents',
                 'route' => Route::has('incidents.index') ? route('incidents.index') : '#',
                 'active' => request()->routeIs('incidents.index', 'incidents.show', 'incidents.edit'),
                 'icon' => 'alert',
             ],
             [
-                'label' => 'Incidents en cours',
+                'label' => 'Suivi en cours',
                 'route' => Route::has('incidents.en-cours') ? route('incidents.en-cours') : '#',
                 'active' => request()->routeIs('incidents.en-cours'),
                 'icon' => 'clock',
@@ -155,7 +155,7 @@
 
         if (Route::has('incidents.create')) {
             $navItems->push([
-                'label' => 'Créer un incident',
+                'label' => 'Déclarer un incident',
                 'route' => route('incidents.create'),
                 'active' => request()->routeIs('incidents.create'),
                 'icon' => 'plus',
@@ -164,7 +164,7 @@
 
         if (($canViewReports ?? false) && Route::has('reports.index')) {
             $navItems->push([
-                'label' => 'Reports',
+                'label' => 'Rapports',
                 'route' => route('reports.index'),
                 'active' => request()->routeIs('reports.*'),
                 'icon' => 'report',

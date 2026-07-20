@@ -613,11 +613,13 @@ class IncidentWorkflowTest extends TestCase
             'actions_realisees' => 'Controle du depart.',
             'resultat' => 'Service retabli.',
             'submitted_at' => now(),
+            'date_soumission' => now(),
+            'statut_rapport' => IncidentReport::STATUS_SUBMITTED,
         ]);
 
         $this->actingAs($supervisor)->get(route('incidents.show', $reported))
             ->assertOk()
-            ->assertSee('Valider la résolution')
+            ->assertSee('Valider le rapport')
             ->assertDontSee("Clôturer l'incident", false);
 
         $validated = $this->makeIncident($context, [
@@ -631,12 +633,16 @@ class IncidentWorkflowTest extends TestCase
             'actions_realisees' => 'Reprise definitive.',
             'resultat' => 'Incident resolu.',
             'submitted_at' => now(),
+            'date_soumission' => now(),
+            'statut_rapport' => IncidentReport::STATUS_VALIDATED,
+            'date_validation' => now(),
+            'valide_par' => $supervisor->id,
         ]);
 
         $this->actingAs($supervisor)->get(route('incidents.show', $validated))
             ->assertOk()
             ->assertSee("Clôturer l'incident", false)
-            ->assertDontSee('Valider la résolution');
+            ->assertDontSee('Valider le rapport');
     }
 
     public function test_incident_create_form_does_not_allow_free_initial_status_choice(): void

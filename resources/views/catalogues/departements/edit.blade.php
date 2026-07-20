@@ -25,7 +25,7 @@
 
     $navItems = [
         ['label' => 'Dashboard', 'icon' => 'dashboard', 'route' => Route::has('dashboard') ? route('dashboard') : '#', 'active' => request()->routeIs('dashboard')],
-        ['label' => 'Incidents', 'icon' => 'bolt', 'route' => Route::has('incidents.index') ? route('incidents.index') : '#', 'active' => request()->routeIs('incidents.*')],
+        ['label' => 'Tous les incidents', 'icon' => 'bolt', 'route' => Route::has('incidents.index') ? route('incidents.index') : '#', 'active' => request()->routeIs('incidents.*')],
         ['label' => 'Catalog', 'icon' => 'inventory_2', 'route' => Route::has('catalogues.index') ? route('catalogues.index') : '#', 'active' => request()->routeIs('catalogues.*')],
         ['label' => 'Admin Tools', 'icon' => 'admin_panel_settings', 'route' => Route::has('users.index') ? route('users.index') : '#', 'active' => request()->routeIs('users.*')],
         ['label' => 'Settings', 'icon' => 'settings', 'route' => Route::has('profile.edit') ? route('profile.edit') : '#', 'active' => request()->routeIs('profile.*')],
@@ -37,7 +37,7 @@
 <main class="ceet-depart-edit-main">
 <div class="ceet-depart-edit-breadcrumb">
     @unless((auth()->user()?->isSuperviseur() ?? false) && ! (auth()->user()?->isAdmin() ?? false))
-    <a href="{{ Route::has('catalogues.index') ? route('catalogues.index') : '#' }}">Catalogs</a>
+    <a href="{{ Route::has('catalogues.index') ? route('catalogues.index') : '#' }}">Catalogues</a>
     @endunless
     <span>/</span>
     <a href="{{ route('catalogues.departements.index') }}">Departs Electriques</a>
@@ -131,7 +131,7 @@
         </section>
 
         <section class="ceet-depart-edit-context">
-            <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuBv8L6DlEdNC4Np8X0jRyk-I_PeNqdORZ_BQLZ5T91sU4qY7Ca1J834yse3Xfxk0nuxW9pmEi4JdXKW7H68HeMbj0bWITxD_ngIrhwoNp1NrQfb1t7UpB-EEWDf9_9mvS6CRbBLWu9LMwvmhIBZY-8Y7vx_RpogvMFyD6Phe0x-Y12g8jWj0dr-VTc2pfqDJQkI9-LghZuyIzkHC4pzok2xQ7rJzONW4FTViJHOzhs1C3qTvFqWs7KTsDl7qhqmn4kyMrKKYTPdZxm3" alt="Infrastructure electrique">
+            <img src="{{ asset('images/logo-ceet.png') }}" alt="Logo CEET">
             <div>
                 <h2>Contexte r&eacute;seau</h2>
                 <p>Les modifications sont synchronis&eacute;es avec le catalogue d'incidents pour garder les affectations coh&eacute;rentes.</p>

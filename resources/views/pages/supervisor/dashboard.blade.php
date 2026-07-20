@@ -74,7 +74,7 @@ $userName = $currentUser?->name ?? 'Superviseur Réseau';
         <div class="ceet-supervisor-header-actions">
             <a href="{{ $safeRoute('incidents.create', [], '/incidents/create') }}" class="ceet-supervisor-create-header-btn">
                 <span class="material-symbols-outlined" aria-hidden="true">add</span>
-                Créer un incident
+                Déclarer un incident
             </a>
         </div>
     </section>
@@ -314,11 +314,4 @@ $userName = $currentUser?->name ?? 'Superviseur Réseau';
     <small>Déclarer un incident</small>
 </a>
 </div>
-@endsection
-
-@section('page_js')
-    @vite([
-        'resources/js/app.js',
-        'resources/js/pages/supervisor-dashboard.js'
-    ])
 @endsection

@@ -38,8 +38,8 @@
     --ceet-info-bg: #dce8f7;
 
     /* Typographie */
-    --ceet-font: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    --ceet-font-mono: "JetBrains Mono", "Fira Code", monospace;
+    --ceet-font: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+    --ceet-font-mono: "Cascadia Code", "Consolas", "Liberation Mono", monospace;
 
     /* Layout shell */
     --ceet-sidebar-width: 280px;

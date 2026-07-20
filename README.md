@@ -82,9 +82,19 @@ Ne pas utiliser `migrate --seed` en production. La procedure complete est dans [
 
 ## Scripts utiles
 ```bash
+# Demarrage local recommande (demarre et attend MySQL automatiquement)
+bash scripts/start-dev.sh
+
+# Ces commandes demarrent egalement MySQL avant Laravel
 composer dev
 composer dev:full
 composer dev:lite
 npm run build
 php artisan optimize
 ```
+
+En developpement local avec PHP lance depuis WSL, `DB_HOST` doit etre
+`127.0.0.1`. Le nom `mysql` est reserve aux processus executes dans le reseau
+Docker (par exemple avec `./vendor/bin/sail`). Le conteneur MySQL utilise la
+politique `restart: unless-stopped` afin de redemarrer automatiquement avec
+Docker Desktop apres un redemarrage du PC.

@@ -45,6 +45,8 @@ class CloseIncidentRequest extends FormRequest
 
             if (! $incident->report) {
                 $validator->errors()->add('rapport', 'La cloture est impossible sans rapport d intervention.');
+            } elseif ($incident->report->statut_rapport !== \App\Models\IncidentReport::STATUS_VALIDATED) {
+                $validator->errors()->add('rapport', 'La cloture exige un rapport d intervention valide.');
             }
 
             if (! $incident->date_debut || ! $dateFin) {

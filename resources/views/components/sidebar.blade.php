@@ -1,6 +1,6 @@
 @props([
     'title' => 'CEET Incidents',
-    'subtitle' => 'Electrical Management',
+    'subtitle' => 'Gestion des incidents électriques',
     'user' => auth()->user(),
     'navItems' => collect(),
     'iconPath' => [],

@@ -39,6 +39,9 @@ class IncidentController extends ApiController
                 'operateur.roles',
                 'responsable.roles',
                 'superviseur.roles',
+                'report.operateur.roles',
+                'report.validator.roles',
+                'report.refuser.roles',
             ])
             ->visibleToUser($request->user())
             ->filter($filters);
@@ -58,7 +61,7 @@ class IncidentController extends ApiController
     public function store(StoreIncidentRequest $request): JsonResponse
     {
         $incident = $this->incidentService->createIncident($request->validated(), $request->user());
-        $incident->load(['departement', 'typeIncident', 'cause', 'status', 'priorite', 'operateur', 'responsable', 'superviseur']);
+        $incident->load(['departement', 'typeIncident', 'cause', 'status', 'priorite', 'operateur', 'responsable', 'superviseur', 'report']);
 
         broadcast(new IncidentChanged('created', $incident))->toOthers();
 
@@ -77,6 +80,9 @@ class IncidentController extends ApiController
             'responsable.roles',
             'superviseur.roles',
             'interventions.user.roles',
+            'report.operateur.roles',
+            'report.validator.roles',
+            'report.refuser.roles',
         ]);
 
         return $this->success(IncidentResource::make($incident));
@@ -85,7 +91,7 @@ class IncidentController extends ApiController
     public function update(UpdateIncidentRequest $request, Incident $incident): JsonResponse
     {
         $incident = $this->incidentService->updateIncident($incident, $request->validated(), $request->user());
-        $incident->load(['departement', 'typeIncident', 'cause', 'status', 'priorite', 'operateur', 'responsable', 'superviseur']);
+        $incident->load(['departement', 'typeIncident', 'cause', 'status', 'priorite', 'operateur', 'responsable', 'superviseur', 'report']);
 
         broadcast(new IncidentChanged('updated', $incident))->toOthers();
 

@@ -1,0 +1,18 @@
+/*
+ * Icônes Material Symbols servies localement pour le mode hors ligne.
+ * Source : https://github.com/google/material-design-icons
+ * Licence : Apache-2.0 (voir resources/fonts/LICENSE-material-symbols.txt).
+ */
+@font-face {
+    font-family: "Material Symbols Outlined";
+    font-style: normal;
+    font-weight: 400;
+    font-display: block;
+    src: url("../fonts/material-symbols-outlined.woff2") format("woff2");
+}
+
+.material-symbols-outlined {
+    font-family: "Material Symbols Outlined", sans-serif;
+    font-feature-settings: "liga";
+    -webkit-font-feature-settings: "liga";
+}

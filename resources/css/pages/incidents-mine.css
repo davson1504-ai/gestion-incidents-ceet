@@ -296,3 +296,17 @@
     .ceet-mine-page-header { flex-direction: column; }
     .ceet-mine-table-footer { flex-direction: column; align-items: flex-start; }
 }
+
+.ceet-mine-status.is-rejected {
+    background: rgba(220, 38, 38, 0.12);
+    color: #b91c1c;
+}
+
+.ceet-mine-report-reason {
+    display: block;
+    margin-top: 0.35rem;
+    max-width: 18rem;
+    color: #7f1d1d;
+    font-size: 0.78rem;
+    line-height: 1.35;
+}

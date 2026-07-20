@@ -3,6 +3,7 @@
 namespace App\Policies;
 
 use App\Models\Incident;
+use App\Models\IncidentReport;
 use App\Models\User;
 
 class IncidentPolicy
@@ -89,14 +90,46 @@ class IncidentPolicy
 
     public function report(User $user, Incident $incident): bool
     {
-        return $user->can('incidents.report')
-            && $user->isOperateur()
-            && $incident->responsable_id === $user->id;
+        if (! ($user->can('incidents.report') || $user->can('reports.submit') || $user->can('reports.update'))) {
+            return false;
+        }
+
+        if (! $user->isOperateur() || (int) $incident->responsable_id !== (int) $user->id) {
+            return false;
+        }
+
+        $incident->loadMissing(['status', 'report']);
+
+        if ($incident->status?->is_final || $incident->status?->code !== 'RESOLU') {
+            return false;
+        }
+
+        if (! $incident->report) {
+            return true;
+        }
+
+        return in_array($incident->report->statut_rapport, [
+            IncidentReport::STATUS_DRAFT,
+            IncidentReport::STATUS_REJECTED,
+        ], true);
     }
 
     public function validateResolution(User $user, Incident $incident): bool
     {
-        return $user->can('incidents.validate') && $user->isSuperviseur();
+        if (! ($user->can('incidents.validate') || $user->can('reports.validate'))) {
+            return false;
+        }
+
+        return $user->isSuperviseur();
+    }
+
+    public function rejectReport(User $user, Incident $incident): bool
+    {
+        if (! ($user->can('reports.reject') || $user->can('incidents.validate'))) {
+            return false;
+        }
+
+        return $user->isSuperviseur();
     }
 
     public function export(User $user): bool

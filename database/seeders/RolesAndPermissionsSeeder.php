@@ -27,6 +27,11 @@ class RolesAndPermissionsSeeder extends Seeder
             'incidents.validate',
             'incidents.close',
             'incidents.export',
+            'reports.view',
+            'reports.submit',
+            'reports.update',
+            'reports.validate',
+            'reports.reject',
             'catalogues.view',
             'catalogues.manage',
             'logs.view',
@@ -49,19 +54,7 @@ class RolesAndPermissionsSeeder extends Seeder
         $superviseur = $this->resolveOrCreateRole(['Superviseur', 'superviseur']);
         $operateur = $this->resolveOrCreateRole(['Opérateur', 'OpÃ©rateur', 'Operateur', 'operateur']);
 
-        $admin->syncPermissions([
-            'users.view',
-            'users.manage',
-            'roles.manage',
-            'catalogues.view',
-            'catalogues.manage',
-            'logs.view',
-            'system.view',
-            'incidents.view',
-            'incidents.delete',
-            'reporting.view',
-            'reporting.export',
-        ]);
+        $admin->syncPermissions($permissions);
 
         $superviseur->syncPermissions([
             'incidents.view',
@@ -71,6 +64,9 @@ class RolesAndPermissionsSeeder extends Seeder
             'incidents.validate',
             'incidents.close',
             'incidents.export',
+            'reports.view',
+            'reports.validate',
+            'reports.reject',
             'reporting.view',
             'reporting.export',
         ]);
@@ -81,6 +77,8 @@ class RolesAndPermissionsSeeder extends Seeder
             'incidents.take',
             'incidents.resolve',
             'incidents.report',
+            'reports.submit',
+            'reports.update',
         ]);
 
         $this->syncAliases($admin, ['admin']);
